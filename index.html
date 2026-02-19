@@ -99,10 +99,10 @@
         }
     </style>
 </head>
-<body class="text-slate-200 h-screen overflow-hidden flex flex-col md:flex-row">
+<body class="text-slate-200 h-[100dvh] overflow-hidden flex flex-col md:flex-row">
 
     <!-- LEFT SIDEBAR: Controls -->
-    <div class="w-full md:w-[400px] flex flex-col bg-slate-800 border-r border-slate-700 z-20 shadow-2xl shrink-0 h-full">
+    <div class="w-full md:w-[400px] flex flex-col bg-slate-800 border-b md:border-b-0 md:border-r border-slate-700 z-20 shadow-2xl shrink-0 h-[55%] md:h-full">
         
         <!-- Header -->
         <div class="bg-slate-900 p-4 border-b border-slate-700 shrink-0 flex items-center justify-between">
@@ -152,34 +152,34 @@
 
                 <!-- Dice Grid (3 columns for sidebar) -->
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="rollStandard(4)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(4)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D4</span>
                         <i class="fa-solid fa-dice-d6 transform rotate-45 text-lg"></i>
                     </button>
-                    <button onclick="rollStandard(6)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(6)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D6</span>
                         <i class="fa-solid fa-dice-d6 text-lg"></i>
                     </button>
-                    <button onclick="rollStandard(8)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(8)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D8</span>
                         <i class="fa-solid fa-dice-d20 transform rotate-180 text-lg"></i>
                     </button>
-                    <button onclick="rollStandard(10)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(10)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D10</span>
                         <span class="font-mono font-bold text-lg leading-none">10</span>
                     </button>
-                    <button onclick="rollStandard(12)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(12)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D12</span>
                         <span class="font-mono font-bold text-lg leading-none">12</span>
                     </button>
-                    <button onclick="rollStandard(100)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
+                    <button onclick="rollStandard(100)" class="dice-btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-indigo-900/30 flex flex-col items-center justify-center gap-1 group">
                         <span class="text-[10px] opacity-70">D100</span>
                         <span class="font-mono font-bold text-lg leading-none">%</span>
                     </button>
                     <!-- D20 spans full width -->
-                    <button onclick="rollStandard(20)" class="dice-btn col-span-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-4 rounded shadow-lg shadow-pink-900/30 flex items-center justify-center gap-3 group mt-2">
-                        <i class="fa-solid fa-dice-d20 text-2xl group-hover:rotate-180 transition-transform duration-500"></i>
-                        <span class="text-xl tracking-widest">ROLL D20</span>
+                    <button onclick="rollStandard(20)" class="dice-btn col-span-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-pink-900/30 flex items-center justify-center gap-3 group mt-1 md:mt-2">
+                        <i class="fa-solid fa-dice-d20 text-xl md:text-2xl group-hover:rotate-180 transition-transform duration-500"></i>
+                        <span class="text-lg md:text-xl tracking-widest">ROLL D20</span>
                     </button>
                 </div>
 
@@ -208,21 +208,21 @@
                 <!-- Expanded Formula Keypad -->
                 <div class="grid grid-cols-4 gap-2">
                     <!-- Row 1 -->
-                    <button onclick="insertText('d4')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d4</button>
-                    <button onclick="insertText('d6')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d6</button>
-                    <button onclick="insertText('d8')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d8</button>
-                    <button onclick="insertText('d10')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d10</button>
+                    <button onclick="insertText('d4')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d4</button>
+                    <button onclick="insertText('d6')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d6</button>
+                    <button onclick="insertText('d8')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d8</button>
+                    <button onclick="insertText('d10')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d10</button>
                     
                     <!-- Row 2 -->
-                    <button onclick="insertText('d12')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d12</button>
-                    <button onclick="insertText('d20')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d20</button>
-                    <button onclick="insertText('d100')" class="bg-slate-700 hover:bg-slate-600 text-xs py-3 rounded text-slate-300 font-mono">d%</button>
-                    <button onclick="clearFormula()" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 text-xs py-3 rounded border border-red-900/50"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="insertText('d12')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d12</button>
+                    <button onclick="insertText('d20')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d20</button>
+                    <button onclick="insertText('d100')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 md:py-3 rounded text-slate-300 font-mono">d%</button>
+                    <button onclick="clearFormula()" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 text-xs py-2 md:py-3 rounded border border-red-900/50"><i class="fa-solid fa-trash"></i></button>
 
                     <!-- Row 3: Operators & Big button -->
-                    <button onclick="insertText('+')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold text-sm py-3 rounded">+</button>
-                    <button onclick="insertText('-')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold text-sm py-3 rounded">-</button>
-                    <button onclick="rollFormula()" class="col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded flex items-center justify-center gap-2">
+                    <button onclick="insertText('+')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold text-sm py-2 md:py-3 rounded">+</button>
+                    <button onclick="insertText('-')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold text-sm py-2 md:py-3 rounded">-</button>
+                    <button onclick="rollFormula()" class="col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 md:py-3 rounded flex items-center justify-center gap-2">
                         <i class="fa-solid fa-calculator"></i> 计算
                     </button>
                 </div>
@@ -267,7 +267,7 @@
                     </div>
                 </div>
 
-                <button onclick="rollDaggerheart()" id="dhRollBtn" class="w-full bg-gradient-to-r from-yellow-700 via-slate-700 to-purple-800 hover:from-yellow-600 hover:to-purple-700 text-white font-bold py-4 rounded-lg shadow-lg border border-white/10 flex items-center justify-center gap-2 group transition-all active:scale-95">
+                <button onclick="rollDaggerheart()" id="dhRollBtn" class="w-full bg-gradient-to-r from-yellow-700 via-slate-700 to-purple-800 hover:from-yellow-600 hover:to-purple-700 text-white font-bold py-3 md:py-4 rounded-lg shadow-lg border border-white/10 flex items-center justify-center gap-2 group transition-all active:scale-95">
                     <span>ROLL DUEL</span>
                     <i class="fa-solid fa-angles-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
@@ -276,33 +276,33 @@
     </div>
 
     <!-- RIGHT PANEL: Display & History -->
-    <div class="flex-1 flex flex-col bg-slate-900 relative overflow-hidden h-full">
+    <div class="flex-1 flex flex-col bg-slate-900 relative overflow-hidden">
         <!-- Background Decor -->
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
         <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
 
         <!-- HERO RESULT AREA -->
-        <div id="heroArea" class="h-[40%] min-h-[250px] flex flex-col items-center justify-center relative border-b border-slate-800 z-10 transition-colors duration-500">
+        <div id="heroArea" class="h-[55%] md:h-[40%] min-h-[160px] md:min-h-[250px] shrink-0 flex flex-col items-center justify-center relative border-b border-slate-800 z-10 transition-colors duration-500">
             
             <div id="welcomeMsg" class="text-slate-600 text-sm font-mono animate-pulse">Waiting for roll...</div>
 
             <div id="resultContainer" class="hidden flex flex-col items-center text-center w-full px-4">
                 <!-- Top Label -->
-                <div class="text-sm font-bold tracking-[0.2em] text-slate-400 mb-2 uppercase" id="heroLabel">Standard Roll</div>
+                <div class="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-400 mb-1 md:mb-2 uppercase" id="heroLabel">Standard Roll</div>
                 
                 <!-- Big Number -->
                 <div class="relative group cursor-default">
-                    <div class="text-[8rem] leading-none font-black text-white drop-shadow-2xl result-enter select-all" id="heroTotal">20</div>
-                    <div class="absolute -right-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-slate-500 vertical-lr">Total</div>
+                    <div class="text-[5rem] md:text-[8rem] leading-none font-black text-white drop-shadow-2xl result-enter select-all" id="heroTotal">20</div>
+                    <div class="absolute -right-6 md:-right-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs text-slate-500 vertical-lr">Total</div>
                 </div>
 
                 <!-- Status Tag (Crit, Hope, etc) -->
-                <div id="heroTag" class="mt-4 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest border backdrop-blur-md hidden shadow-lg transform transition-all duration-300 hover:scale-105">
+                <div id="heroTag" class="mt-2 md:mt-4 px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest border backdrop-blur-md hidden shadow-lg transform transition-all duration-300 hover:scale-105">
                     Critical Success
                 </div>
 
                 <!-- Detail Breakdown -->
-                <div class="mt-6 text-slate-500 font-mono text-sm bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-800/50" id="heroBreakdown">
+                <div class="mt-3 md:mt-6 text-slate-500 font-mono text-xs md:text-sm bg-slate-900/50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-slate-800/50" id="heroBreakdown">
                     [14, 2] + 4
                 </div>
             </div>
@@ -653,10 +653,10 @@
             else bEl.innerText = breakdown;
 
             tagEl.classList.add('hidden');
-            tEl.className = "text-[8rem] leading-none font-black text-white drop-shadow-2xl result-enter select-all transition-colors duration-300";
+            tEl.className = "text-[5rem] md:text-[8rem] leading-none font-black text-white drop-shadow-2xl result-enter select-all transition-colors duration-300";
             
             if (tag) {
-                tagEl.className = `mt-4 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest border backdrop-blur-md shadow-lg transform transition-all duration-300 hover:scale-105 ${tag.color} ${tag.bg} ${tag.border}`;
+                tagEl.className = `mt-2 md:mt-4 px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest border backdrop-blur-md shadow-lg transform transition-all duration-300 hover:scale-105 ${tag.color} ${tag.bg} ${tag.border}`;
                 tagEl.innerText = tag.text;
                 tagEl.classList.remove('hidden');
 
