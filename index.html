@@ -179,7 +179,7 @@
                     <!-- D20 spans full width -->
                     <button onclick="rollStandard(20)" class="dice-btn col-span-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-3 md:py-4 rounded shadow-lg shadow-pink-900/30 flex items-center justify-center gap-3 group mt-1 md:mt-2">
                         <i class="fa-solid fa-dice-d20 text-xl md:text-2xl group-hover:rotate-180 transition-transform duration-500"></i>
-                        <span class="text-lg md:text-xl tracking-widest">ROLL D20</span>
+                        <span class="text-lg md:text-xl tracking-widest">投掷 D20</span>
                     </button>
                 </div>
 
@@ -241,7 +241,7 @@
                         <div id="dh-hope-box" class="w-16 h-16 bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-900/30 border border-yellow-500/30 relative transition-transform">
                              <i id="dh-hope-icon" class="fa-solid fa-sun text-2xl text-white opacity-90"></i>
                         </div>
-                        <div class="text-[10px] font-bold text-yellow-500 tracking-widest uppercase mt-1">HOPE</div>
+                        <div class="text-[10px] font-bold text-yellow-500 tracking-widest mt-1">希望</div>
                         <div id="dh-hope-val" class="h-6 text-xl font-bold text-yellow-400 transition-all opacity-0 transform translate-y-2">-</div>
                     </div>
                     
@@ -252,14 +252,14 @@
                         <div id="dh-fear-box" class="w-16 h-16 bg-gradient-to-br from-purple-800 to-slate-950 rounded-xl flex items-center justify-center shadow-lg shadow-purple-900/30 border border-purple-500/30 relative transition-transform">
                             <i id="dh-fear-icon" class="fa-solid fa-moon text-2xl text-purple-200 opacity-80"></i>
                         </div>
-                        <div class="text-[10px] font-bold text-purple-500 tracking-widest uppercase mt-1">FEAR</div>
+                        <div class="text-[10px] font-bold text-purple-500 tracking-widest mt-1">恐惧</div>
                         <div id="dh-fear-val" class="h-6 text-xl font-bold text-purple-400 transition-all opacity-0 transform translate-y-2">-</div>
                     </div>
                 </div>
 
                 <!-- Modifier Input -->
                 <div class="w-full mb-6 px-4">
-                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center uppercase tracking-wider">额外修正 (Modifier)</label>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1 text-center uppercase tracking-wider">额外修正</label>
                     <div class="relative flex items-center justify-center">
                         <button onclick="adjustValue('dhMod', -1)" class="w-10 h-10 text-slate-400 bg-slate-700 hover:bg-slate-600 rounded-l">-</button>
                         <input type="number" id="dhMod" value="0" class="w-20 h-10 bg-slate-900 border-y border-slate-700 text-center text-white font-mono text-lg focus:outline-none">
@@ -268,7 +268,7 @@
                 </div>
 
                 <button onclick="rollDaggerheart()" id="dhRollBtn" class="w-full bg-gradient-to-r from-yellow-700 via-slate-700 to-purple-800 hover:from-yellow-600 hover:to-purple-700 text-white font-bold py-3 md:py-4 rounded-lg shadow-lg border border-white/10 flex items-center justify-center gap-2 group transition-all active:scale-95">
-                    <span>ROLL DUEL</span>
+                    <span>进行判定</span>
                     <i class="fa-solid fa-angles-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -284,21 +284,21 @@
         <!-- HERO RESULT AREA -->
         <div id="heroArea" class="h-[55%] md:h-[40%] min-h-[160px] md:min-h-[250px] shrink-0 flex flex-col items-center justify-center relative border-b border-slate-800 z-10 transition-colors duration-500">
             
-            <div id="welcomeMsg" class="text-slate-600 text-sm font-mono animate-pulse">Waiting for roll...</div>
+            <div id="welcomeMsg" class="text-slate-600 text-sm font-mono animate-pulse">等待投掷...</div>
 
             <div id="resultContainer" class="hidden flex flex-col items-center text-center w-full px-4">
                 <!-- Top Label -->
-                <div class="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-400 mb-1 md:mb-2 uppercase" id="heroLabel">Standard Roll</div>
+                <div class="text-xs md:text-sm font-bold tracking-[0.2em] text-slate-400 mb-1 md:mb-2 uppercase" id="heroLabel">标准投掷</div>
                 
                 <!-- Big Number -->
                 <div class="relative group cursor-default">
                     <div class="text-[5rem] md:text-[8rem] leading-none font-black text-white drop-shadow-2xl result-enter select-all" id="heroTotal">20</div>
-                    <div class="absolute -right-6 md:-right-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs text-slate-500 vertical-lr">Total</div>
+                    <div class="absolute -right-6 md:-right-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs text-slate-500 vertical-lr">总计</div>
                 </div>
 
                 <!-- Status Tag (Crit, Hope, etc) -->
                 <div id="heroTag" class="mt-2 md:mt-4 px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest border backdrop-blur-md hidden shadow-lg transform transition-all duration-300 hover:scale-105">
-                    Critical Success
+                    大成功
                 </div>
 
                 <!-- Detail Breakdown -->
@@ -488,12 +488,12 @@
             const breakdownStr = `[${rollsStr}]` + (mod ? (mod > 0 ? ` + ${mod}` : ` - ${Math.abs(mod)}`) : '');
 
             let tag = null;
-            if (isCritSuccess) tag = { text: "Critical Success", color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/50" };
-            if (isCritFail) tag = { text: "Critical Fail", color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/50" };
+            if (isCritSuccess) tag = { text: "大成功", color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/50" };
+            if (isCritFail) tag = { text: "大失败", color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/50" };
 
             // Determine Label Type
             const standardDice = [4, 6, 8, 10, 12, 20, 100];
-            const typeLabel = standardDice.includes(sides) ? "Standard" : "Custom";
+            const typeLabel = standardDice.includes(sides) ? "标准" : "自定义";
 
             updateHero(total, formulaStr, breakdownStr, tag);
             addHistoryItem(typeLabel, formulaStr, total, breakdownStr, tag);
@@ -563,8 +563,8 @@
             }
 
             const cleanInput = els.inputs.formula.value; 
-            updateHero(total, "Formula", cleanInput + " = " + breakdownParts.join(' '), null);
-            addHistoryItem("Formula", cleanInput, total, breakdownParts.join(' '));
+            updateHero(total, "公式", cleanInput + " = " + breakdownParts.join(' '), null);
+            addHistoryItem("公式", cleanInput, total, breakdownParts.join(' '));
         }
 
         // --- UPDATED Daggerheart Logic with Animation ---
@@ -612,20 +612,20 @@
                 let tag = {};
 
                 if (hope === fear) {
-                    status = "Critical (Hope Clear)";
+                    status = "双重暴击";
                     tag = { text: status, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/50" };
                 } else if (hope > fear) {
-                    status = "With Hope";
+                    status = "伴随希望";
                     tag = { text: status, color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/50" };
                 } else {
-                    status = "With Fear";
+                    status = "伴随恐惧";
                     tag = { text: status, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/50" };
                 }
 
-                const breakdownHTML = `<span class="dh-hope">H:${hope}</span> <span class="text-slate-600">/</span> <span class="dh-fear">F:${fear}</span>${mod ? (mod > 0 ? ` + ${mod}` : ` ${mod}`) : ''}`;
+                const breakdownHTML = `<span class="dh-hope">希望:${hope}</span> <span class="text-slate-600">/</span> <span class="dh-fear">恐惧:${fear}</span>${mod ? (mod > 0 ? ` + ${mod}` : ` ${mod}`) : ''}`;
 
-                updateHero(total, "Daggerheart Check", breakdownHTML, tag, true);
-                addHistoryItem("DH", "2d12 Duel", total, `Hope ${hope}, Fear ${fear}`, tag);
+                updateHero(total, "匕首心判定", breakdownHTML, tag, true);
+                addHistoryItem("匕首心", "2d12 判定", total, `希望 ${hope}, 恐惧 ${fear}`, tag);
 
                 // Reset State
                 isRolling = false;
@@ -672,9 +672,9 @@
             li.className = "flex items-start gap-4 p-4 bg-slate-800 rounded-xl border border-slate-700/50 hover:border-indigo-500/30 transition result-enter";
             
             let icon = "fa-dice-d20";
-            if (type === "Formula") icon = "fa-calculator";
-            if (type === "DH") icon = "fa-shield-heart";
-            if (type === "Custom") icon = "fa-dice-d6";
+            if (type === "公式") icon = "fa-calculator";
+            if (type === "匕首心") icon = "fa-shield-heart";
+            if (type === "自定义") icon = "fa-dice-d6";
 
             let tagHTML = '';
             if (tag) {
