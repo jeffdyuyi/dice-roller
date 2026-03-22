@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { PlayerNode } from '../lib/mqttService';
+import { useState } from 'react';
+import type { PlayerNode } from '../lib/mqttService';
 
 interface RoomModalProps {
     isOpen: boolean;
@@ -12,7 +12,7 @@ interface RoomModalProps {
     pendingPlayers: PlayerNode[];
     myId: string;
     onCreateRoom: (name: string, rid: string) => void;
-    onJoinRoom: (name: string, rid: string) => void;
+    onJoinRoom: (name: string, rid: string, charInfo?: any) => void;
     onAcceptPlayer: (id: string, name: string) => void;
     onRejectPlayer: (id: string) => void;
     onKickPlayer: (id: string) => void;
@@ -25,6 +25,8 @@ export function RoomModal({
 }: RoomModalProps) {
     const [inputName, setInputName] = useState(initialName);
     const [inputRoomId, setInputRoomId] = useState('');
+    const [guestMode, setGuestMode] = useState(false);
+    const [ruleSystem, setRuleSystem] = useState('dnd5e');
 
     if (!isOpen) return null;
 
@@ -46,9 +48,32 @@ export function RoomModal({
                                 <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位数字(创建时留空)" className="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white text-sm h-10 transition-colors" />
                             </div>
                         </div>
+
+                        <div className="flex gap-4 mb-4">
+                            <div className="flex-1">
+                                <label className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-2">
+                                    <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="bg-slate-900 border-slate-700 rounded" />
+                                    以访客身份加入 (无角色卡)
+                                </label>
+                            </div>
+                            {!guestMode && (
+                                <div className="flex-1">
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">选择规则卡</label>
+                                    <select value={ruleSystem} onChange={e => setRuleSystem(e.target.value)} className="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white text-sm h-10 transition-colors">
+                                        <option value="dnd5e">D&D 5e</option>
+                                        <option value="coc7th">COC 7th</option>
+                                        <option value="daggerheart">Daggerheart</option>
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex gap-3 mt-6">
                             <button onClick={() => onCreateRoom(inputName, inputRoomId)} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded shadow-lg">创建房间</button>
-                            <button onClick={() => onJoinRoom(inputName, inputRoomId)} className="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 rounded shadow-lg">加入房间</button>
+                            <button onClick={() => {
+                                const charInfo = guestMode ? { guestMode: true } : { guestMode: false, characterId: 'mock-char-123', ruleSystem, characterData: { hp: 10 } };
+                                onJoinRoom(inputName, inputRoomId, charInfo);
+                            }} className="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 rounded shadow-lg">加入房间</button>
                         </div>
                     </div>
                 )}
@@ -77,6 +102,8 @@ export function RoomModal({
                                     <span className={p.id === myId ? 'text-indigo-400 font-bold' : 'text-slate-300'}>
                                         {p.isHost && <i className="fa-solid fa-crown text-yellow-500 mr-1"></i>}
                                         {p.name} {p.id === myId && '(你)'}
+                                        {!p.isHost && p.guestMode && <span className="ml-2 text-[10px] bg-slate-700 text-slate-300 px-1 py-0.5 rounded">访客</span>}
+                                        {!p.isHost && p.ruleSystem && <span className="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-1 py-0.5 rounded">{p.ruleSystem}</span>}
                                     </span>
                                     {isHost && p.id !== myId && (
                                         <button onClick={() => onKickPlayer(p.id)} className="text-xs text-red-400 hover:text-red-300"><i className="fa-solid fa-user-minus"></i></button>
@@ -93,7 +120,11 @@ export function RoomModal({
                                         <li className="text-slate-600 text-xs italic">暂无申请</li>
                                     ) : pendingPlayers.map(p => (
                                         <li key={p.id} className="bg-slate-900 border border-slate-700/50 p-2 rounded flex justify-between items-center text-sm">
-                                            <span className="text-slate-300">{p.name}</span>
+                                            <span className="text-slate-300">
+                                                {p.name}
+                                                {p.guestMode && <span className="ml-2 text-[10px] bg-slate-700 text-slate-300 px-1 py-0.5 rounded">访客</span>}
+                                                {p.ruleSystem && <span className="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-1 py-0.5 rounded">{p.ruleSystem}</span>}
+                                            </span>
                                             <div>
                                                 <button onClick={() => onAcceptPlayer(p.id, p.name)} className="text-green-400 mr-2"><i className="fa-solid fa-check"></i></button>
                                                 <button onClick={() => onRejectPlayer(p.id)} className="text-red-400"><i className="fa-solid fa-xmark"></i></button>

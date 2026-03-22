@@ -4,10 +4,15 @@ export interface PlayerNode {
     id: string;
     name: string;
     isHost?: boolean;
+    guestMode?: boolean;
+    characterId?: string;
+    ruleSystem?: string;
+    characterData?: any;
 }
 
 export interface RoomMessage {
-    type: 'JOIN_REQUEST' | 'JOIN_ACCEPTED' | 'JOIN_REJECTED' | 'PLAYER_LIST' | 'PLAYER_LEFT' | 'ROOM_CLOSED' | 'DICE_ROLL';
+    type: 'JOIN_REQUEST' | 'JOIN_ACCEPTED' | 'JOIN_REJECTED' | 'PLAYER_LIST' | 'PLAYER_LEFT' | 'ROOM_CLOSED' | 'DICE_ROLL'
+    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT';
     senderId: string;
     senderName: string;
     timestamp: number;
@@ -47,7 +52,7 @@ class MqttService {
             this.onConnectHandlers.forEach(cb => cb());
         });
 
-        this.client.on('message', (topic, message) => {
+        this.client.on('message', (_topic, message) => {
             try {
                 const data: RoomMessage = JSON.parse(message.toString());
                 // ignore echoes

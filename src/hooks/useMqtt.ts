@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { mqttInstance, PlayerNode, RoomMessage } from '../lib/mqttService';
+import { mqttInstance } from '../lib/mqttService';
+import type { PlayerNode, RoomMessage } from '../lib/mqttService';
 
 export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
 
@@ -28,7 +29,14 @@ export function useMqtt() {
                 if (mqttInstance.isHost) {
                     setPendingPlayers(prev => {
                         if (prev.find(p => p.id === msg.senderId)) return prev;
-                        return [...prev, { id: msg.senderId, name: msg.senderName }];
+                        return [...prev, {
+                            id: msg.senderId,
+                            name: msg.senderName,
+                            guestMode: msg.payload?.guestMode,
+                            characterId: msg.payload?.characterId,
+                            ruleSystem: msg.payload?.ruleSystem,
+                            characterData: msg.payload?.characterData
+                        }];
                     });
                 }
             } else if (msg.type === 'JOIN_ACCEPTED') {
@@ -80,20 +88,32 @@ export function useMqtt() {
         mqttInstance.init(name, customRoomId || null, true);
     }, []);
 
-    const joinRoom = useCallback((name: string, targetRoomId: string) => {
+    const joinRoom = useCallback((name: string, targetRoomId: string, characterInfo?: { characterId?: string; ruleSystem?: string; characterData?: any; guestMode?: boolean; }) => {
         if (!targetRoomId) return;
         setMyName(name);
         setCommState('WAITING');
         mqttInstance.init(name, targetRoomId, false);
         setTimeout(() => {
-            mqttInstance.sendToHost('JOIN_REQUEST');
+            mqttInstance.sendToHost('JOIN_REQUEST', characterInfo);
         }, 500);
     }, []);
 
     const acceptPlayer = useCallback((pId: string, pName: string) => {
-        setPendingPlayers(prev => prev.filter(p => p.id !== pId));
+        let acceptedPlayer: PlayerNode | undefined;
+        setPendingPlayers(prev => {
+            acceptedPlayer = prev.find(p => p.id === pId);
+            return prev.filter(p => p.id !== pId);
+        });
         setConnectedPlayers(prev => {
-            const next = [...prev, { id: pId, name: pName, isHost: false }];
+            const next = [...prev, {
+                id: pId,
+                name: pName,
+                isHost: false,
+                guestMode: acceptedPlayer?.guestMode,
+                characterId: acceptedPlayer?.characterId,
+                ruleSystem: acceptedPlayer?.ruleSystem,
+                characterData: acceptedPlayer?.characterData
+            }];
             mqttInstance.broadcast('PLAYER_LIST', next);
             return next;
         });
