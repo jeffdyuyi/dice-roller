@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PlayerNode } from '../lib/mqttService';
+import { getMyCharacters } from '../features/characters/api';
+import type { Character } from '../features/characters/rule-engines/types';
 
 interface RoomModalProps {
     isOpen: boolean;
@@ -26,116 +28,191 @@ export function RoomModal({
     const [inputName, setInputName] = useState(initialName);
     const [inputRoomId, setInputRoomId] = useState('');
     const [guestMode, setGuestMode] = useState(false);
-    const [ruleSystem, setRuleSystem] = useState('dnd5e');
+
+    // Character selection state
+    const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [selectedCharId, setSelectedCharId] = useState<string>('');
+
+    useEffect(() => {
+        if (isOpen) {
+            // Mock userId lookup - in real app this comes from useAuth
+            const user = JSON.parse(localStorage.getItem('mock_user') || '{}');
+            if (user.id) {
+                const chars = getMyCharacters(user.id);
+                setMyCharacters(chars);
+                if (chars.length > 0) setSelectedCharId(chars[0].id);
+            }
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
+    const handleJoin = () => {
+        let charInfo = null;
+        if (guestMode) {
+            charInfo = { guestMode: true };
+        } else {
+            const char = myCharacters.find(c => c.id === selectedCharId);
+            if (!char) {
+                alert('请先选择一个角色，或开启访客模式。');
+                return;
+            }
+            charInfo = {
+                guestMode: false,
+                characterId: char.id,
+                ruleSystem: char.ruleSystem,
+                characterData: char.characterData
+            };
+        }
+        onJoinRoom(inputName, inputRoomId, charInfo);
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-md w-full relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white"><i className="fa-solid fa-xmark"></i></button>
-                <h3 className="text-xl font-bold text-white mb-4"><i className="fa-solid fa-network-wired"></i> 联机房间</h3>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-2xl max-w-md w-full relative overflow-hidden group">
+                {/* Decorative background element */}
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
 
-                {commState === 'DISCONNECTED' && (
-                    <div>
-                        <div className="mb-4">
-                            <label className="block text-xs font-bold text-slate-500 mb-1">玩家昵称</label>
-                            <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入昵称" className="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white text-sm h-10 transition-colors" />
-                        </div>
-                        <div className="flex gap-4 mb-4">
-                            <div className="flex-1">
-                                <label className="block text-xs font-bold text-slate-500 mb-1">房间号</label>
-                                <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位数字(创建时留空)" className="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white text-sm h-10 transition-colors" />
-                            </div>
-                        </div>
+                <button onClick={onClose} className="absolute top-6 right-6 text-slate-300 hover:text-slate-800 transition-colors z-10"><i className="fa-solid fa-xmark text-xl"></i></button>
 
-                        <div className="flex gap-4 mb-4">
-                            <div className="flex-1">
-                                <label className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-2">
-                                    <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="bg-slate-900 border-slate-700 rounded" />
-                                    以访客身份加入 (无角色卡)
-                                </label>
-                            </div>
-                            {!guestMode && (
-                                <div className="flex-1">
-                                    <label className="block text-xs font-bold text-slate-500 mb-1">选择规则卡</label>
-                                    <select value={ruleSystem} onChange={e => setRuleSystem(e.target.value)} className="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white text-sm h-10 transition-colors">
-                                        <option value="dnd5e">D&D 5e</option>
-                                        <option value="coc7th">COC 7th</option>
-                                        <option value="daggerheart">Daggerheart</option>
-                                    </select>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                            <i className="fa-solid fa-tower-broadcast text-white"></i>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight">房间联接</h3>
+                    </div>
+
+                    {commState === 'DISCONNECTED' && (
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest ml-1 group-within:text-indigo-600 transition-colors">登录代号 (Nickname)</label>
+                                    <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入您的昵称..." className="w-full bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 px-5 py-3 rounded-2xl text-slate-800 font-bold outline-none transition-all placeholder:text-slate-300" />
                                 </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-3 mt-6">
-                            <button onClick={() => onCreateRoom(inputName, inputRoomId)} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded shadow-lg">创建房间</button>
-                            <button onClick={() => {
-                                const charInfo = guestMode ? { guestMode: true } : { guestMode: false, characterId: 'mock-char-123', ruleSystem, characterData: { hp: 10 } };
-                                onJoinRoom(inputName, inputRoomId, charInfo);
-                            }} className="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 rounded shadow-lg">加入房间</button>
-                        </div>
-                    </div>
-                )}
-
-                {commState === 'WAITING' && (
-                    <div className="flex flex-col items-center justify-center py-8">
-                        <i className="fa-solid fa-spinner fa-spin text-3xl text-indigo-500 mb-3"></i>
-                        <div className="text-slate-400 text-sm">连接中/等待审批...</div>
-                    </div>
-                )}
-
-                {commState === 'CONNECTED' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-4 bg-slate-900 p-3 rounded">
-                            <div>
-                                <div className="text-xs text-slate-500">当前房间</div>
-                                <div className="text-2xl font-mono font-bold text-indigo-400">{roomId}</div>
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-slate-400 mb-1.5 uppercase tracking-widest ml-1 group-within:text-indigo-600 transition-colors">时空坐标 (Room ID)</label>
+                                    <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位房间代码(创建时留空)" className="w-full bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 px-5 py-3 rounded-2xl text-slate-800 font-mono font-bold outline-none transition-all placeholder:text-slate-300" />
+                                </div>
                             </div>
-                            <button onClick={() => { onLeaveRoom(); onClose() }} className="bg-red-900/50 hover:bg-red-900/80 text-red-300 px-3 py-1.5 rounded text-sm border border-red-900/50"><i className="fa-solid fa-arrow-right-from-bracket"></i> 退出</button>
-                        </div>
 
-                        <h4 className="text-sm font-bold text-slate-300 mb-2 border-b border-slate-700 pb-1">成员列表 ({connectedPlayers.length})</h4>
-                        <ul className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar mb-4">
-                            {connectedPlayers.map(p => (
-                                <li key={p.id} className="bg-slate-900 border border-slate-700/50 p-2 rounded flex justify-between items-center text-sm">
-                                    <span className={p.id === myId ? 'text-indigo-400 font-bold' : 'text-slate-300'}>
-                                        {p.isHost && <i className="fa-solid fa-crown text-yellow-500 mr-1"></i>}
-                                        {p.name} {p.id === myId && '(你)'}
-                                        {!p.isHost && p.guestMode && <span className="ml-2 text-[10px] bg-slate-700 text-slate-300 px-1 py-0.5 rounded">访客</span>}
-                                        {!p.isHost && p.ruleSystem && <span className="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-1 py-0.5 rounded">{p.ruleSystem}</span>}
-                                    </span>
-                                    {isHost && p.id !== myId && (
-                                        <button onClick={() => onKickPlayer(p.id)} className="text-xs text-red-400 hover:text-red-300"><i className="fa-solid fa-user-minus"></i></button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
+                            <div className="bg-slate-50 rounded-3xl p-5 border-2 border-slate-100 space-y-4">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative">
+                                        <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="peer sr-only" />
+                                        <div className="w-10 h-6 bg-slate-200 rounded-full peer-checked:bg-indigo-600 transition-colors"></div>
+                                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                                    </div>
+                                    <span className="text-xs font-black text-slate-600 group-hover:text-slate-800 transition-colors">以访客身份加入 (无角色卡)</span>
+                                </label>
 
-                        {isHost && (
-                            <div>
-                                <h4 className="text-sm font-bold text-yellow-500 mb-2 border-b border-slate-700 pb-1">等待审批 ({pendingPlayers.length})</h4>
-                                <ul className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                                    {pendingPlayers.length === 0 ? (
-                                        <li className="text-slate-600 text-xs italic">暂无申请</li>
-                                    ) : pendingPlayers.map(p => (
-                                        <li key={p.id} className="bg-slate-900 border border-slate-700/50 p-2 rounded flex justify-between items-center text-sm">
-                                            <span className="text-slate-300">
-                                                {p.name}
-                                                {p.guestMode && <span className="ml-2 text-[10px] bg-slate-700 text-slate-300 px-1 py-0.5 rounded">访客</span>}
-                                                {p.ruleSystem && <span className="ml-2 text-[10px] bg-indigo-900 text-indigo-300 px-1 py-0.5 rounded">{p.ruleSystem}</span>}
-                                            </span>
-                                            <div>
-                                                <button onClick={() => onAcceptPlayer(p.id, p.name)} className="text-green-400 mr-2"><i className="fa-solid fa-check"></i></button>
-                                                <button onClick={() => onRejectPlayer(p.id)} className="text-red-400"><i className="fa-solid fa-xmark"></i></button>
+                                {!guestMode && (
+                                    <div className="animate-in slide-in-from-top-2 duration-300">
+                                        <label className="block text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest ml-1">导入档案 (Character)</label>
+                                        {myCharacters.length === 0 ? (
+                                            <div className="text-[10px] text-orange-500 font-bold bg-orange-50 p-3 rounded-xl border border-orange-100 italic">
+                                                <i className="fa-solid fa-circle-exclamation mr-1"></i> 您尚未创建任何角色档案，请先前往角色库。
                                             </div>
+                                        ) : (
+                                            <div className="relative group">
+                                                <select value={selectedCharId} onChange={e => setSelectedCharId(e.target.value)} className="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-2 text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer">
+                                                    {myCharacters.map(c => (
+                                                        <option key={c.id} value={c.id}>{c.name} ({c.ruleSystem})</option>
+                                                    ))}
+                                                </select>
+                                                <i className="fa-solid fa-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-600 transition-colors pointer-events-none"></i>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <button onClick={() => onCreateRoom(inputName, inputRoomId)} className="flex-1 bg-white border-2 border-slate-100 hover:border-indigo-600 hover:text-indigo-600 text-slate-600 font-black py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-slate-100/50">创建时空</button>
+                                <button onClick={handleJoin} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-indigo-100">建立联接</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {commState === 'WAITING' && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
+                            <div className="text-slate-800 font-black text-lg">请求同步中...</div>
+                            <p className="text-xs text-slate-400 mt-2 font-bold">请等待管理员批准接入</p>
+                        </div>
+                    )}
+
+                    {commState === 'CONNECTED' && (
+                        <div className="space-y-6">
+                            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 rounded-[2rem] shadow-xl shadow-indigo-100 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rotate-45 translate-x-12 -translate-y-12"></div>
+                                <div className="relative">
+                                    <div className="text-[10px] text-indigo-100 font-black uppercase tracking-widest mb-1">当前时空坐标</div>
+                                    <div className="text-4xl font-mono font-black text-white">{roomId}</div>
+                                </div>
+                                <button onClick={() => { onLeaveRoom(); onClose() }} className="absolute bottom-6 right-6 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95">
+                                    断开联接
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">已同步成员 ({connectedPlayers.length})</h4>
+                                </div>
+                                <ul className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                    {connectedPlayers.map(p => (
+                                        <li key={p.id} className="bg-slate-50/50 border border-slate-100 p-3 rounded-2xl flex justify-between items-center group hover:bg-white hover:border-indigo-100 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-sm ${p.isHost ? 'bg-orange-500 text-white' : 'bg-white text-slate-400'}`}>
+                                                    {p.isHost ? <i className="fa-solid fa-crown text-[10px]"></i> : p.name[0]}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className={`text-xs font-black ${p.id === myId ? 'text-indigo-600' : 'text-slate-700'}`}>
+                                                        {p.name} {p.id === myId && '(您)'}
+                                                    </span>
+                                                    <div className="flex gap-1">
+                                                        {p.guestMode ? (
+                                                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-slate-100 text-slate-400 rounded-md uppercase">访客</span>
+                                                        ) : p.ruleSystem ? (
+                                                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-indigo-50 text-indigo-500 rounded-md uppercase">{p.ruleSystem}</span>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isHost && p.id !== myId && (
+                                                <button onClick={() => onKickPlayer(p.id)} className="w-8 h-8 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><i className="fa-solid fa-user-xmark text-xs"></i></button>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
+
+                                {isHost && (
+                                    <div className="pt-4 space-y-4">
+                                        <div className="flex justify-between items-center border-b border-orange-100 pb-2">
+                                            <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest">待审批接入 ({pendingPlayers.length})</h4>
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {pendingPlayers.length === 0 ? (
+                                                <li className="text-slate-300 text-[10px] font-bold text-center py-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">暂无并发接入请求</li>
+                                            ) : pendingPlayers.map(p => (
+                                                <li key={p.id} className="bg-orange-50/50 border border-orange-100 p-3 rounded-2xl flex justify-between items-center">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-black text-slate-700">{p.name}</span>
+                                                        <span className="text-[8px] font-bold text-orange-400 uppercase">{p.guestMode ? '以访客身份' : `导入了 ${p.ruleSystem} 档案`}</span>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => onAcceptPlayer(p.id, p.name)} className="w-8 h-8 bg-green-500 text-white rounded-lg shadow-lg shadow-green-100 transition-all active:scale-95"><i className="fa-solid fa-check text-xs"></i></button>
+                                                        <button onClick={() => onRejectPlayer(p.id)} className="w-8 h-8 bg-white border border-slate-100 text-slate-400 rounded-lg transition-all active:scale-95"><i className="fa-solid fa-xmark text-xs"></i></button>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

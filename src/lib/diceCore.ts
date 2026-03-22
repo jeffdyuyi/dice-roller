@@ -1,3 +1,15 @@
+export type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20' | 'd100';
+
+export const DICE_TYPES: Record<DiceType, { icon: string }> = {
+    d4: { icon: 'fa-dice-d6' }, // Adjusting icons for variety
+    d6: { icon: 'fa-dice-d6' },
+    d8: { icon: 'fa-dice-d20' },
+    d10: { icon: 'fa-dice-d10' },
+    d12: { icon: 'fa-dice-d12' },
+    d20: { icon: 'fa-dice-d20' },
+    d100: { icon: 'fa-dice-d6' } // d100 usually d10s but simplified
+};
+
 export interface DiceResult {
     total: number;
     breakdown: string;

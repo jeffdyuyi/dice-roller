@@ -46,12 +46,13 @@ export function useMqtt() {
                 alert('加入拒绝！');
                 disconnectLocal();
             } else if (msg.type === 'PLAYER_LIST') {
-                setConnectedPlayers(msg.payload);
+                const list = msg.payload as unknown as PlayerNode[];
+                setConnectedPlayers(list);
             } else if (msg.type === 'PLAYER_LEFT') {
                 if (mqttInstance.isHost) {
                     setConnectedPlayers(prev => {
                         const next = prev.filter(p => p.id !== msg.senderId);
-                        mqttInstance.broadcast('PLAYER_LIST', next);
+                        mqttInstance.broadcast('PLAYER_LIST', { list: next }); // Wrap in object for safety if needed
                         return next;
                     });
                 }
@@ -61,7 +62,7 @@ export function useMqtt() {
                     disconnectLocal();
                 }
             } else if (msg.type === 'DICE_ROLL') {
-                const rollData = { ...msg.payload, senderName: msg.senderName, timestamp: msg.timestamp };
+                const rollData = { ...msg.payload, userName: msg.senderName, timestamp: msg.timestamp };
                 setLatestRoll(rollData);
                 setDiceHistory(prev => [rollData, ...prev]);
             }
@@ -98,24 +99,17 @@ export function useMqtt() {
         }, 500);
     }, []);
 
-    const acceptPlayer = useCallback((pId: string, pName: string) => {
-        let acceptedPlayer: PlayerNode | undefined;
-        setPendingPlayers(prev => {
-            acceptedPlayer = prev.find(p => p.id === pId);
-            return prev.filter(p => p.id !== pId);
-        });
-        setConnectedPlayers(prev => {
-            const next = [...prev, {
-                id: pId,
-                name: pName,
-                isHost: false,
-                guestMode: acceptedPlayer?.guestMode,
-                characterId: acceptedPlayer?.characterId,
-                ruleSystem: acceptedPlayer?.ruleSystem,
-                characterData: acceptedPlayer?.characterData
-            }];
-            mqttInstance.broadcast('PLAYER_LIST', next);
-            return next;
+    const acceptPlayer = useCallback((pId: string) => {
+        setPendingPlayers(prevPending => {
+            const accepted = prevPending.find(p => p.id === pId);
+            if (accepted) {
+                setConnectedPlayers(prevConnected => {
+                    const next = [...prevConnected, { ...accepted, isHost: false }];
+                    mqttInstance.broadcast('PLAYER_LIST', { list: next } as any); // Type hack for quick fix
+                    return next;
+                });
+            }
+            return prevPending.filter(p => p.id !== pId);
         });
         mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED');
     }, []);
@@ -128,7 +122,7 @@ export function useMqtt() {
     const kickPlayer = useCallback((pId: string) => {
         setConnectedPlayers(prev => {
             const next = prev.filter(p => p.id !== pId);
-            mqttInstance.broadcast('PLAYER_LIST', next);
+            mqttInstance.broadcast('PLAYER_LIST', { list: next } as any);
             return next;
         });
         mqttInstance.sendToPlayer(pId, 'ROOM_CLOSED');
@@ -149,16 +143,18 @@ export function useMqtt() {
     }, [commState]);
 
     const addLocalRoll = useCallback((rollPayload: any) => {
-        const data = { ...rollPayload, senderName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
+        const data = { ...rollPayload, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
         setLatestRoll(data);
         setDiceHistory(prev => [data, ...prev]);
-        broadcastRoll(rollPayload);
-    }, [broadcastRoll, myName]);
+        if (commState === 'CONNECTED') {
+            broadcastRoll(rollPayload);
+        }
+    }, [broadcastRoll, myName, commState]);
 
     const clearHistory = useCallback(() => setDiceHistory([]), []);
 
     return {
         commState, roomId, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, myName, myId: mqttInstance.myId,
-        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, addLocalRoll, clearHistory
+        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, addLocalRoll, broadcastRoll, clearHistory
     };
 }

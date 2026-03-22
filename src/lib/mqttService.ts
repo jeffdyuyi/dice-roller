@@ -1,4 +1,5 @@
-import mqtt, { MqttClient } from 'mqtt';
+import mqtt from 'mqtt';
+import type { MqttClient } from 'mqtt';
 
 export interface PlayerNode {
     id: string;
@@ -7,7 +8,7 @@ export interface PlayerNode {
     guestMode?: boolean;
     characterId?: string;
     ruleSystem?: string;
-    characterData?: any;
+    characterData?: Record<string, any>;
 }
 
 export interface RoomMessage {
@@ -16,7 +17,7 @@ export interface RoomMessage {
     senderId: string;
     senderName: string;
     timestamp: number;
-    payload?: any;
+    payload?: Record<string, any>;
 }
 
 class MqttService {
@@ -55,7 +56,6 @@ class MqttService {
         this.client.on('message', (_topic, message) => {
             try {
                 const data: RoomMessage = JSON.parse(message.toString());
-                // ignore echoes
                 if (data.senderId === this.myId) return;
                 this.messageHandlers.forEach(handler => handler(data));
             } catch (e) {
@@ -74,7 +74,7 @@ class MqttService {
         return () => this.onConnectHandlers.delete(handler);
     }
 
-    public send(topicSuffix: string, type: RoomMessage['type'], payload?: any) {
+    public send(topicSuffix: string, type: RoomMessage['type'], payload?: Record<string, any>) {
         if (!this.client || !this.currentRoomId) return;
         const msg: RoomMessage = {
             type, senderId: this.myId, senderName: this.myName, timestamp: Date.now(), payload
@@ -82,15 +82,15 @@ class MqttService {
         this.client.publish(`dnd5r/room/${this.currentRoomId}/${topicSuffix}`, JSON.stringify(msg));
     }
 
-    public broadcast(type: RoomMessage['type'], payload?: any) {
+    public broadcast(type: RoomMessage['type'], payload?: Record<string, any>) {
         this.send('broadcast', type, payload);
     }
 
-    public sendToHost(type: RoomMessage['type'], payload?: any) {
+    public sendToHost(type: RoomMessage['type'], payload?: Record<string, any>) {
         this.send('host', type, payload);
     }
 
-    public sendToPlayer(playerId: string, type: RoomMessage['type'], payload?: any) {
+    public sendToPlayer(playerId: string, type: RoomMessage['type'], payload?: Record<string, any>) {
         this.send(`p/${playerId}`, type, payload);
     }
 
