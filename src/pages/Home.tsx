@@ -23,17 +23,12 @@ export function Home() {
         rejectPlayer,
         kickPlayer,
         leaveRoom,
-        broadcastRoll,
         addLocalRoll
     } = useMqtt();
 
     const handleRoll = useCallback((rollData: any) => {
-        if (commState === 'CONNECTED') {
-            broadcastRoll(rollData);
-        } else {
-            addLocalRoll(rollData);
-        }
-    }, [commState, broadcastRoll, addLocalRoll]);
+        addLocalRoll(rollData);
+    }, [addLocalRoll]);
 
     return (
         <div className="flex flex-col md:flex-row h-full w-full bg-[#fdf8f4] overflow-hidden">
