@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>秘密基地骰子工具</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -109,7 +110,12 @@
             <h1 onclick="showCredits()" class="text-lg font-bold flex items-center gap-2 text-indigo-400 cursor-pointer hover:text-indigo-300 transition-colors select-none" title="点击查看作者信息">
                 <i class="fa-solid fa-dice-d20"></i> 秘密基地骰子工具
             </h1>
-            <div class="text-xs text-slate-500 font-mono">v2.3</div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleRoomModal()" class="text-xs font-bold flex items-center gap-2 text-indigo-400 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 hover:text-white transition-colors">
+                    <i class="fa-solid fa-network-wired"></i> <span id="roomStatusBtnText">离线</span>
+                </button>
+                <div class="text-xs text-slate-500 font-mono">v2.3</div>
+            </div>
         </div>
 
         <!-- Navigation Tabs -->
@@ -323,6 +329,56 @@
         </div>
     </div>
 
+    <!-- Room Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-md w-full relative">
+            <button onclick="toggleRoomModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-network-wired"></i> 联机房间</h3>
+            
+            <div id="roomDisconnectedView">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">玩家昵称</label>
+                    <input type="text" id="playerNameInput" placeholder="输入昵称" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white focus:outline-none focus:border-indigo-500 text-sm h-10 transition-colors">
+                </div>
+                <div class="flex gap-4 mb-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">房间号</label>
+                        <input type="text" id="roomIdInput" placeholder="输入5位数字(创建时留空)" class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded text-white focus:outline-none focus:border-indigo-500 text-sm h-10 transition-colors">
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="createRoom()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded shadow-lg">创建房间</button>
+                    <button onclick="joinRoomBtn()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 rounded shadow-lg">加入房间</button>
+                </div>
+            </div>
+
+            <div id="roomConnectedView" class="hidden">
+                <div class="flex justify-between items-center mb-4 bg-slate-900 p-3 rounded">
+                    <div>
+                        <div class="text-xs text-slate-500">当前房间</div>
+                        <div id="currentRoomIdDisplay" class="text-2xl font-mono font-bold text-indigo-400">---</div>
+                    </div>
+                    <button onclick="leaveRoom()" class="bg-red-900/50 hover:bg-red-900/80 text-red-300 px-3 py-1.5 rounded text-sm border border-red-900/50"><i class="fa-solid fa-arrow-right-from-bracket"></i> 退出</button>
+                </div>
+                
+                <h4 class="text-sm font-bold text-slate-300 mb-2 border-b border-slate-700 pb-1">成员列表 (<span id="playerCount">1</span>)</h4>
+                <ul id="roomPlayerList" class="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar mb-4">
+                </ul>
+                
+                <div id="hostPendingSection" class="hidden">
+                    <h4 class="text-sm font-bold text-yellow-500 mb-2 border-b border-slate-700 pb-1">等待审批</h4>
+                    <ul id="roomPendingList" class="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="roomLoadingView" class="hidden flex flex-col items-center justify-center py-8">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-500 mb-3"></i>
+                <div id="roomLoadingText" class="text-slate-400 text-sm">连接中...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Credits Modal -->
     <div id="creditsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="hideCredits()">
         <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center relative" onclick="event.stopPropagation()">
@@ -497,6 +553,7 @@
 
             updateHero(total, formulaStr, breakdownStr, tag);
             addHistoryItem(typeLabel, formulaStr, total, breakdownStr, tag);
+            if(typeof broadcastRoll === 'function') broadcastRoll(total, typeLabel, formulaStr, tag, breakdownStr);
         }
 
         function rollCustom() {
@@ -565,6 +622,7 @@
             const cleanInput = els.inputs.formula.value; 
             updateHero(total, "公式", cleanInput + " = " + breakdownParts.join(' '), null);
             addHistoryItem("公式", cleanInput, total, breakdownParts.join(' '));
+            if(typeof broadcastRoll === 'function') broadcastRoll(total, "公式", cleanInput, null, breakdownParts.join(' '));
         }
 
         // --- UPDATED Daggerheart Logic with Animation ---
@@ -625,7 +683,8 @@
                 const breakdownHTML = `<span class="dh-hope">希望:${hope}</span> <span class="text-slate-600">/</span> <span class="dh-fear">恐惧:${fear}</span>${mod ? (mod > 0 ? ` + ${mod}` : ` ${mod}`) : ''}`;
 
                 updateHero(total, "匕首心判定", breakdownHTML, tag, true);
-                addHistoryItem("匕首心", "2d12 判定", total, `希望 ${hope}, 恐惧 ${fear}`, tag);
+            addHistoryItem("匕首心", "2d12 判定", total, `希望 ${hope}, 恐惧 ${fear}`, tag);
+            if(typeof broadcastRoll === 'function') broadcastRoll(total, "匕首心", "2d12 判定", tag, breakdownHTML);
 
                 // Reset State
                 isRolling = false;
@@ -706,6 +765,227 @@
             els.history.innerHTML = '<div class="text-center text-slate-600 py-8 italic text-xs">记录已清除</div>';
             els.hero.container.classList.add('hidden');
             els.hero.welcome.classList.remove('hidden');
+        }
+        // --- MQTT LOGIC REPLACEMENT ---
+        let myId = 'player-' + Math.random().toString(36).substr(2, 9);
+        let myName = 'Player-' + Math.floor(Math.random() * 1000);
+        let currentRoomId = null;
+        let isHost = false;
+        let roomMqttClient = null;
+        let connectedPlayers = [];
+        let pendingPlayers = [];
+        let roomCommState = 'DISCONNECTED';
+        
+        setTimeout(() => { if(document.getElementById('playerNameInput')) document.getElementById('playerNameInput').value = myName; }, 100);
+
+        function toggleRoomModal() {
+            const modal = document.getElementById('roomModal');
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                updateRoomUI();
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+        
+        function updateRoomUI() {
+            document.getElementById('roomStatusBtnText').innerText = roomCommState === 'CONNECTED' ? myName + (isHost?' (房主)':'') : '离线';
+            
+            if (roomCommState === 'DISCONNECTED') {
+                document.getElementById('roomDisconnectedView').classList.remove('hidden');
+                document.getElementById('roomConnectedView').classList.add('hidden');
+                document.getElementById('roomLoadingView').classList.add('hidden');
+            } else if (roomCommState === 'WAITING') {
+                document.getElementById('roomDisconnectedView').classList.add('hidden');
+                document.getElementById('roomConnectedView').classList.add('hidden');
+                document.getElementById('roomLoadingView').classList.remove('hidden');
+            } else if (roomCommState === 'CONNECTED') {
+                document.getElementById('roomDisconnectedView').classList.add('hidden');
+                document.getElementById('roomConnectedView').classList.remove('hidden');
+                document.getElementById('roomLoadingView').classList.add('hidden');
+                document.getElementById('currentRoomIdDisplay').innerText = currentRoomId;
+                
+                const list = document.getElementById('roomPlayerList');
+                list.innerHTML = connectedPlayers.map(p => `
+                    <li class="bg-slate-900 border border-slate-700/50 p-2 rounded flex justify-between items-center text-sm">
+                        <span class="${p.id === myId ? 'text-indigo-400 font-bold' : 'text-slate-300'}">
+                            ${p.isHost ? '<i class="fa-solid fa-crown text-yellow-500 mr-1"></i>' : ''}${p.name} ${p.id === myId?'(你)':''}
+                        </span>
+                        ${isHost && p.id !== myId ? `<button onclick="kickPlayer('${p.id}')" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-user-minus"></i></button>` : ''}
+                    </li>
+                `).join('');
+                document.getElementById('playerCount').innerText = connectedPlayers.length;
+                
+                if (isHost) {
+                    document.getElementById('hostPendingSection').classList.remove('hidden');
+                    const pend = document.getElementById('roomPendingList');
+                    if (pendingPlayers.length === 0) {
+                        pend.innerHTML = '<li class="text-slate-600 text-xs italic">暂无申请</li>';
+                    } else {
+                        pend.innerHTML = pendingPlayers.map(p => `
+                            <li class="bg-slate-900 border border-slate-700/50 p-2 rounded flex justify-between items-center text-sm">
+                                <span class="text-slate-300">${p.name}</span>
+                                <div>
+                                    <button onclick="acceptPlayer('${p.id}', '${p.name}')" class="text-green-400 mr-2"><i class="fa-solid fa-check"></i></button>
+                                    <button onclick="rejectPlayer('${p.id}')" class="text-red-400"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </li>
+                        `).join('');
+                    }
+                } else {
+                    document.getElementById('hostPendingSection').classList.add('hidden');
+                }
+            }
+        }
+        
+        function initMqtt(callback) {
+            if (roomMqttClient) roomMqttClient.end(true);
+            myName = document.getElementById('playerNameInput').value || myName;
+            roomCommState = 'WAITING';
+            updateRoomUI();
+            if(typeof mqtt === 'undefined') { alert('加载MQTT失败'); disconnectLocal(); return; }
+            roomMqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+            roomMqttClient.on('connect', () => { callback(); });
+            roomMqttClient.on('message', handleMqttMessage);
+        }
+        
+        function createRoom() {
+            let userRoom = document.getElementById('roomIdInput').value.trim();
+            currentRoomId = userRoom || Math.floor(10000 + Math.random() * 90000).toString();
+            isHost = true;
+            myId = 'host-' + Math.random().toString(36).substr(2, 9);
+            initMqtt(() => {
+                roomMqttClient.subscribe([
+                    `dnd5r/room/${currentRoomId}/host`,
+                    `dnd5r/room/${currentRoomId}/broadcast`
+                ]);
+                roomCommState = 'CONNECTED';
+                connectedPlayers = [{id: myId, name: myName, isHost: true}];
+                pendingPlayers = [];
+                updateRoomUI();
+            });
+        }
+        
+        function joinRoomBtn() {
+            currentRoomId = document.getElementById('roomIdInput').value.trim();
+            if (!currentRoomId) return alert('请输入房间号');
+            isHost = false;
+            
+            initMqtt(() => {
+                roomMqttClient.subscribe([
+                    `dnd5r/room/${currentRoomId}/broadcast`,
+                    `dnd5r/room/${currentRoomId}/p/${myId}`
+                ]);
+                const msg = { type: 'JOIN_REQUEST', senderId: myId, senderName: myName, timestamp: Date.now() };
+                roomMqttClient.publish(`dnd5r/room/${currentRoomId}/host`, JSON.stringify(msg));
+                document.getElementById('roomLoadingText').innerText = "等待房主审批...";
+            });
+        }
+        
+        function broadcastPlayerList() {
+            if (!isHost) return;
+            const msg = { type: 'PLAYER_LIST', senderId: myId, senderName: myName, timestamp: Date.now(), payload: connectedPlayers };
+            roomMqttClient.publish(`dnd5r/room/${currentRoomId}/broadcast`, JSON.stringify(msg));
+            updateRoomUI();
+        }
+        
+        function acceptPlayer(pId, pName) {
+            pendingPlayers = pendingPlayers.filter(p => p.id !== pId);
+            connectedPlayers.push({id: pId, name: pName, isHost: false});
+            const msg = { type: 'JOIN_ACCEPTED', senderId: myId, senderName: myName, timestamp: Date.now() };
+            roomMqttClient.publish(`dnd5r/room/${currentRoomId}/p/${pId}`, JSON.stringify(msg));
+            broadcastPlayerList();
+        }
+        
+        function rejectPlayer(pId) {
+            pendingPlayers = pendingPlayers.filter(p => p.id !== pId);
+            const msg = { type: 'JOIN_REJECTED', senderId: myId, senderName: myName, timestamp: Date.now() };
+            roomMqttClient.publish(`dnd5r/room/${currentRoomId}/p/${pId}`, JSON.stringify(msg));
+            updateRoomUI();
+        }
+        
+        function kickPlayer(pId) {
+            connectedPlayers = connectedPlayers.filter(p => p.id !== pId);
+            const msg = { type: 'ROOM_CLOSED', senderId: myId, senderName: myName, timestamp: Date.now() };
+            roomMqttClient.publish(`dnd5r/room/${currentRoomId}/p/${pId}`, JSON.stringify(msg));
+            broadcastPlayerList();
+        }
+        
+        function leaveRoom() {
+            if (isHost) {
+                const msg = { type: 'ROOM_CLOSED', senderId: myId, senderName: myName, timestamp: Date.now() };
+                roomMqttClient.publish(`dnd5r/room/${currentRoomId}/broadcast`, JSON.stringify(msg));
+                setTimeout(() => disconnectLocal(), 500);
+            } else {
+                const msg = { type: 'PLAYER_LEFT', senderId: myId, senderName: myName, timestamp: Date.now() };
+                roomMqttClient.publish(`dnd5r/room/${currentRoomId}/host`, JSON.stringify(msg));
+                disconnectLocal();
+            }
+        }
+        
+        function disconnectLocal() {
+            if (roomMqttClient) { roomMqttClient.end(true); roomMqttClient = null; }
+            roomCommState = 'DISCONNECTED';
+            currentRoomId = null;
+            isHost = false;
+            connectedPlayers = [];
+            pendingPlayers = [];
+            if(document.getElementById('roomIdInput')) document.getElementById('roomIdInput').value = '';
+            updateRoomUI();
+        }
+        
+        function broadcastRoll(total, typeLabel, formulaStr, tag, breakdownStr) {
+            if (roomCommState !== 'CONNECTED' || !currentRoomId) return;
+            const msg = {
+                type: 'DICE_ROLL', senderId: myId, senderName: myName, timestamp: Date.now(),
+                payload: { total, typeLabel, formulaStr, tag, breakdownStr }
+            };
+            roomMqttClient.publish(`dnd5r/room/${currentRoomId}/broadcast`, JSON.stringify(msg));
+        }
+
+        function handleMqttMessage(topic, message) {
+            try {
+                const data = JSON.parse(message.toString());
+                if (data.senderId === myId) return;
+                
+                switch(data.type) {
+                    case 'JOIN_REQUEST':
+                        if (isHost && !pendingPlayers.find(p=>p.id===data.senderId) && !connectedPlayers.find(p=>p.id===data.senderId)) {
+                            pendingPlayers.push({id: data.senderId, name: data.senderName});
+                            updateRoomUI();
+                        }
+                        break;
+                    case 'JOIN_ACCEPTED':
+                        roomCommState = 'CONNECTED';
+                        updateRoomUI();
+                        break;
+                    case 'JOIN_REJECTED':
+                        alert('加入拒绝！');
+                        disconnectLocal();
+                        break;
+                    case 'PLAYER_LIST':
+                        connectedPlayers = data.payload;
+                        updateRoomUI();
+                        break;
+                    case 'PLAYER_LEFT':
+                        if (isHost) {
+                            connectedPlayers = connectedPlayers.filter(p => p.id !== data.senderId);
+                            broadcastPlayerList();
+                        }
+                        break;
+                    case 'ROOM_CLOSED':
+                        if (!isHost) {
+                            alert('房间已关闭或你被移出房间');
+                            disconnectLocal();
+                        }
+                        break;
+                    case 'DICE_ROLL':
+                        const payload = data.payload;
+                        updateHero(payload.total, payload.typeLabel + ' (' + data.senderName + ')', payload.breakdownStr, payload.tag, payload.typeLabel.includes('匕首心'));
+                        addHistoryItem(payload.typeLabel + ' | ' + data.senderName, payload.formulaStr, payload.total, payload.breakdownStr, payload.tag);
+                        break;
+                }
+            } catch (e) { console.error(e); }
         }
     </script>
 </body>
