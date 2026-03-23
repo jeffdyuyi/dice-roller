@@ -59,7 +59,7 @@ export function RoomModal({
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-[#0a0c14] border border-amber-900/30 p-10 rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-md w-full relative overflow-hidden group">
+            <div className="bg-[#0a0c14] border border-amber-900/30 p-8 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-md w-full relative overflow-hidden group">
                 {/* Decorative background element */}
                 <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl opacity-50"></div>
 

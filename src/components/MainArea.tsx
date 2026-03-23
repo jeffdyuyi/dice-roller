@@ -18,20 +18,20 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
         const isDaggerheart = roll.historyTitle === '匕首心';
 
         return (
-            <div key={idx} className={`bg-[#141420]/80 backdrop-blur-xl border rounded-xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-500 group relative overflow-hidden ${isLatest ? 'border-[#bf953f] ring-2 ring-[#bf953f]/20 scale-[1.01] z-10' : 'border-[#bf953f]/10'
+            <div key={idx} className={`bg-[#141420]/80 backdrop-blur-xl border rounded-xl p-5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] transition-all duration-500 group relative overflow-hidden ${isLatest ? 'border-[#bf953f] ring-2 ring-[#bf953f]/20 scale-[1.01] z-10' : 'border-[#bf953f]/10'
                 }`}>
                 {/* Decorative background */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#bf953f]/5 to-transparent blur-3xl pointer-events-none -mr-12 -mt-12"></div>
 
-                <div className="flex justify-between items-center mb-6 pb-5 border-b border-[#bf953f]/10">
-                    <div className="flex items-center gap-5">
-                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shadow-2xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 ${isDaggerheart ? 'bg-[#bf953f] text-[#0c0c10]' : 'bg-[#1e1e30] text-[#bf953f] border border-[#bf953f]/10'
+                <div className="flex justify-between items-center mb-5 pb-4 border-b border-[#bf953f]/10">
+                    <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-2xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 ${isDaggerheart ? 'bg-[#bf953f] text-[#0c0c10]' : 'bg-[#1e1e30] text-[#bf953f] border border-[#bf953f]/10'
                             }`}>
-                            <i className={`fa-solid ${roll.historyTitle === '公式' ? 'fa-scroll' : isDaggerheart ? 'fa-shield-heart' : 'fa-dice-d20'} text-lg`}></i>
+                            <i className={`fa-solid ${roll.historyTitle === '公式' ? 'fa-scroll' : isDaggerheart ? 'fa-shield-heart' : 'fa-dice-d20'} text-base`}></i>
                         </div>
                         <div className="flex flex-col">
-                            <div className="flex items-center gap-4">
-                                <span className="text-lg font-black text-[#f0ead8] tracking-tight">{roll.userName || '未知领域者'}</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-base font-black text-[#f0ead8] tracking-tight">{roll.userName || '未知领域者'}</span>
                                 {roll.tag && (
                                     <span className={`text-[10px] font-black px-3 py-1 rounded-lg border shadow-lg ${roll.tag.bg} ${roll.tag.color} ${roll.tag.border} uppercase tracking-[0.2em]`}>
                                         {roll.tag.text}
@@ -74,8 +74,8 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                     </div>
 
                     <div className="flex flex-col items-end shrink-0">
-                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.5em] mb-2 leading-none opacity-60">结果</span>
-                        <div className={`text-[6rem] font-black leading-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-700 group-hover:scale-105 group-hover:-rotate-3 ${roll.tag?.color.includes('green') || roll.tag?.color.includes('emerald') ? 'text-emerald-500' :
+                        <span className="text-[10px] font-black text-[#bf953f] uppercase tracking-[0.5em] mb-1 leading-none opacity-60">结果</span>
+                        <div className={`text-5xl font-black leading-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-700 group-hover:scale-105 group-hover:-rotate-3 ${roll.tag?.color.includes('green') || roll.tag?.color.includes('emerald') ? 'text-emerald-500' :
                             roll.tag?.color.includes('red') ? 'text-red-500' :
                                 roll.tag?.color.includes('order-[#bf953f]') ? 'text-[#bf953f]' :
                                     roll.tag?.color.includes('order-emerald-500') ? 'text-emerald-500' :
@@ -114,9 +114,9 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
 
             {/* Premium Latest Result Banner - Style Guide: bg-panel */}
             {latestRoll && (
-                <div className="p-10 bg-[#18182a]/95 backdrop-blur-3xl border-t border-[#bf953f]/30 shadow-[0_-20px_100px_rgba(0,0,0,0.8)] relative z-20 animate-in slide-in-from-bottom-20 duration-700">
-                    <div className="max-w-6xl mx-auto flex items-center gap-16">
-                        <div className={`w-40 h-40 rounded-[2.5rem] flex items-center justify-center shadow-[0_15px_60px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-700 hover:scale-110 hover:-rotate-3 border border-[#fcf6ba]/20 ${latestRoll.tag?.bg.includes('emerald') ? 'bg-emerald-600' :
+                <div className="p-6 md:p-8 bg-[#18182a]/95 backdrop-blur-3xl border-t border-[#bf953f]/30 shadow-[0_-20px_100px_rgba(0,0,0,0.8)] relative z-20 animate-in slide-in-from-bottom-20 duration-700">
+                    <div className="max-w-6xl mx-auto flex items-center gap-10">
+                        <div className={`w-32 h-32 rounded-[2rem] flex items-center justify-center shadow-[0_15px_60px_rgba(0,0,0,0.6)] relative overflow-hidden transition-all duration-700 hover:scale-110 hover:-rotate-3 border border-[#fcf6ba]/20 ${latestRoll.tag?.bg.includes('emerald') ? 'bg-emerald-600' :
                             latestRoll.tag?.bg.includes('green') ? 'bg-green-600' :
                                 latestRoll.tag?.bg.includes('red') ? 'bg-red-600' :
                                     latestRoll.tag?.bg.includes('orange') ? 'bg-orange-600' :
@@ -124,7 +124,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                                             'bg-gradient-to-br from-[#bf953f] via-[#aa771c] to-[#0c0c10]'
                             }`}>
                             <div className="absolute inset-0 bg-white/10 opacity-20 pointer-events-none"></div>
-                            <span className="text-8xl font-black text-[#0c0c10] relative z-10 drop-shadow-md drop-shadow-black/20">{latestRoll.total}</span>
+                            <span className="text-6xl font-black text-[#0c0c10] relative z-10 drop-shadow-md drop-shadow-black/20">{latestRoll.total}</span>
                             <div className="absolute inset-0 gold-glow opacity-30"></div>
                         </div>
 
@@ -140,10 +140,10 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                                 )}
                             </div>
 
-                            <div className="flex items-baseline gap-6">
-                                <span className="text-6xl font-black text-[#f0ead8] tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">{latestRoll.userName}</span>
-                                <span className="text-2xl font-black text-[#6b6250] uppercase tracking-[0.3em] italic opacity-40">掷出了</span>
-                                <span className="text-8xl font-black golden-text tracking-tighter drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] select-none leading-none">{latestRoll.total}</span>
+                            <div className="flex items-baseline gap-5">
+                                <span className="text-3xl font-black text-[#f0ead8] tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">{latestRoll.userName}</span>
+                                <span className="text-lg font-black text-[#6b6250] uppercase tracking-[0.3em] italic opacity-40">掷出了</span>
+                                <span className="text-5xl font-black golden-text tracking-tighter drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] select-none leading-none">{latestRoll.total}</span>
                             </div>
 
                             <div className="mt-8 flex items-center gap-5">
