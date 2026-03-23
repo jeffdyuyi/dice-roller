@@ -72,7 +72,7 @@ export function RoomModal({
                         </div>
                         <div className="flex flex-col">
                             <h3 className="text-2xl font-black text-white tracking-tight leading-none mb-1">房间联接</h3>
-                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.2em]">Spacetime Link Sequence</span>
+                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.2em]">时空联结序列</span>
                         </div>
                     </div>
 
@@ -80,11 +80,11 @@ export function RoomModal({
                         <div className="space-y-8">
                             <div className="space-y-5">
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">登录代号 (Nickname)</label>
+                                    <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">登录代号 (昵称)</label>
                                     <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入您的昵称..." className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 px-6 py-4 rounded-2xl text-white font-bold outline-none transition-all placeholder:text-slate-700 backdrop-blur-sm" />
                                 </div>
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">时空坐标 (Room ID)</label>
+                                    <label className="block text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">时空坐标 (房间 ID)</label>
                                     <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位房间代码" className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 px-6 py-4 rounded-2xl text-white font-mono font-bold outline-none transition-all placeholder:text-slate-700 backdrop-blur-sm" />
                                 </div>
                             </div>
@@ -96,12 +96,12 @@ export function RoomModal({
                                         <div className="w-12 h-7 bg-white/10 rounded-full peer-checked:bg-[#bf953f] transition-all border border-white/5 shadow-inner"></div>
                                         <div className="absolute left-1.5 top-1.5 w-4 h-4 bg-slate-400 rounded-full transition-transform peer-checked:translate-x-5 peer-checked:bg-white shadow-md"></div>
                                     </div>
-                                    <span className="text-xs font-black text-slate-400 group-hover:text-slate-200 transition-colors">以访客身份加入 (无角色卡导入)</span>
+                                    <span className="text-xs font-black text-slate-400 group-hover:text-slate-200 transition-colors">以访客身份加入 (不导入角色卡)</span>
                                 </label>
 
                                 {!guestMode && (
                                     <div className="animate-in slide-in-from-top-2 duration-400">
-                                        <label className="block text-[10px] font-black text-slate-500 mb-2.5 uppercase tracking-widest ml-1">导入档案 (Character)</label>
+                                        <label className="block text-[10px] font-black text-slate-500 mb-2.5 uppercase tracking-widest ml-1">导入档案 (角色卡)</label>
                                         {myCharacters.length === 0 ? (
                                             <div className="text-[10px] text-amber-500/70 font-bold bg-amber-500/5 p-4 rounded-xl border border-amber-500/10 italic leading-relaxed">
                                                 <i className="fa-solid fa-circle-exclamation mr-2"></i> 您尚未创建任何角色档案，请先前往角色库。
@@ -121,8 +121,8 @@ export function RoomModal({
                             </div>
 
                             <div className="flex gap-4 pt-4">
-                                <button onClick={() => createRoom(inputName, inputRoomId)} className="flex-1 bg-white/5 border border-white/10 hover:border-amber-500/50 hover:text-amber-500 text-slate-400 font-black py-5 rounded-2xl transition-all active:scale-95">创建时空</button>
-                                <button onClick={handleJoin} className="flex-1 bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-5 rounded-2xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30">建立联接</button>
+                                <button onClick={() => createRoom(inputName, inputRoomId)} className="flex-1 bg-white/5 border border-white/10 hover:border-amber-500/50 hover:text-amber-500 text-slate-400 font-black py-5 rounded-2xl transition-all active:scale-95">创建房间</button>
+                                <button onClick={handleJoin} className="flex-1 bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-5 rounded-2xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30">发送加入请求</button>
                             </div>
                         </div>
                     )}
@@ -136,7 +136,7 @@ export function RoomModal({
                                 </div>
                             </div>
                             <div className="text-white font-black text-xl mt-8">请求同步中...</div>
-                            <p className="text-[10px] text-slate-500 mt-3 font-black uppercase tracking-[0.2em] animate-pulse">Waiting for Administrator Clearance</p>
+                            <p className="text-[10px] text-slate-500 mt-3 font-black uppercase tracking-[0.2em] animate-pulse">正在等待房主通过验证</p>
                         </div>
                     )}
 
@@ -146,7 +146,7 @@ export function RoomModal({
                                 <i className="fa-solid fa-circle-check text-4xl"></i>
                             </div>
                             <div className="text-white font-black text-xl leading-none mb-2">已建立联接</div>
-                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.3em] mb-6">Resonance Target: {roomId}</span>
+                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.3em] mb-6">目前联接目标: {roomId}</span>
                             <div className="flex gap-4 w-full pt-4">
                                 <button onClick={onClose} className="flex-1 bg-white/5 hover:bg-white/10 text-slate-400 font-black py-4 rounded-xl transition-all active:scale-95 border border-white/5">返回大厅</button>
                                 <button onClick={() => { leaveRoom(); onClose(); }} className="flex-1 bg-red-600/10 text-red-500 font-black py-4 rounded-xl transition-all active:scale-95 border border-red-500/20 hover:bg-red-600 hover:text-white">断开联接</button>

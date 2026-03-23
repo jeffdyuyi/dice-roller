@@ -28,8 +28,8 @@ export function Layout() {
                         <div className="flex flex-col">
                             <span className="text-[14px] font-black golden-text leading-none tracking-tight">成都秘密基地</span>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-bold text-[#fcf6ba] uppercase tracking-[0.2em]">Dice Roller</span>
-                                <span className="text-[7px] font-black text-[#fcf6ba]/60 uppercase tracking-widest px-2 py-0.5 bg-[#bf953f]/10 rounded-full border border-[#bf953f]/20">v2.5 Stable</span>
+                                <span className="text-[9px] font-bold text-[#fcf6ba] uppercase tracking-[0.2em]">骰子工具</span>
+                                <span className="text-[7px] font-black text-[#fcf6ba]/60 uppercase tracking-widest px-2 py-0.5 bg-[#bf953f]/10 rounded-full border border-[#bf953f]/20">v2.5 稳定版</span>
                             </div>
                         </div>
                     </button>
@@ -39,7 +39,7 @@ export function Layout() {
                             <div className="w-6 h-6 bg-[#bf953f]/10 text-[#bf953f] rounded-lg flex items-center justify-center group-hover:bg-[#bf953f] group-hover:text-[#141420] transition-all">
                                 <i className="fa-solid fa-dice-d20 text-[11px]"></i>
                             </div>
-                            <span className="text-[12px] font-bold text-[#a89b7a] group-hover:text-[#fcf6ba] transition-colors uppercase tracking-tight">骰子 Dice</span>
+                            <span className="text-[12px] font-bold text-[#a89b7a] group-hover:text-[#fcf6ba] transition-colors uppercase tracking-tight">骰子投掷</span>
                         </Link>
 
                         {commState !== 'CONNECTED' && (
@@ -48,7 +48,7 @@ export function Layout() {
                                 className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[#bf953f]/5 text-[#bf953f] hover:bg-[#bf953f] hover:text-[#141420] transition-all group border border-[#bf953f]/20 shadow-lg shadow-black/20"
                             >
                                 <i className="fa-solid fa-network-wired text-[11px]"></i>
-                                <span className="text-[11px] font-black uppercase tracking-tight">时空联结 Link</span>
+                                <span className="text-[11px] font-black uppercase tracking-tight">建立联结</span>
                             </button>
                         )}
                         {isLoggedIn && (
@@ -69,7 +69,7 @@ export function Layout() {
                             className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all group border border-emerald-500/20"
                         >
                             <i className="fa-solid fa-tower-broadcast text-[11px]"></i>
-                            <span className="text-[11px] font-black uppercase tracking-tight">房间 ({roomId})</span>
+                            <span className="text-[11px] font-black uppercase tracking-tight">区域房间 ({roomId})</span>
                         </button>
                     )}
 
@@ -79,13 +79,13 @@ export function Layout() {
                             if (un) login(un);
                         }} className="flex items-center gap-2.5 bg-[#bf953f] hover:bg-[#fcf6ba] text-[#0c0c10] px-6 py-2 rounded-xl shadow-xl shadow-black/40 transition-all active:scale-95 group font-black uppercase text-[11px]">
                             <i className="fa-solid fa-right-to-bracket text-[11px]"></i>
-                            <span>Login 入境</span>
+                            <span>入境登录</span>
                         </button>
                     ) : (
                         <div className="flex items-center gap-4 border-l border-[#bf953f]/20 pl-4">
                             <div className="flex flex-col items-end">
                                 <span className="text-[11px] font-black text-[#f0ead8] leading-none">{user?.displayName}</span>
-                                <button onClick={() => { logout(); navigate('/'); }} className="text-[9px] font-bold text-[#6b6250] hover:text-red-500 transition-colors uppercase tracking-widest mt-1.5 focus:outline-none">Sign Out</button>
+                                <button onClick={() => { logout(); navigate('/'); }} className="text-[9px] font-bold text-[#6b6250] hover:text-red-500 transition-colors uppercase tracking-widest mt-1.5 focus:outline-none">退出登录</button>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#bf953f] to-[#aa771c] flex items-center justify-center text-[#0c0c10] text-sm font-black shadow-lg border border-[#fcf6ba]/20 group-hover:scale-105 transition-transform">
                                 {user?.displayName[0]}
@@ -106,7 +106,7 @@ export function Layout() {
                                 <i className="fa-solid fa-dice-d20 text-[12rem] absolute -right-12 -bottom-12 text-[#bf953f]"></i>
                             </div>
                             <div className="flex flex-col items-center gap-1">
-                                <h2 className="text-[#a89b7a] text-[10px] font-black tracking-[0.4em] uppercase">Secret Base</h2>
+                                <h2 className="text-[#a89b7a] text-[10px] font-black tracking-[0.4em] uppercase">秘密基地</h2>
                                 <h2 className="golden-text text-xl uppercase tracking-widest">基地成员信息</h2>
                             </div>
                             <button onClick={() => setInfoOpen(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 text-[#f0ead8] flex items-center justify-center hover:bg-[#bf953f]/20 transition-colors">
@@ -121,7 +121,7 @@ export function Layout() {
                                         <i className="fa-solid fa-user-gear text-xl"></i>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">Architect / Creator</p>
+                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">制作者 / 架构师</p>
                                         <p className="font-black text-[#f0ead8] tracking-tight text-base">不咕鸟（哈基米德）</p>
                                     </div>
                                 </div>
@@ -130,7 +130,7 @@ export function Layout() {
                                         <i className="fa-solid fa-robot text-xl"></i>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">Core AI Assistant</p>
+                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">AI 技术辅助</p>
                                         <p className="font-black text-[#f0ead8] tracking-tight text-base">Antigravity Gemini</p>
                                     </div>
                                 </div>
@@ -150,7 +150,7 @@ export function Layout() {
                                     <div className="p-4 bg-white/5 rounded-xl flex items-start gap-3 border border-white/5 hover:border-[#bf953f]/20 transition-all">
                                         <i className="fa-brands fa-qq text-[#a89b7a] mt-1"></i>
                                         <div className="flex-1">
-                                            <p className="text-[9px] font-black text-[#6b6250] uppercase tracking-widest mb-1">基地群 QQ</p>
+                                            <p className="text-[9px] font-black text-[#6b6250] uppercase tracking-widest mb-1">基地交流群 (QQ)</p>
                                             <p className="text-sm font-bold text-[#f0ead8] select-all tracking-tight">691707475</p>
                                         </div>
                                     </div>
@@ -166,7 +166,7 @@ export function Layout() {
 
                             <a href="https://ifdian.net/a/nogubird" target="_blank" rel="noopener" className="block w-full bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] py-4 rounded-xl text-center font-black text-xs shadow-2xl transition-all active:scale-95 group">
                                 <i className="fa-solid fa-glass-cheers text-[11px] mr-2 animate-bounce"></i>
-                                赞助作者 / Support Creator
+                                为作者加油 Support Creator
                             </a>
                         </div>
                     </div>

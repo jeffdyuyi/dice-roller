@@ -66,7 +66,7 @@ export function CharacterCreator() {
                             <i className="fa-solid fa-wand-magic-sparkles text-2xl"></i>
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black golden-text tracking-widest uppercase">档案塑造 Grimoire Entry</h1>
+                            <h1 className="text-3xl font-black golden-text tracking-widest uppercase">档案塑造</h1>
                             <p className="text-[11px] font-black text-[#6b6250] uppercase tracking-[0.4em] mt-1">灵魂与属性的炼金记录</p>
                         </div>
                     </div>
@@ -75,7 +75,7 @@ export function CharacterCreator() {
                 <div className="space-y-12 relative z-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div>
-                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域核心规则 Core Rules</label>
+                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域核心规则</label>
                             <div className="relative group">
                                 <select value={ruleSystem} onChange={e => { setRuleSystem(e.target.value); setCharData({}); }} className="w-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/60 rounded-xl px-6 py-4 text-[#f0ead8] font-black transition-all outline-none appearance-none hover:bg-[#25253a] shadow-inner">
                                     {Object.values(ruleRegistry).map(r => (
@@ -87,7 +87,7 @@ export function CharacterCreator() {
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域代号 Character Name</label>
+                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域代号 (姓名)</label>
                             <input type="text" value={charName} onChange={e => setCharName(e.target.value)} className="w-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/60 rounded-xl px-6 py-4 text-[#bf953f] font-black text-xl transition-all outline-none placeholder-[#6b6250]/40 shadow-inner hover:bg-[#25253a]" placeholder="输入您的冒险者代号..." />
                         </div>
                     </div>
@@ -123,7 +123,7 @@ export function CharacterCreator() {
                 <div className="relative z-10 w-full max-w-sm flex flex-col">
                     <div className="flex items-center gap-3 mb-8 self-start bg-[#1e1e30] border border-[#bf953f]/20 px-4 py-2 rounded-lg shadow-xl shadow-black/40">
                         <i className="fa-solid fa-eye text-[#bf953f] text-xs animate-pulse"></i>
-                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.4em]">档案实时观测 Preview</span>
+                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.4em]">档案实时观测 预览</span>
                     </div>
 
                     <div className="transform hover:rotate-2 transition-all duration-700">

@@ -75,7 +75,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                         {/* Compact Counter & Mod */}
                         <div className="grid grid-cols-2 gap-5">
                             <div className="space-y-2.5">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">数量 Count</label>
+                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">骰子数量</label>
                                 <div className="flex items-center h-12 bg-[#1e1e30] border border-[#bf953f]/10 rounded-xl focus-within:border-[#bf953f]/50 transition-all overflow-hidden backdrop-blur-sm shadow-inner group">
                                     <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-12 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[11px]"></i></button>
                                     <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-black text-[#f0ead8] outline-none text-base" />
@@ -83,7 +83,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 </div>
                             </div>
                             <div className="space-y-2.5">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">修正 Mod</label>
+                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">数值修正</label>
                                 <div className="flex items-center h-12 bg-[#1e1e30] border border-[#bf953f]/10 rounded-xl focus-within:border-[#bf953f]/50 transition-all overflow-hidden backdrop-blur-sm shadow-inner group">
                                     <button onClick={() => adjustValue(setDiceMod, -1)} className="w-12 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[11px]"></i></button>
                                     <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-[#f0ead8] outline-none text-base" />
@@ -99,10 +99,10 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                     <i className="fa-solid fa-dice-d6 text-[#bf953f] text-[12px]"></i>
                                     <span className="text-[#bf953f] font-mono text-[11px] font-black">D</span>
                                 </div>
-                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/50 pl-14 pr-4 rounded-xl text-[#f0ead8] font-black outline-none transition-all text-sm backdrop-blur-sm" placeholder="Sides" />
+                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/50 pl-14 pr-4 rounded-xl text-[#f0ead8] font-black outline-none transition-all text-sm backdrop-blur-sm" placeholder="自定义面数" />
                             </div>
                             <button onClick={() => handleStandardRoll(customSides)} className="bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-8 rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-xl shadow-black/40 font-black text-[12px] uppercase tracking-widest">
-                                <span>掷</span>
+                                <span>掷骰</span>
                             </button>
                         </div>
 
@@ -131,7 +131,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#bf953f]/5 blur-3xl pointer-events-none"></div>
                             <div className="flex justify-between items-center mb-4">
                                 <label className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <i className="fa-solid fa-scroll text-[#bf953f]"></i> 符文解析 Rune Console
+                                    <i className="fa-solid fa-scroll text-[#bf953f]"></i> 符文解析指令
                                 </label>
                                 <button onClick={() => setFormulaText('')} className="text-[#6b6250] hover:text-red-500 transition-colors">
                                     <i className="fa-solid fa-circle-xmark"></i>
@@ -142,10 +142,10 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 onChange={e => setFormulaText(e.target.value)}
                                 rows={2}
                                 className="w-full bg-transparent text-[#fcf6ba] font-mono text-2xl focus:outline-none placeholder-[#6b6250]/40 resize-none leading-relaxed"
-                                placeholder="2d20 + 8"
+                                placeholder="输入公式 如 2d20 + 8"
                             />
                             <div className="mt-8 pt-4 border-t border-[#bf953f]/10 flex justify-between items-center">
-                                <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest">Execute Ritual</span>
+                                <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest">执行秘法解析</span>
                                 <button onClick={handleFormulaRoll} className="bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-black/40">解 析</button>
                             </div>
                         </div>

@@ -42,7 +42,7 @@ export function CharacterLibrary() {
                 <div>
                     <div className="flex items-center gap-5 mb-3">
                         <div className="w-2.5 h-10 bg-[#bf953f] rounded-full shadow-[0_0_15px_rgba(191,149,63,0.6)]"></div>
-                        <h1 className="text-4xl font-black golden-text tracking-widest uppercase">我的角色档案 My Grimoire</h1>
+                        <h1 className="text-4xl font-black golden-text tracking-widest uppercase">我的角色档案</h1>
                     </div>
                     <p className="text-[11px] font-black text-[#6b6250] ml-7 uppercase tracking-[0.4em]">英雄与调查员的记忆之殿堂</p>
                 </div>
@@ -75,7 +75,7 @@ export function CharacterLibrary() {
                                             <h3 className="text-xl font-black text-[#f0ead8] group-hover:text-[#bf953f] transition-colors tracking-tight uppercase leading-tight">{c.name}</h3>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-[10px] font-black px-3 py-1 bg-[#bf953f]/10 text-[#bf953f] border border-[#bf953f]/20 rounded uppercase tracking-widest">{c.ruleSystem}</span>
-                                                <span className="text-[10px] font-black px-3 py-1 bg-[#1e1e30] text-[#a89b7a] border border-[#bf953f]/5 rounded uppercase tracking-widest">RANK {c.level}</span>
+                                                <span className="text-[10px] font-black px-3 py-1 bg-[#1e1e30] text-[#a89b7a] border border-[#bf953f]/5 rounded uppercase tracking-widest">等级 {c.level}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -86,7 +86,7 @@ export function CharacterLibrary() {
                             </div>
 
                             <div className="relative pt-6 flex gap-4 opacity-0 group-hover:opacity-100 transition-all translate-y-6 group-hover:translate-y-0">
-                                <button className="flex-1 bg-[#1e1e30] hover:bg-[#bf953f] py-3 rounded-lg text-[10px] text-[#a89b7a] hover:text-[#0c0c10] font-black transition-all uppercase tracking-widest border border-[#bf953f]/10 shadow-lg" onClick={() => alert('记忆之门即将开启 (Coming Soon)')}>查看档案</button>
+                                <button className="flex-1 bg-[#1e1e30] hover:bg-[#bf953f] py-3 rounded-lg text-[10px] text-[#a89b7a] hover:text-[#0c0c10] font-black transition-all uppercase tracking-widest border border-[#bf953f]/10 shadow-lg" onClick={() => alert('档案详情系统即将开放')}>查看档案</button>
                                 <button className="w-12 h-12 bg-red-950/20 hover:bg-red-600 border border-red-900/20 text-red-500 hover:text-white rounded-lg flex items-center justify-center transition-all active:scale-90" onClick={() => handleDelete(c.id)}>
                                     <i className="fa-solid fa-trash-can text-lg"></i>
                                 </button>

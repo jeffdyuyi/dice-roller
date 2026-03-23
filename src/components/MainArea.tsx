@@ -45,14 +45,14 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] mb-2 leading-none">Sequence Code</div>
+                        <div className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] mb-2 leading-none">操作指令</div>
                         <div className="text-sm font-bold text-[#bf953f]/80 font-mono bg-[#0c0c10]/60 px-5 py-2 rounded-lg border border-[#bf953f]/10 shadow-inner group-hover:border-[#bf953f]/40 transition-colors">{roll.historyFormula}</div>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between px-2 gap-10">
                     <div className="flex-1 flex flex-col gap-4 min-w-0">
-                        <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] leading-none">Aura Resonance Analysis</span>
+                        <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] leading-none">共鸣详情分析</span>
 
                         {isDaggerheart ? (
                             <div className="flex items-center gap-6">
@@ -74,7 +74,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                     </div>
 
                     <div className="flex flex-col items-end shrink-0">
-                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.5em] mb-2 leading-none opacity-60">Result</span>
+                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.5em] mb-2 leading-none opacity-60">结果</span>
                         <div className={`text-[6rem] font-black leading-none drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-700 group-hover:scale-105 group-hover:-rotate-3 ${roll.tag?.color.includes('green') || roll.tag?.color.includes('emerald') ? 'text-emerald-500' :
                             roll.tag?.color.includes('red') ? 'text-red-500' :
                                 roll.tag?.color.includes('order-[#bf953f]') ? 'text-[#bf953f]' :
@@ -105,7 +105,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                                 <i className="fa-solid fa-sparkles text-5xl opacity-20 animate-pulse text-[#bf953f]"></i>
                             </div>
                         </div>
-                        <p className="text-[12px] font-black text-[#bf953f] tracking-[1em] uppercase opacity-20 mt-16 animate-pulse leading-none">Resonance Standby</p>
+                        <p className="text-[12px] font-black text-[#bf953f] tracking-[1em] uppercase opacity-20 mt-16 animate-pulse leading-none">空灵待机中</p>
                     </div>
                 ) : (
                     diceHistory.map((roll, idx) => renderRollCard(roll, idx, idx === diceHistory.length - 1))
@@ -131,7 +131,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         <div className="flex-1 flex flex-col justify-center">
                             <div className="flex items-center gap-6 mb-6">
                                 <span className="bg-[#bf953f]/10 text-[#bf953f] text-[11px] font-black px-5 py-2 rounded-lg border border-[#bf953f]/30 uppercase tracking-[0.4em] leading-none shadow-xl shadow-black/20">
-                                    Latest Resonance Detected
+                                    检测到最新共鸣结果
                                 </span>
                                 {latestRoll.tag && (
                                     <span className={`text-[12px] font-black px-6 py-2.5 rounded-lg border shadow-2xl animate-pulse ${latestRoll.tag.bg} ${latestRoll.tag.color} ${latestRoll.tag.border} uppercase tracking-[0.2em] shadow-black/40`}>
@@ -142,7 +142,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
 
                             <div className="flex items-baseline gap-6">
                                 <span className="text-6xl font-black text-[#f0ead8] tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">{latestRoll.userName}</span>
-                                <span className="text-2xl font-black text-[#6b6250] uppercase tracking-[0.3em] italic opacity-40">Witnessed</span>
+                                <span className="text-2xl font-black text-[#6b6250] uppercase tracking-[0.3em] italic opacity-40">掷出了</span>
                                 <span className="text-8xl font-black golden-text tracking-tighter drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] select-none leading-none">{latestRoll.total}</span>
                             </div>
 

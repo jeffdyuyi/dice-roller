@@ -57,7 +57,7 @@ export function RoomManagerDrawer() {
                     {/* Member List */}
                     <div className="space-y-6">
                         <div className="flex justify-between items-center border-b border-[#bf953f]/10 pb-3">
-                            <h4 className="text-[11px] font-black text-[#6b6250] uppercase tracking-[0.4em]">同步成员 Synchronized ({connectedPlayers.length})</h4>
+                            <h4 className="text-[11px] font-black text-[#6b6250] uppercase tracking-[0.4em]">已同步成员 ({connectedPlayers.length})</h4>
                         </div>
                         <ul className="space-y-4">
                             {connectedPlayers.map(p => (
@@ -74,7 +74,7 @@ export function RoomManagerDrawer() {
                                             </div>
                                             <div className="flex gap-2 mt-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                                                 {p.guestMode ? (
-                                                    <span className="text-[10px] font-black px-2.5 py-1 bg-[#1e1e30] border border-[#bf953f]/10 text-[#6b6250] rounded uppercase tracking-widest">GUEST MODE</span>
+                                                    <span className="text-[10px] font-black px-2.5 py-1 bg-[#1e1e30] border border-[#bf953f]/10 text-[#6b6250] rounded uppercase tracking-widest">访客模式</span>
                                                 ) : p.ruleSystem ? (
                                                     <span className="text-[10px] font-black px-2.5 py-1 bg-[#bf953f]/10 border border-[#bf953f]/20 text-[#bf953f] rounded uppercase tracking-widest">{p.ruleSystem}</span>
                                                 ) : null}
@@ -95,7 +95,7 @@ export function RoomManagerDrawer() {
                     {isHost && (
                         <div className="pt-6 space-y-6">
                             <div className="flex justify-between items-center border-b border-amber-900/30 pb-3">
-                                <h4 className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4em]">接入请求 Pending Queries ({pendingPlayers.length})</h4>
+                                <h4 className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4em]">接入请求 待处理 ({pendingPlayers.length})</h4>
                             </div>
                             <ul className="space-y-4">
                                 {pendingPlayers.length === 0 ? (
@@ -130,11 +130,11 @@ export function RoomManagerDrawer() {
                 <div className="p-8 bg-[#141420] border-t border-[#bf953f]/10 relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
                     <div className="flex items-center justify-between text-[11px] font-black text-[#6b6250] uppercase tracking-[0.5em]">
                         <span className="flex items-center gap-3">
-                            <i className="fa-solid fa-tower-broadcast text-[#bf953f]"></i> MQTT Active
+                            <i className="fa-solid fa-tower-broadcast text-[#bf953f]"></i> MQTT 服务活跃
                         </span>
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-                            <span className="text-emerald-500/80">Synchronized</span>
+                            <span className="text-emerald-500/80">已建立通讯同步</span>
                         </div>
                     </div>
                 </div>
