@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { DICE_TYPES, type DiceType, rollStandardDice, parseAndRollFormula, rollDaggerheart } from '../lib/diceCore';
+import { useMqttContext } from '../contexts/MqttContext';
 
 interface SidebarProps {
     onRoll: (rollData: any) => void;
@@ -8,6 +9,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
+    const { setManagerOpen } = useMqttContext();
     const [activeTab, setActiveTab] = useState<'standard' | 'formula' | 'daggerheart'>('standard');
     const [diceCount, setDiceCount] = useState(1);
     const [diceMod, setDiceMod] = useState(0);
@@ -63,7 +65,7 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
             {/* Connection Status Button */}
             <div className="p-4 border-b border-slate-50 relative z-10 shrink-0">
                 <button
-                    onClick={onOpenRoom}
+                    onClick={commState === 'CONNECTED' ? () => setManagerOpen(true) : onOpenRoom}
                     className={`w-full py-3 rounded-2xl flex flex-col items-center justify-center transition-all shadow-xl group border-2 ${commState === 'CONNECTED'
                         ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white border-indigo-100 shadow-indigo-100'
                         : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-600 hover:text-indigo-600'
@@ -71,7 +73,7 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                 >
                     <div className="flex items-center gap-2">
                         <i className={`fa-solid ${commState === 'CONNECTED' ? 'fa-tower-broadcast' : 'fa-network-wired'} text-base group-hover:scale-110 transition-transform`}></i>
-                        <span className="text-xs font-black uppercase tracking-widest">{commState === 'CONNECTED' ? '联机接入中' : '建立时空联接'}</span>
+                        <span className="text-xs font-black uppercase tracking-widest">{commState === 'CONNECTED' ? '时空接入管理' : '建立时空联接'}</span>
                     </div>
                 </button>
             </div>

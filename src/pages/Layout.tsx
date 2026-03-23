@@ -1,8 +1,11 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
+import { useMqttContext } from '../contexts/MqttContext';
+import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
+    const { commState, setManagerOpen, roomId } = useMqttContext();
     const navigate = useNavigate();
 
     return (
@@ -35,6 +38,17 @@ export function Layout() {
                                 <span className="text-xs font-bold text-slate-600">我的角色卡</span>
                             </Link>
                         )}
+                        {commState === 'CONNECTED' && (
+                            <button
+                                onClick={() => setManagerOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all group shadow-sm"
+                            >
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+                                    <i className="fa-solid fa-tower-broadcast text-xs"></i>
+                                </div>
+                                <span className="text-xs font-black">房间管理 ({roomId})</span>
+                            </button>
+                        )}
                     </nav>
                 </div>
 
@@ -65,6 +79,9 @@ export function Layout() {
             <main className="flex-1 w-full bg-[#fdf8f4] overflow-hidden relative">
                 <Outlet />
             </main>
+
+            {/* Room Management Drawer */}
+            <RoomManagerDrawer />
         </div>
     );
 }
