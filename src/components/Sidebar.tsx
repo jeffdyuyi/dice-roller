@@ -51,250 +51,170 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
     };
 
     return (
-        <aside className="w-full md:w-[360px] bg-white border-r border-slate-100 flex flex-col h-[60%] md:h-full shrink-0 shadow-2xl z-20 overflow-hidden relative">
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/40 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-50/30 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
+        <aside className="w-full md:w-[320px] bg-[#fffdfa] border-r border-amber-50 flex flex-col h-[60%] md:h-full shrink-0 shadow-xl z-20 overflow-hidden relative">
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-50/60 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-50/40 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
 
-            {/* Connection Status Button & Version */}
-            <div className="p-4 border-b border-slate-50 relative z-10 shrink-0 bg-white/50 backdrop-blur-md">
+            {/* Top Bar: Connection & Version */}
+            <div className="p-3 border-b border-amber-50 relative z-10 shrink-0 bg-white/40 backdrop-blur-md">
                 <button
                     onClick={commState === 'CONNECTED' ? () => setManagerOpen(true) : onOpenRoom}
-                    className={`w-full group relative overflow-hidden py-3.5 rounded-2xl flex flex-col items-center justify-center transition-all shadow-xl active:scale-95 border-2 mb-3.5 ${commState === 'CONNECTED'
-                        ? 'bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white border-indigo-200 shadow-indigo-100'
-                        : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-600 hover:text-indigo-600'
+                    className={`w-full group relative overflow-hidden py-2.5 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95 border-2 mb-2 ${commState === 'CONNECTED'
+                        ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white border-amber-400 shadow-lg shadow-orange-100'
+                        : 'bg-white border-amber-100 text-amber-500 hover:border-amber-500 hover:bg-amber-50/50'
                         }`}
                 >
-                    {commState === 'CONNECTED' && (
-                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    )}
-                    <div className="flex items-center gap-2.5 relative">
-                        <i className={`fa-solid ${commState === 'CONNECTED' ? 'fa-tower-broadcast' : 'fa-network-wired'} text-base animate-pulse-slow`}></i>
-                        <span className="text-[11px] font-black uppercase tracking-[0.15em]">{commState === 'CONNECTED' ? '时空接入管理' : '建立时空联接'}</span>
+                    <div className="flex items-center gap-2 relative">
+                        <i className={`fa-solid ${commState === 'CONNECTED' ? 'fa-tower-broadcast' : 'fa-network-wired'} text-[10px]`}></i>
+                        <span className="text-[10px] font-black uppercase tracking-[0.1em]">{commState === 'CONNECTED' ? '时空接入管理' : '建立时空联结'}</span>
                     </div>
                 </button>
 
-                <div className="flex items-center justify-center gap-2 grayscale opacity-40 transition-all cursor-default">
-                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                    <div className="text-[9px] font-black text-slate-400 tracking-[0.4em] uppercase">Engine v2.5 Stable</div>
-                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                <div className="flex items-center justify-center gap-2 opacity-40">
+                    <div className="w-0.5 h-0.5 bg-amber-400 rounded-full"></div>
+                    <div className="text-[8px] font-black text-amber-600 tracking-[0.3em] uppercase">Engine v2.5 Stable</div>
+                    <div className="w-0.5 h-0.5 bg-amber-400 rounded-full"></div>
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex bg-slate-50/80 backdrop-blur-sm border-b border-slate-100 shrink-0 px-2 py-1 gap-1">
+            {/* Compact Tabs */}
+            <div className="flex bg-amber-50/30 border-b border-amber-50 shrink-0 p-1 gap-1">
                 {(['standard', 'formula', 'daggerheart'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === tab
-                            ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
-                            : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
+                        className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === tab
+                            ? 'bg-white text-orange-600 shadow-sm border border-amber-100'
+                            : 'text-amber-800/40 hover:text-amber-600 hover:bg-white/50'
                             }`}
                     >
-                        {tab === 'standard' ? '标准' : tab === 'formula' ? '公式' : '匕首心'}
+                        {tab === 'standard' ? '标准' : tab === 'formula' ? '公式' : '判定'}
                     </button>
                 ))}
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 md:custom-scrollbar relative z-10 space-y-10 pb-12">
-
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:px-5 md:py-6 md:custom-scrollbar relative z-10 space-y-6">
                 {activeTab === 'standard' && (
-                    <div className="animate-in fade-in slide-in-from-left-2 duration-300 space-y-8">
-                        {/* Adjusters */}
-                        <div className="grid grid-cols-2 gap-5">
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                    <i className="fa-solid fa-layer-group text-[8px]"></i>
-                                    投掷数量
-                                </label>
-                                <div className="flex items-center h-12 bg-white border-2 border-slate-100 rounded-2xl shadow-sm focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-50 transition-all overflow-hidden">
-                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-12 h-full flex items-center justify-center text-slate-400 hover:bg-slate-50 active:scale-90 transition-all">
-                                        <i className="fa-solid fa-minus text-xs"></i>
-                                    </button>
-                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 min-w-0 bg-transparent text-center font-black text-slate-800 outline-none text-base" />
-                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-12 h-full flex items-center justify-center text-slate-400 hover:bg-slate-50 active:scale-90 transition-all">
-                                        <i className="fa-solid fa-plus text-xs"></i>
-                                    </button>
+                    <div className="animate-in fade-in slide-in-from-left-1 duration-300 space-y-6">
+                        {/* Compact Counter & Mod */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <label className="flex items-center gap-1 text-[8px] font-black text-amber-400 uppercase tracking-widest leading-none">数量 Count</label>
+                                <div className="flex items-center h-10 bg-white border-2 border-amber-50 rounded-xl focus-within:border-orange-300 transition-all overflow-hidden">
+                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-minus text-[10px]"></i></button>
+                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-black text-slate-800 outline-none text-sm" />
+                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-plus text-[10px]"></i></button>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                    <i className="fa-solid fa-calculator text-[8px]"></i>
-                                    额外修正
-                                </label>
-                                <div className="flex items-center h-12 bg-white border-2 border-slate-100 rounded-2xl shadow-sm focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-50 transition-all overflow-hidden">
-                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-12 h-full flex items-center justify-center text-slate-400 hover:bg-slate-50 active:scale-90 transition-all">
-                                        <i className="fa-solid fa-minus text-xs"></i>
-                                    </button>
-                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 min-w-0 bg-transparent text-center font-black text-slate-800 outline-none text-base" />
-                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-12 h-full flex items-center justify-center text-slate-400 hover:bg-slate-50 active:scale-90 transition-all">
-                                        <i className="fa-solid fa-plus text-xs"></i>
-                                    </button>
+                            <div className="space-y-1.5">
+                                <label className="flex items-center gap-1 text-[8px] font-black text-amber-400 uppercase tracking-widest leading-none">修正 Mod</label>
+                                <div className="flex items-center h-10 bg-white border-2 border-amber-50 rounded-xl focus-within:border-orange-300 transition-all overflow-hidden">
+                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-minus text-[10px]"></i></button>
+                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-slate-800 outline-none text-sm" />
+                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-plus text-[10px]"></i></button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Custom Sides - MOVED UP */}
-                        <div className="pt-2 border-t border-slate-50 space-y-3">
-                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">自定义异形骰 (Custom)</label>
-                            <div className="flex gap-3 h-12">
-                                <div className="relative flex-1 group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
-                                        <i className="fa-solid fa-dice-d6 text-slate-300 text-xs group-focus-within:text-indigo-500 transition-colors"></i>
-                                        <span className="text-slate-300 font-mono text-xs group-focus-within:text-indigo-400 font-black">D</span>
-                                    </div>
-                                    <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-slate-50 border-2 border-slate-100 focus:border-indigo-600 pl-14 pr-4 rounded-2xl text-slate-700 font-bold outline-none transition-all text-sm" />
+                        {/* Custom Dice Field */}
+                        <div className="pt-2 border-t border-amber-100 flex gap-2 h-10">
+                            <div className="relative flex-1 group">
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-40 group-focus-within:opacity-100 transition-opacity">
+                                    <i className="fa-solid fa-dice-d6 text-orange-500 text-[10px]"></i>
+                                    <span className="text-orange-600 font-mono text-[10px] font-black">D</span>
                                 </div>
-                                <button onClick={() => handleStandardRoll(customSides)} className="bg-slate-800 hover:bg-slate-900 text-white px-8 rounded-2xl transition-all font-black text-[11px] uppercase tracking-widest shadow-lg shadow-slate-200 active:scale-95 flex items-center gap-2">
-                                    <i className="fa-solid fa-paper-plane text-[9px]"></i>
-                                    投掷
+                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-amber-50/20 border-2 border-amber-100 focus:border-orange-400 pl-10 pr-3 rounded-xl text-orange-800 font-black outline-none transition-all text-sm" placeholder="Sides" />
+                            </div>
+                            <button onClick={() => handleStandardRoll(customSides)} className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-orange-100">
+                                <i className="fa-solid fa-paper-plane text-[9px]"></i>
+                                <span className="font-black text-[10px] uppercase">投掷</span>
+                            </button>
+                        </div>
+
+                        {/* Space-Optimized Grid */}
+                        <div className="grid grid-cols-3 gap-3 pt-2">
+                            {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
+                                    className={`group relative aspect-square rounded-2xl flex items-center justify-center transition-all active:scale-90 shadow-sm border-[2.5px] ${type === 'd20'
+                                        ? 'bg-amber-50 border-orange-400 text-orange-700 font-black'
+                                        : 'bg-white border-amber-100 text-slate-500 hover:border-orange-300 hover:text-orange-600'
+                                        }`}
+                                >
+                                    <span className="text-[11px] font-black tracking-tighter uppercase">{type}</span>
                                 </button>
-                            </div>
-                        </div>
-
-                        {/* Dice Grid */}
-                        <div className="space-y-4">
-                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">标准骰子选择 (Standard)</label>
-                            <div className="grid grid-cols-3 gap-5">
-                                {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
-                                    <button
-                                        key={type}
-                                        onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
-                                        className={`group relative aspect-square rounded-[2rem] flex items-center justify-center transition-all active:scale-95 shadow-md border-[3px] overflow-hidden ${type === 'd20'
-                                            ? 'bg-slate-50 border-indigo-600 text-indigo-600 shadow-indigo-50'
-                                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600'
-                                            }`}
-                                    >
-                                        <span className="text-sm font-black tracking-widest uppercase">{type}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            ))}
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'formula' && (
-                    <div className="animate-in slide-in-from-right-2 duration-300 space-y-8">
-                        {/* Independent Formula Board */}
-                        <div className="bg-slate-900 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden group ring-8 ring-slate-100">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-3xl pointer-events-none"></div>
-
-                            <div className="flex justify-between items-center mb-4">
-                                <label className="flex items-center gap-2 text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-none">
-                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
-                                    公式运算板 Board
+                    <div className="animate-in fade-in slide-in-from-right-1 duration-300 space-y-4">
+                        <div className="bg-amber-900 rounded-3xl p-5 shadow-inner border-2 border-amber-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 blur-3xl pointer-events-none"></div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-[8px] font-black text-amber-400/60 uppercase tracking-widest flex items-center gap-1.5">
+                                    <i className="fa-solid fa-microchip animate-pulse"></i> Calculation Log
                                 </label>
-                                <button onClick={() => setFormulaText('')} className="text-slate-500 hover:text-white transition-colors">
-                                    <i className="fa-solid fa-trash-can text-sm"></i>
+                                <button onClick={() => setFormulaText('')} className="text-amber-700 hover:text-orange-400">
+                                    <i className="fa-solid fa-circle-xmark"></i>
                                 </button>
                             </div>
-
                             <textarea
                                 value={formulaText}
                                 onChange={e => setFormulaText(e.target.value)}
                                 rows={2}
-                                className="w-full bg-transparent text-white font-mono text-2xl focus:outline-none placeholder-slate-700 resize-none custom-scrollbar"
-                                placeholder="2d20 + 1d6 + 8"
-                            ></textarea>
-
-                            <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                                <div className="flex gap-2 text-[10px] font-black text-slate-500">
-                                    <span className="text-indigo-500">FORMAT:</span>
-                                    <span>NdX + M</span>
-                                </div>
-                                <button onClick={handleFormulaRoll} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-indigo-900 transition-all active:scale-95 flex items-center gap-2">
-                                    <i className="fa-solid fa-bolt-lightning"></i>
-                                    计算
-                                </button>
+                                className="w-full bg-transparent text-white font-mono text-xl focus:outline-none placeholder-amber-800/80 resize-none"
+                                placeholder="2d20 + 8"
+                            />
+                            <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                                <span className="text-[8px] font-black text-amber-700 uppercase">Input NdX + M</span>
+                                <button onClick={handleFormulaRoll} className="bg-orange-500 hover:bg-orange-400 text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">计算 Run</button>
                             </div>
                         </div>
 
-                        {/* Specialized Keypad */}
-                        <div className="bg-white border-2 border-slate-100 rounded-[2rem] p-4 shadow-sm space-y-4">
-                            <div className="grid grid-cols-4 gap-2.5">
-                                {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
-                                    <button
-                                        key={d}
-                                        onClick={() => insertText(d)}
-                                        className="h-12 bg-slate-50 text-slate-500 rounded-xl text-[11px] font-black hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-90"
-                                    >
-                                        {d.toUpperCase()}
-                                    </button>
-                                ))}
-                                <button onClick={() => {
-                                    const lastChar = formulaText.trim().slice(-1);
-                                    if (['+', '-'].includes(lastChar)) {
-                                        setFormulaText(prev => prev.trim().slice(0, -1));
-                                    } else {
-                                        setFormulaText(prev => prev.slice(0, -1));
-                                    }
-                                }} className="h-12 bg-red-50 text-red-400 rounded-xl text-lg flex items-center justify-center hover:bg-red-400 hover:text-white transition-all">
-                                    <i className="fa-solid fa-delete-left"></i>
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={() => insertText('+')} className="h-14 bg-slate-100 text-slate-700 rounded-2xl font-black text-xl hover:bg-indigo-100 hover:text-indigo-600 transition-all active:scale-90">+</button>
-                                    <button onClick={() => insertText('-')} className="h-14 bg-slate-100 text-slate-700 rounded-2xl font-black text-2xl hover:bg-indigo-100 hover:text-indigo-600 transition-all active:scale-90">-</button>
-                                </div>
-                                <div className="grid grid-cols-1">
-                                    <button onClick={handleFormulaRoll} className="h-14 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-black text-xs shadow-xl shadow-indigo-100 active:scale-95 flex items-center justify-center gap-2">
-                                        <i className="fa-solid fa-wand-magic-sparkles"></i>
-                                        快速施放
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
+                                <button key={d} onClick={() => insertText(d)} className="h-10 bg-white border border-amber-100 rounded-xl text-[9px] font-black text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90">{d.toUpperCase()}</button>
+                            ))}
+                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-10 bg-red-50 text-red-400 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left"></i></button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button onClick={() => insertText('+')} className="h-12 bg-amber-50 text-amber-700 rounded-2xl font-black text-xl hover:bg-amber-500 hover:text-white transition-all">+</button>
+                            <button onClick={() => insertText('-')} className="h-12 bg-amber-50 text-amber-700 rounded-2xl font-black text-xl hover:bg-amber-500 hover:text-white transition-all">-</button>
+                            <button onClick={handleFormulaRoll} className="h-12 bg-orange-500 text-white rounded-2xl font-black text-xs shadow-lg shadow-orange-100 active:scale-95"><i className="fa-solid fa-wand-magic-sparkles"></i></button>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'daggerheart' && (
-                    <div className="animate-in slide-in-from-right-2 duration-300 flex flex-col items-center space-y-12 py-4">
-                        <div className="flex gap-10 items-center relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-500/5 rounded-full blur-[40px] pointer-events-none"></div>
-
-                            <div className="flex flex-col items-center gap-3 group">
-                                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-[2.5rem] shadow-2xl shadow-orange-100 flex items-center justify-center border-4 border-white transform transition-transform group-hover:rotate-12">
-                                    <i className="fa-solid fa-sun text-white text-3xl"></i>
-                                </div>
-                                <span className="text-[11px] font-black text-orange-400 uppercase tracking-[0.2em]">希望骰 Hope</span>
+                    <div className="animate-in fade-in slide-in-from-right-1 duration-300 flex flex-col items-center space-y-6">
+                        <div className="flex gap-8 items-center bg-white p-6 rounded-[2.5rem] shadow-sm border border-amber-50">
+                            <div className="flex flex-col items-center gap-2 group">
+                                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl shadow-lg shadow-orange-50 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform"><i className="fa-solid fa-sun"></i></div>
+                                <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest">希望 Hope</span>
                             </div>
-
-                            <div className="z-10 bg-white px-3 py-1 rounded-full border-2 border-slate-100 text-slate-200 font-black text-lg italic shadow-sm">VS</div>
-
-                            <div className="flex flex-col items-center gap-3 group">
-                                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-purple-800 rounded-[2.5rem] shadow-2xl shadow-purple-100 flex items-center justify-center border-4 border-white transform transition-transform group-hover:-rotate-12">
-                                    <i className="fa-solid fa-moon text-white text-3xl"></i>
-                                </div>
-                                <span className="text-[11px] font-black text-purple-600 uppercase tracking-[0.2em]">恐惧骰 Fear</span>
+                            <div className="text-amber-200 font-black italic text-lg">VS</div>
+                            <div className="flex flex-col items-center gap-2 group">
+                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-lg shadow-indigo-50 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform"><i className="fa-solid fa-moon"></i></div>
+                                <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">恐惧 Fear</span>
                             </div>
                         </div>
 
-                        <div className="w-full space-y-4 px-4">
-                            <label className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                <div className="h-px flex-1 bg-slate-100"></div>
-                                属性与难度修正
-                                <div className="h-px flex-1 bg-slate-100"></div>
-                            </label>
-                            <div className="flex items-center justify-center h-16 bg-white border-2 border-slate-100 rounded-3xl shadow-sm focus-within:ring-8 focus-within:ring-indigo-50 focus-within:border-indigo-600 transition-all overflow-hidden mx-8">
-                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-75">
-                                    <i className="fa-solid fa-minus text-lg"></i>
-                                </button>
-                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-black text-slate-800 outline-none text-2xl" />
-                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-slate-300 hover:text-green-500 hover:bg-green-50 transition-all active:scale-75">
-                                    <i className="fa-solid fa-plus text-lg"></i>
-                                </button>
+                        <div className="w-full px-4 space-y-4">
+                            <div className="flex items-center justify-center h-14 bg-white border-2 border-amber-50 rounded-2xl focus-within:border-orange-300 transition-all overflow-hidden mx-4">
+                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-12 h-full text-amber-200 hover:text-orange-500"><i className="fa-solid fa-minus"></i></button>
+                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-16 bg-transparent text-center font-black text-slate-800 outline-none text-xl" />
+                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-12 h-full text-amber-200 hover:text-orange-500"><i className="fa-solid fa-plus"></i></button>
                             </div>
+                            <button onClick={handleDhRoll} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black py-4 rounded-3xl shadow-xl shadow-orange-100 active:scale-95 transition-all flex items-center justify-center gap-3">
+                                <i className="fa-solid fa-shield-heart text-amber-200"></i>
+                                <span className="text-[10px] uppercase tracking-[0.2em]">判定 Roll Check</span>
+                            </button>
                         </div>
-
-                        <button onClick={handleDhRoll} className="w-full relative group bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-3xl shadow-2xl shadow-indigo-100 active:scale-95 transition-all overflow-hidden flex items-center justify-center gap-4">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                            <i className="fa-solid fa-shield-heart text-xl text-indigo-200"></i>
-                            <span className="text-sm uppercase tracking-[0.2em]">执行判定 Roll Check</span>
-                        </button>
                     </div>
                 )}
             </div>

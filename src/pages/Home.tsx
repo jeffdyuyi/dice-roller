@@ -9,7 +9,7 @@ export function Home() {
     const { diceHistory, latestRoll, addLocalRoll, commState } = useMqttContext();
 
     return (
-        <div className="flex flex-col md:flex-row h-full w-full bg-[#fdf8f4] overflow-hidden">
+        <div className="flex flex-col md:flex-row h-full w-full bg-[#fffdfa] overflow-hidden">
             <Sidebar onRoll={addLocalRoll} onOpenRoom={() => setIsMenuOpen(true)} commState={commState} />
             <MainArea latestRoll={latestRoll} diceHistory={diceHistory} />
 
