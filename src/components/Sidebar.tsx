@@ -47,20 +47,20 @@ export function Sidebar({ onRoll }: SidebarProps) {
     };
 
     return (
-        <aside className="w-full md:w-[320px] bg-[#fffdfa] border-r border-amber-50 flex flex-col h-[60%] md:h-full shrink-0 shadow-xl z-20 overflow-hidden relative">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-50/60 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-50/40 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
+        <aside className="w-full md:w-[320px] bg-[#0a0c1d] border-r border-white/5 flex flex-col h-[60%] md:h-full shrink-0 shadow-2xl z-20 overflow-hidden relative">
+            {/* Dark Background Decor */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-900/10 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-900/10 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
 
-            {/* Compact Tabs */}
-            <div className="flex bg-amber-50/30 border-b border-amber-50 shrink-0 p-1 gap-1">
+            {/* Premium Dark Tabs */}
+            <div className="flex bg-black/40 border-b border-white/5 shrink-0 p-1.5 gap-1.5 backdrop-blur-md">
                 {(['standard', 'formula', 'daggerheart'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === tab
-                            ? 'bg-white text-orange-600 shadow-sm border border-amber-100'
-                            : 'text-amber-800/40 hover:text-amber-600 hover:bg-white/50'
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider transition-all rounded-xl ${activeTab === tab
+                            ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/20'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                             }`}
                     >
                         {tab === 'standard' ? '标准' : tab === 'formula' ? '公式' : '判定'}
@@ -69,56 +69,57 @@ export function Sidebar({ onRoll }: SidebarProps) {
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:px-5 md:py-6 md:custom-scrollbar relative z-10 space-y-6">
+            <div className="flex-1 overflow-y-auto p-5 md:px-6 md:py-8 md:custom-scrollbar relative z-10 space-y-8">
                 {activeTab === 'standard' && (
-                    <div className="animate-in fade-in slide-in-from-left-1 duration-300 space-y-6">
+                    <div className="animate-in fade-in slide-in-from-left-2 duration-400 space-y-8">
                         {/* Compact Counter & Mod */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <label className="flex items-center gap-1 text-[8px] font-black text-amber-400 uppercase tracking-widest leading-none">数量 Count</label>
-                                <div className="flex items-center h-10 bg-white border-2 border-amber-50 rounded-xl focus-within:border-orange-300 transition-all overflow-hidden">
-                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-minus text-[10px]"></i></button>
-                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-black text-slate-800 outline-none text-sm" />
-                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-plus text-[10px]"></i></button>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-[9px] font-black text-amber-500/50 uppercase tracking-[0.2em] leading-none mb-1">数量 Count</label>
+                                <div className="flex items-center h-12 bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500/50 transition-all overflow-hidden backdrop-blur-sm">
+                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-12 h-full text-slate-500 hover:text-amber-500 hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[11px]"></i></button>
+                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-black text-white outline-none text-base" />
+                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-12 h-full text-slate-500 hover:text-amber-500 hover:bg-white/5 transition-colors"><i className="fa-solid fa-plus text-[11px]"></i></button>
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="flex items-center gap-1 text-[8px] font-black text-amber-400 uppercase tracking-widest leading-none">修正 Mod</label>
-                                <div className="flex items-center h-10 bg-white border-2 border-amber-50 rounded-xl focus-within:border-orange-300 transition-all overflow-hidden">
-                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-minus text-[10px]"></i></button>
-                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-slate-800 outline-none text-sm" />
-                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-10 h-full text-amber-300 hover:bg-amber-50"><i className="fa-solid fa-plus text-[10px]"></i></button>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-[9px] font-black text-amber-500/50 uppercase tracking-[0.2em] leading-none mb-1">修正 Mod</label>
+                                <div className="flex items-center h-12 bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500/50 transition-all overflow-hidden backdrop-blur-sm">
+                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-12 h-full text-slate-500 hover:text-amber-500 hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[11px]"></i></button>
+                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-white outline-none text-base" />
+                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-12 h-full text-slate-500 hover:text-amber-500 hover:bg-white/5 transition-colors"><i className="fa-solid fa-plus text-[11px]"></i></button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Custom Dice Field */}
-                        <div className="pt-2 border-t border-amber-100 flex gap-2 h-10">
+                        <div className="pt-2 flex gap-3 h-12">
                             <div className="relative flex-1 group">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none opacity-40 group-focus-within:opacity-100 transition-opacity">
-                                    <i className="fa-solid fa-dice-d6 text-orange-500 text-[10px]"></i>
-                                    <span className="text-orange-600 font-mono text-[10px] font-black">D</span>
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none opacity-30 group-focus-within:opacity-100 transition-opacity">
+                                    <i className="fa-solid fa-dice-d6 text-amber-500 text-[11px]"></i>
+                                    <span className="text-amber-500 font-mono text-[11px] font-black">D</span>
                                 </div>
-                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-amber-50/20 border-2 border-amber-100 focus:border-orange-400 pl-10 pr-3 rounded-xl text-orange-800 font-black outline-none transition-all text-sm" placeholder="Sides" />
+                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-white/5 border border-white/10 focus:border-amber-500/50 pl-12 pr-4 rounded-2xl text-white font-black outline-none transition-all text-sm backdrop-blur-sm" placeholder="Sides" />
                             </div>
-                            <button onClick={() => handleStandardRoll(customSides)} className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-orange-100">
-                                <i className="fa-solid fa-paper-plane text-[9px]"></i>
-                                <span className="font-black text-[10px] uppercase">投掷</span>
+                            <button onClick={() => handleStandardRoll(customSides)} className="bg-amber-600 hover:bg-amber-500 text-black px-6 rounded-2xl flex items-center gap-2 transition-all active:scale-95 shadow-xl shadow-amber-900/20 font-black text-[11px] uppercase">
+                                <i className="fa-solid fa-bolt text-[10px]"></i>
+                                <span>掷</span>
                             </button>
                         </div>
 
                         {/* Space-Optimized Grid */}
-                        <div className="grid grid-cols-3 gap-3 pt-2">
+                        <div className="grid grid-cols-3 gap-4 pt-4">
                             {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
                                 <button
                                     key={type}
                                     onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
-                                    className={`group relative aspect-square rounded-2xl flex items-center justify-center transition-all active:scale-90 shadow-sm border-[2.5px] ${type === 'd20'
-                                        ? 'bg-amber-50 border-orange-400 text-orange-700 font-black'
-                                        : 'bg-white border-amber-100 text-slate-500 hover:border-orange-300 hover:text-orange-600'
+                                    className={`group relative aspect-square rounded-2xl flex items-center justify-center transition-all active:scale-90 shadow-lg border-2 ${type === 'd20'
+                                        ? 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-amber-900/10'
+                                        : 'bg-white/5 border-white/5 text-slate-400 hover:border-amber-500/30 hover:text-amber-500 hover:bg-amber-500/5'
                                         }`}
                                 >
-                                    <span className="text-[11px] font-black tracking-tighter uppercase">{type}</span>
+                                    <span className="text-xs font-black tracking-tight uppercase">{type}</span>
+                                    <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none`}></div>
                                 </button>
                             ))}
                         </div>
@@ -126,14 +127,14 @@ export function Sidebar({ onRoll }: SidebarProps) {
                 )}
 
                 {activeTab === 'formula' && (
-                    <div className="animate-in fade-in slide-in-from-right-1 duration-300 space-y-4">
-                        <div className="bg-amber-900 rounded-3xl p-5 shadow-inner border-2 border-amber-100 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 blur-3xl pointer-events-none"></div>
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-[8px] font-black text-amber-400/60 uppercase tracking-widest flex items-center gap-1.5">
-                                    <i className="fa-solid fa-microchip animate-pulse"></i> Calculation Log
+                    <div className="animate-in fade-in slide-in-from-right-2 duration-400 space-y-5">
+                        <div className="bg-black/40 rounded-3xl p-6 shadow-2xl border border-white/10 relative overflow-hidden group backdrop-blur-xl">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl pointer-events-none"></div>
+                            <div className="flex justify-between items-center mb-3">
+                                <label className="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <i className="fa-solid fa-code animate-pulse"></i> Formula Terminal
                                 </label>
-                                <button onClick={() => setFormulaText('')} className="text-amber-700 hover:text-orange-400">
+                                <button onClick={() => setFormulaText('')} className="text-slate-600 hover:text-red-500 transition-colors">
                                     <i className="fa-solid fa-circle-xmark"></i>
                                 </button>
                             </div>
@@ -141,52 +142,52 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 value={formulaText}
                                 onChange={e => setFormulaText(e.target.value)}
                                 rows={2}
-                                className="w-full bg-transparent text-white font-mono text-xl focus:outline-none placeholder-amber-800/80 resize-none"
+                                className="w-full bg-transparent text-white font-mono text-2xl focus:outline-none placeholder-slate-700 resize-none leading-relaxed"
                                 placeholder="2d20 + 8"
                             />
-                            <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
-                                <span className="text-[8px] font-black text-amber-700 uppercase">Input NdX + M</span>
-                                <button onClick={handleFormulaRoll} className="bg-orange-500 hover:bg-orange-400 text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all">计算 Run</button>
+                            <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
+                                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">NdX + Modifier</span>
+                                <button onClick={handleFormulaRoll} className="bg-amber-600 hover:bg-amber-500 text-black px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-900/20">Execute</button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-4 gap-2.5">
                             {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
-                                <button key={d} onClick={() => insertText(d)} className="h-10 bg-white border border-amber-100 rounded-xl text-[9px] font-black text-slate-600 hover:bg-amber-500 hover:text-white transition-all active:scale-90">{d.toUpperCase()}</button>
+                                <button key={d} onClick={() => insertText(d)} className="h-11 bg-white/5 border border-white/5 rounded-xl text-[10px] font-black text-slate-400 hover:bg-amber-500 hover:text-black transition-all active:scale-95">{d.toUpperCase()}</button>
                             ))}
-                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-10 bg-red-50 text-red-400 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left"></i></button>
+                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center border border-red-500/20 hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left"></i></button>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                            <button onClick={() => insertText('+')} className="h-12 bg-amber-50 text-amber-700 rounded-2xl font-black text-xl hover:bg-amber-500 hover:text-white transition-all">+</button>
-                            <button onClick={() => insertText('-')} className="h-12 bg-amber-50 text-amber-700 rounded-2xl font-black text-xl hover:bg-amber-500 hover:text-white transition-all">-</button>
-                            <button onClick={handleFormulaRoll} className="h-12 bg-orange-500 text-white rounded-2xl font-black text-xs shadow-lg shadow-orange-100 active:scale-95"><i className="fa-solid fa-wand-magic-sparkles"></i></button>
+                        <div className="grid grid-cols-3 gap-3">
+                            <button onClick={() => insertText('+')} className="h-14 bg-white/5 text-slate-300 rounded-2xl font-black text-2xl hover:bg-white/10 border border-white/5 transition-all active:scale-95">+</button>
+                            <button onClick={() => insertText('-')} className="h-14 bg-white/5 text-slate-300 rounded-2xl font-black text-2xl hover:bg-white/10 border border-white/5 transition-all active:scale-95">-</button>
+                            <button onClick={handleFormulaRoll} className="h-14 bg-amber-600 text-black rounded-2xl font-black text-lg shadow-xl shadow-amber-900/20 active:scale-95 hover:bg-amber-500 transition-all"><i className="fa-solid fa-wand-magic-sparkles"></i></button>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'daggerheart' && (
-                    <div className="animate-in fade-in slide-in-from-right-1 duration-300 flex flex-col items-center space-y-6">
-                        <div className="flex gap-8 items-center bg-white p-6 rounded-[2.5rem] shadow-sm border border-amber-50">
-                            <div className="flex flex-col items-center gap-2 group">
-                                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl shadow-lg shadow-orange-50 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform"><i className="fa-solid fa-sun"></i></div>
-                                <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest">希望 Hope</span>
+                    <div className="animate-in fade-in slide-in-from-right-2 duration-400 flex flex-col items-center space-y-8">
+                        <div className="flex gap-6 items-center bg-black/40 p-8 rounded-[2.5rem] shadow-2xl border border-white/5 backdrop-blur-md">
+                            <div className="flex flex-col items-center gap-3 group">
+                                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-3xl shadow-xl shadow-amber-900/20 flex items-center justify-center text-black text-3xl group-hover:scale-110 group-hover:rotate-3 transition-all"><i className="fa-solid fa-sun animate-spin-slow"></i></div>
+                                <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em]">Hope</span>
                             </div>
-                            <div className="text-amber-200 font-black italic text-lg">VS</div>
-                            <div className="flex flex-col items-center gap-2 group">
-                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-lg shadow-indigo-50 flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform"><i className="fa-solid fa-moon"></i></div>
-                                <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">恐惧 Fear</span>
+                            <div className="text-white/10 font-black italic text-xl select-none">VS</div>
+                            <div className="flex flex-col items-center gap-3 group">
+                                <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-800 rounded-3xl shadow-xl shadow-indigo-900/20 flex items-center justify-center text-white text-3xl group-hover:scale-110 group-hover:-rotate-3 transition-all"><i className="fa-solid fa-moon"></i></div>
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em]">Fear</span>
                             </div>
                         </div>
 
-                        <div className="w-full px-4 space-y-4">
-                            <div className="flex items-center justify-center h-14 bg-white border-2 border-amber-50 rounded-2xl focus-within:border-orange-300 transition-all overflow-hidden mx-4">
-                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-12 h-full text-amber-200 hover:text-orange-500"><i className="fa-solid fa-minus"></i></button>
-                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-16 bg-transparent text-center font-black text-slate-800 outline-none text-xl" />
-                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-12 h-full text-amber-200 hover:text-orange-500"><i className="fa-solid fa-plus"></i></button>
+                        <div className="w-full space-y-5">
+                            <div className="flex items-center justify-center h-16 bg-white/5 border border-white/10 rounded-2xl focus-within:border-amber-500/50 transition-all overflow-hidden backdrop-blur-sm mx-2">
+                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-slate-600 hover:text-white transition-colors"><i className="fa-solid fa-minus"></i></button>
+                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-black text-white outline-none text-2xl" />
+                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-slate-600 hover:text-white transition-colors"><i className="fa-solid fa-plus"></i></button>
                             </div>
-                            <button onClick={handleDhRoll} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black py-4 rounded-3xl shadow-xl shadow-orange-100 active:scale-95 transition-all flex items-center justify-center gap-3">
-                                <i className="fa-solid fa-shield-heart text-amber-200"></i>
-                                <span className="text-[10px] uppercase tracking-[0.2em]">判定 Roll Check</span>
+                            <button onClick={handleDhRoll} className="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-black font-black py-5 rounded-[2rem] shadow-2xl shadow-amber-900/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:from-amber-500 hover:to-amber-600">
+                                <i className="fa-solid fa-shield-heart text-black/50 text-xl"></i>
+                                <span className="text-[12px] uppercase tracking-[0.3em]">Roll Check</span>
                             </button>
                         </div>
                     </div>
