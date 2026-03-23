@@ -109,7 +109,7 @@ export function rollDaggerheart(mod: number): DiceResult {
     let tag = null;
 
     if (hope === fear) {
-        status = "双重暴击";
+        status = "关键成功";
         tag = { text: status, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" };
     } else if (hope > fear) {
         status = "伴随希望";

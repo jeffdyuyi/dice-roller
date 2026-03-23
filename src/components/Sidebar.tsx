@@ -131,7 +131,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[#bf953f]/5 blur-3xl pointer-events-none"></div>
                             <div className="flex justify-between items-center mb-4">
                                 <label className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <i className="fa-solid fa-scroll text-[#bf953f]"></i> 符文解析指令
+                                    <i className="fa-solid fa-scroll text-[#bf953f]"></i> 掷骰公式
                                 </label>
                                 <button onClick={() => setFormulaText('')} className="text-[#6b6250] hover:text-red-500 transition-colors">
                                     <i className="fa-solid fa-circle-xmark"></i>
@@ -144,22 +144,37 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 className="w-full bg-transparent text-[#fcf6ba] font-mono text-2xl focus:outline-none placeholder-[#6b6250]/40 resize-none leading-relaxed"
                                 placeholder="输入公式 如 2d20 + 8"
                             />
-                            <div className="mt-8 pt-4 border-t border-[#bf953f]/10 flex justify-between items-center">
-                                <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest">执行秘法解析</span>
-                                <button onClick={handleFormulaRoll} className="bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-black/40">解 析</button>
+                            <div className="mt-8 pt-4 border-t border-[#bf953f]/10 flex justify-end items-center">
+                                <button onClick={handleFormulaRoll} className="bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-10 py-2.5 rounded-lg text-[12px] font-black uppercase tracking-widest transition-all shadow-lg shadow-black/40">执 行</button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-3">
+                        <div className="grid grid-cols-4 gap-2.5">
+                            {/* Dice Shortcuts */}
                             {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
                                 <button key={d} onClick={() => insertText(d)} className="h-11 bg-[#1e1e30] border border-transparent rounded-lg text-[10px] font-black text-[#a89b7a] hover:bg-[#bf953f] hover:text-[#0c0c10] transition-all active:scale-95">{d.toUpperCase()}</button>
                             ))}
-                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-red-500/5 text-red-500 rounded-lg flex items-center justify-center border border-red-500/10 hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left"></i></button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <button onClick={() => insertText('+')} className="h-12 bg-[#1e1e30] text-[#f0ead8] rounded-xl font-black text-xl hover:bg-white/5 border border-transparent hover:border-[#bf953f]/20 transition-all active:scale-95">+</button>
-                            <button onClick={() => insertText('-')} className="h-12 bg-[#1e1e30] text-[#f0ead8] rounded-xl font-black text-xl hover:bg-white/5 border border-transparent hover:border-[#bf953f]/20 transition-all active:scale-95">-</button>
-                            <button onClick={handleFormulaRoll} className="h-12 bg-gradient-to-br from-[#bf953f] to-[#aa771c] text-[#0c0c10] rounded-xl font-black text-base shadow-xl shadow-black/40 active:scale-95 hover:from-[#fcf6ba] hover:to-[#bf953f] transition-all"><i className="fa-solid fa-wand-magic-sparkles"></i></button>
+                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-red-500/5 text-red-500 rounded-lg flex items-center justify-center border border-red-500/10 hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left text-lg"></i></button>
+
+                            {/* Number Pad and Operators */}
+                            {[7, 8, 9, '+', 4, 5, 6, '-', 1, 2, 3, 'd', 0].map((item, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => insertText(item.toString())}
+                                    className={`h-11 rounded-lg font-black transition-all active:scale-95 ${typeof item === 'number' || item === '0' || item === 'd'
+                                        ? 'bg-[#1e1e30]/60 text-[#f0ead8] text-base hover:bg-white/5 border border-white/5'
+                                        : 'bg-[#1e1e30] text-[#bf953f] text-xl border border-[#bf953f]/10 hover:bg-[#bf953f] hover:text-[#0c0c10]'
+                                        } ${item === 'd' ? 'italic font-serif lowercase' : ''}`}
+                                >
+                                    {item}
+                                </button>
+                            ))}
+
+                            {/* Execute Button in Grid */}
+                            <button onClick={handleFormulaRoll} className="col-span-3 h-11 bg-gradient-to-br from-[#bf953f] to-[#aa771c] text-[#0c0c10] rounded-lg font-black text-sm shadow-xl shadow-black/40 active:scale-95 hover:from-[#fcf6ba] hover:to-[#bf953f] transition-all flex items-center justify-center gap-3">
+                                <i className="fa-solid fa-wand-magic-sparkles"></i>
+                                执 行
+                            </button>
                         </div>
                     </div>
                 )}

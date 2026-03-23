@@ -52,7 +52,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
 
                 <div className="flex items-center justify-between px-2 gap-10">
                     <div className="flex-1 flex flex-col gap-4 min-w-0">
-                        <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] leading-none">共鸣详情分析</span>
+                        <span className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.4em] leading-none">掷骰详情分析</span>
 
                         {isDaggerheart ? (
                             <div className="flex items-center gap-6">
@@ -131,7 +131,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         <div className="flex-1 flex flex-col justify-center">
                             <div className="flex items-center gap-6 mb-6">
                                 <span className="bg-[#bf953f]/10 text-[#bf953f] text-[11px] font-black px-5 py-2 rounded-lg border border-[#bf953f]/30 uppercase tracking-[0.4em] leading-none shadow-xl shadow-black/20">
-                                    检测到最新共鸣结果
+                                    检测到最新掷骰结果
                                 </span>
                                 {latestRoll.tag && (
                                     <span className={`text-[12px] font-black px-6 py-2.5 rounded-lg border shadow-2xl animate-pulse ${latestRoll.tag.bg} ${latestRoll.tag.color} ${latestRoll.tag.border} uppercase tracking-[0.2em] shadow-black/40`}>
