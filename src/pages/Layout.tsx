@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
-import RoomModal from '../components/RoomModal';
+import { RoomModal } from '../components/RoomModal';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
@@ -18,12 +18,12 @@ export function Layout() {
             {latestNotification && (
                 <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-top-4 duration-300">
                     <div className={`px-6 py-3 rounded-2xl border flex items-center gap-3 shadow-2xl backdrop-blur-md ${latestNotification.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-500' :
-                            latestNotification.type === 'success' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-500' :
-                                'bg-amber-500/20 border-amber-500/30 text-amber-500'
+                        latestNotification.type === 'success' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-500' :
+                            'bg-amber-500/20 border-amber-500/30 text-amber-500'
                         }`}>
                         <i className={`fa-solid ${latestNotification.type === 'error' ? 'fa-circle-exclamation' :
-                                latestNotification.type === 'success' ? 'fa-circle-check' :
-                                    'fa-circle-info'
+                            latestNotification.type === 'success' ? 'fa-circle-check' :
+                                'fa-circle-info'
                             } text-base`}></i>
                         <span className="text-xs font-black uppercase tracking-widest">{latestNotification.message}</span>
                     </div>
