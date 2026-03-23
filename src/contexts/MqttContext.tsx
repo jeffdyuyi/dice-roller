@@ -133,13 +133,19 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 setConnectedPlayers(prevConnected => {
                     const next = [...prevConnected, { ...accepted, isHost: false }];
                     mqttInstance.broadcast('PLAYER_LIST', { list: next } as any);
+
+                    // Sync latest roll if it exists
+                    if (latestRoll) {
+                        mqttInstance.broadcast('DICE_ROLL', latestRoll);
+                    }
+
                     return next;
                 });
             }
             return prevPending.filter(p => p.id !== pId);
         });
         mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED');
-    }, []);
+    }, [latestRoll]);
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));

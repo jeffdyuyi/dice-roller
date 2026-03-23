@@ -1,13 +1,13 @@
 export type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20' | 'd100';
 
 export const DICE_TYPES: Record<DiceType, { icon: string, sides: number }> = {
-    d4: { icon: 'fa-dice-d6', sides: 4 },
+    d4: { icon: 'fa-dice-d4', sides: 4 },
     d6: { icon: 'fa-dice-d6', sides: 6 },
-    d8: { icon: 'fa-dice-d20', sides: 8 },
+    d8: { icon: 'fa-dice-d8', sides: 8 },
     d10: { icon: 'fa-dice-d10', sides: 10 },
     d12: { icon: 'fa-dice-d12', sides: 12 },
     d20: { icon: 'fa-dice-d20', sides: 20 },
-    d100: { icon: 'fa-dice-d6', sides: 100 }
+    d100: { icon: 'fa-dice', sides: 100 }
 };
 
 export interface DiceResult {

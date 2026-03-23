@@ -154,16 +154,16 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                                             key={type}
                                             onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
                                             className={`group relative aspect-square rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-90 shadow-lg border-2 border-transparent overflow-hidden ${type === 'd20'
-                                                ? 'bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-indigo-200'
-                                                : 'bg-white border-slate-100 text-slate-500 hover:border-indigo-600 hover:text-indigo-600 hover:shadow-indigo-50'
+                                                ? 'bg-slate-50 border-indigo-200 text-slate-900 shadow-indigo-100'
+                                                : 'bg-white border-slate-100 text-slate-900 hover:border-indigo-600 shadow-slate-100'
                                                 }`}
                                         >
                                             {/* Sparkle effect on d20 */}
                                             {type === 'd20' && (
-                                                <div className="absolute top-0 right-0 w-12 h-12 bg-white/20 blur-xl -mr-4 -mt-4 group-hover:bg-white/40 transition-all"></div>
+                                                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/10 blur-xl -mr-4 -mt-4 group-hover:bg-indigo-500/20 transition-all"></div>
                                             )}
-                                            <i className={`fa-solid ${DICE_TYPES[type].icon} ${type === 'd20' ? 'text-4xl' : 'text-2xl'} mb-1.5 drop-shadow-sm group-hover:translate-y-[-2px] transition-transform`}></i>
-                                            <span className={`text-[10px] font-black tracking-widest uppercase ${type === 'd20' ? 'text-indigo-100' : 'text-slate-300 group-hover:text-indigo-300'}`}>{type}</span>
+                                            <i className={`fa-solid ${DICE_TYPES[type].icon} ${type === 'd20' ? 'text-4xl' : 'text-2xl'} mb-1.5 drop-shadow-sm group-hover:translate-y-[-2px] transition-transform text-slate-900`}></i>
+                                            <span className={`text-[10px] font-black tracking-widest uppercase ${type === 'd20' ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-400'}`}>{type}</span>
                                         </button>
                                     ))}
                                 </div>
