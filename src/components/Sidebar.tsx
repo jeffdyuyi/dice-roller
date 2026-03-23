@@ -56,11 +56,11 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
             <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/40 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-50/30 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
 
-            {/* Connection Status Button */}
-            <div className="p-4 border-b border-slate-50 relative z-10 shrink-0">
+            {/* Connection Status Button & Version */}
+            <div className="p-4 border-b border-slate-50 relative z-10 shrink-0 bg-white/50 backdrop-blur-md">
                 <button
                     onClick={commState === 'CONNECTED' ? () => setManagerOpen(true) : onOpenRoom}
-                    className={`w-full group relative overflow-hidden py-3.5 rounded-2xl flex flex-col items-center justify-center transition-all shadow-xl active:scale-95 border-2 ${commState === 'CONNECTED'
+                    className={`w-full group relative overflow-hidden py-3.5 rounded-2xl flex flex-col items-center justify-center transition-all shadow-xl active:scale-95 border-2 mb-3.5 ${commState === 'CONNECTED'
                         ? 'bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white border-indigo-200 shadow-indigo-100'
                         : 'bg-white border-slate-100 text-slate-400 hover:border-indigo-600 hover:text-indigo-600'
                         }`}
@@ -73,6 +73,12 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                         <span className="text-[11px] font-black uppercase tracking-[0.15em]">{commState === 'CONNECTED' ? '时空接入管理' : '建立时空联接'}</span>
                     </div>
                 </button>
+
+                <div className="flex items-center justify-center gap-2 grayscale opacity-40 transition-all cursor-default">
+                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                    <div className="text-[9px] font-black text-slate-400 tracking-[0.4em] uppercase">Engine v2.5 Stable</div>
+                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                </div>
             </div>
 
             {/* Navigation Tabs */}
@@ -92,7 +98,7 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 md:custom-scrollbar relative z-10 space-y-10 pb-32">
+            <div className="flex-1 overflow-y-auto p-6 md:custom-scrollbar relative z-10 space-y-10 pb-12">
 
                 {activeTab === 'standard' && (
                     <div className="animate-in fade-in slide-in-from-left-2 duration-300 space-y-8">
@@ -130,26 +136,8 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                             </div>
                         </div>
 
-                        {/* Dice Grid */}
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-3 gap-5">
-                                {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
-                                    <button
-                                        key={type}
-                                        onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
-                                        className={`group relative aspect-square rounded-[2rem] flex items-center justify-center transition-all active:scale-95 shadow-md border-[3px] overflow-hidden ${type === 'd20'
-                                            ? 'bg-slate-50 border-indigo-600 text-indigo-600 shadow-indigo-50'
-                                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600'
-                                            }`}
-                                    >
-                                        <span className="text-sm font-black tracking-widest uppercase">{type}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Custom Sides */}
-                        <div className="pt-6 border-t-2 border-dashed border-slate-100 space-y-3">
+                        {/* Custom Sides - MOVED UP */}
+                        <div className="pt-2 border-t border-slate-50 space-y-3">
                             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">自定义异形骰 (Custom)</label>
                             <div className="flex gap-3 h-12">
                                 <div className="relative flex-1 group">
@@ -163,6 +151,25 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                                     <i className="fa-solid fa-paper-plane text-[9px]"></i>
                                     投掷
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Dice Grid */}
+                        <div className="space-y-4">
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">标准骰子选择 (Standard)</label>
+                            <div className="grid grid-cols-3 gap-5">
+                                {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
+                                    <button
+                                        key={type}
+                                        onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
+                                        className={`group relative aspect-square rounded-[2rem] flex items-center justify-center transition-all active:scale-95 shadow-md border-[3px] overflow-hidden ${type === 'd20'
+                                            ? 'bg-slate-50 border-indigo-600 text-indigo-600 shadow-indigo-50'
+                                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600'
+                                            }`}
+                                    >
+                                        <span className="text-sm font-black tracking-widest uppercase">{type}</span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -290,14 +297,6 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                         </button>
                     </div>
                 )}
-            </div>
-
-            <div className="p-5 bg-slate-50/50 border-t border-slate-100 relative z-10 shrink-0">
-                <div className="flex items-center justify-center gap-2 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                    <div className="text-[9px] font-black text-slate-400 tracking-[0.4em] uppercase">Engine v2.5 Stable</div>
-                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                </div>
             </div>
         </aside>
     );
