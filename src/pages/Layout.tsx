@@ -7,7 +7,7 @@ import { RoomModal } from '../components/RoomModal';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
-    const { commState, roomId, latestNotification, setManagerOpen } = useMqttContext();
+    const { commState, roomId, roomName, latestNotification, setManagerOpen } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const navigate = useNavigate();
@@ -85,7 +85,7 @@ export function Layout() {
                             className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all group border border-emerald-500/20"
                         >
                             <i className="fa-solid fa-tower-broadcast text-[11px]"></i>
-                            <span className="text-[11px] font-black uppercase tracking-tight">区域房间 ({roomId})</span>
+                            <span className="text-[11px] font-black uppercase tracking-tight">联机中: {roomName || roomId}</span>
                         </button>
                     )}
 

@@ -6,6 +6,8 @@ export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
 interface MqttContextType {
     commState: RoomCommState;
     roomId: string | null;
+    roomName: string | null;
+    ruleSystem: string | null;
     isHost: boolean;
     connectedPlayers: PlayerNode[];
     pendingPlayers: PlayerNode[];
@@ -17,7 +19,7 @@ interface MqttContextType {
     myId: string;
     isManagerOpen: boolean;
     setManagerOpen: (open: boolean) => void;
-    createRoom: (name: string, rid: string) => void;
+    createRoom: (name: string, rid: string, roomName: string, ruleSystem: string) => void;
     joinRoom: (name: string, rid: string, charInfo?: any) => void;
     acceptPlayer: (id: string, name: string) => void;
     rejectPlayer: (id: string) => void;
@@ -35,6 +37,8 @@ const MqttContext = createContext<MqttContextType | undefined>(undefined);
 export function MqttProvider({ children }: { children: ReactNode }) {
     const [commState, setCommState] = useState<RoomCommState>('DISCONNECTED');
     const [roomId, setRoomId] = useState<string | null>(null);
+    const [roomName, setRoomName] = useState<string | null>(null);
+    const [ruleSystem, setRuleSystem] = useState<string | null>(null);
     const [isHost, setIsHost] = useState(false);
     const [connectedPlayers, setConnectedPlayers] = useState<PlayerNode[]>([]);
     const [pendingPlayers, setPendingPlayers] = useState<PlayerNode[]>([]);
@@ -56,6 +60,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 setCommState('CONNECTED');
                 setConnectedPlayers([{ id: mqttInstance.myId, name: mqttInstance.myName, isHost: true }]);
                 setRoomId(mqttInstance.currentRoomId);
+                // roomName and ruleSystem are already set in createRoom
                 setIsHost(true);
             }
         });
@@ -79,8 +84,10 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             } else if (msg.type === 'JOIN_ACCEPTED') {
                 setCommState('CONNECTED');
                 setRoomId(mqttInstance.currentRoomId);
+                setRoomName(msg.payload?.roomName || null);
+                setRuleSystem(msg.payload?.ruleSystem || null);
                 setConnectionError(null);
-                showNotification('成功加入房间', 'success');
+                showNotification(`成功加入 [${msg.payload?.roomName || '联机房间'}]`, 'success');
             } else if (msg.type === 'JOIN_REJECTED') {
                 setConnectionError('被房主拒绝加入');
                 showNotification('被房主拒绝加入', 'error');
@@ -120,17 +127,21 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         mqttInstance.disconnect();
         setCommState('DISCONNECTED');
         setRoomId(null);
+        setRoomName(null);
+        setRuleSystem(null);
         setIsHost(false);
         setConnectedPlayers([]);
         setPendingPlayers([]);
     }, []);
 
-    const createRoom = useCallback((name: string, rid: string) => {
+    const createRoom = useCallback((name: string, rid: string, rName: string, rSystem: string) => {
         setMyName(name);
+        setRoomName(rName);
+        setRuleSystem(rSystem);
         setCommState('WAITING');
         setConnectionError(null);
         mqttInstance.init(name, rid || null, true);
-        showNotification('正在创建房间...', 'info');
+        showNotification(`正在创建房间: ${rName}...`, 'info');
     }, [showNotification]);
 
     const joinRoom = useCallback((name: string, rid: string, charInfo?: any) => {
@@ -166,7 +177,11 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             if (accepted) {
                 setConnectedPlayers(prevConnected => {
                     const next = [...prevConnected, { ...accepted, isHost: false }];
-                    mqttInstance.broadcast('PLAYER_LIST', { list: next } as any);
+                    mqttInstance.broadcast('PLAYER_LIST', {
+                        list: next,
+                        roomName: roomName,
+                        ruleSystem: ruleSystem
+                    } as any);
 
                     // Sync latest roll if it exists
                     if (latestRoll) {
@@ -178,8 +193,8 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             }
             return prevPending.filter(p => p.id !== pId);
         });
-        mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED');
-    }, [latestRoll]);
+        mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED', { roomName, ruleSystem });
+    }, [latestRoll, roomName, ruleSystem]);
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));
@@ -216,7 +231,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const clearHistory = useCallback(() => setDiceHistory([]), []);
 
     const value = {
-        commState, roomId, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, myName, myId: mqttInstance.myId,
+        commState, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, myName, myId: mqttInstance.myId,
         isManagerOpen, setManagerOpen, connectionError, latestNotification,
         createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, clearHistory,
         setConnectionError, showNotification

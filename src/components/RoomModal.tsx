@@ -18,6 +18,8 @@ export function RoomModal({
     const [mode, setMode] = useState<'join' | 'create'>('join');
     const [inputName, setInputName] = useState(initialName);
     const [inputRoomId, setInputRoomId] = useState('');
+    const [inputRoomName, setInputRoomName] = useState('新联机房间');
+    const [selectedRuleSystem, setSelectedRuleSystem] = useState('D&D 5E');
     const [guestMode, setGuestMode] = useState(false);
 
     // Character selection state
@@ -89,10 +91,29 @@ export function RoomModal({
                                     <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">您的昵称</label>
                                     <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入您的昵称..." className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 px-5 py-3.5 rounded-xl text-white font-bold outline-none transition-all placeholder:text-slate-700 backdrop-blur-sm text-sm" />
                                 </div>
-                                {mode === 'join' && (
+                                {mode === 'join' ? (
                                     <div className="group">
                                         <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">房间 ID</label>
                                         <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位代码" className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 px-5 py-3.5 rounded-xl text-white font-mono font-bold outline-none transition-all placeholder:text-slate-700 backdrop-blur-sm text-sm" />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="group">
+                                            <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">房间名称 (选填)</label>
+                                            <input type="text" value={inputRoomName} onChange={e => setInputRoomName(e.target.value)} placeholder="给房间起个名字..." className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 px-5 py-3.5 rounded-xl text-white font-bold outline-none transition-all placeholder:text-slate-700 backdrop-blur-sm text-sm" />
+                                        </div>
+                                        <div className="group">
+                                            <label className="block text-[9px] font-black text-slate-500 mb-1.5 uppercase tracking-[0.2em] ml-1 group-within:text-amber-500 transition-colors">游戏规则</label>
+                                            <div className="relative">
+                                                <select value={selectedRuleSystem} onChange={e => setSelectedRuleSystem(e.target.value)} className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-xl px-5 py-3.5 text-sm font-black text-white outline-none appearance-none cursor-pointer transition-all hover:bg-white/10">
+                                                    <option value="D&D 5E" className="bg-slate-900">D&D 5E (龙与地下城)</option>
+                                                    <option value="Daggerheart" className="bg-slate-900">Daggerheart (匕首之心)</option>
+                                                    <option value="COC 7th" className="bg-slate-900">COC 7th (克苏鲁的呼唤)</option>
+                                                    <option value="Other" className="bg-slate-900">其他规则系统</option>
+                                                </select>
+                                                <i className="fa-solid fa-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -139,7 +160,7 @@ export function RoomModal({
 
                             <div className="pt-2">
                                 {mode === 'create' ? (
-                                    <button onClick={() => createRoom(inputName, inputRoomId)} className="w-full bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-4 rounded-xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30 uppercase tracking-widest text-[12px]">立即开启房间</button>
+                                    <button onClick={() => createRoom(inputName, inputRoomId, inputRoomName, selectedRuleSystem)} className="w-full bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-4 rounded-xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30 uppercase tracking-widest text-[12px]">立即开启房间</button>
                                 ) : (
                                     <button onClick={handleJoin} className="w-full bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-4 rounded-xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30 uppercase tracking-widest text-[12px]">发送入场请求</button>
                                 )}
@@ -155,9 +176,9 @@ export function RoomModal({
                                     <div className="w-12 h-12 border-4 border-t-amber-500 border-white/5 rounded-full animate-spin"></div>
                                 </div>
                             </div>
-                            <div className="text-white font-black text-lg mt-8">{mode === 'create' ? '正在创建房间...' : '正在请求入场...'}</div>
+                            <div className="text-white font-black text-lg mt-8">{mode === 'create' ? '正在创建房间...' : '正在入场确认...'}</div>
                             <p className="text-[9px] text-slate-500 mt-2 font-black uppercase tracking-[0.2em] animate-pulse">
-                                {mode === 'create' ? '正在同步时空数据' : '确认请求已发送，等待房主接受'}
+                                {mode === 'create' ? '正在配置房间设置' : '等待房主接受入场请'}
                             </p>
                             <button onClick={disconnectLocal} className="mt-8 text-xs font-black text-red-500/60 hover:text-red-500 transition-colors border-b border-red-500/20">取消并返回</button>
                         </div>
