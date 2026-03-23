@@ -18,15 +18,15 @@ export function RoomManagerDrawer() {
                 {/* Noise Texture */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
 
-                <div className="p-8 border-b border-[#bf953f]/10 flex justify-between items-center bg-[#141420]/50 relative z-10">
+                <div className="p-6 border-b border-[#bf953f]/10 flex justify-between items-center bg-[#141420]/50 relative z-10">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#bf953f] to-[#aa771c] rounded-xl flex items-center justify-center shadow-xl shadow-black/40">
-                            <i className="fa-solid fa-users-gear text-[#0c0c10] text-lg"></i>
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#bf953f] to-[#aa771c] rounded-xl flex items-center justify-center shadow-xl shadow-black/40">
+                            <i className="fa-solid fa-users-gear text-[#0c0c10] text-base"></i>
                         </div>
-                        <h3 className="text-xl font-black text-[#f0ead8] tracking-widest uppercase">房间管理</h3>
+                        <h3 className="text-lg font-black text-[#f0ead8] tracking-widest uppercase">房间管理</h3>
                     </div>
-                    <button onClick={() => setManagerOpen(false)} className="w-10 h-10 flex items-center justify-center text-[#6b6250] hover:text-[#bf953f] transition-all hover:rotate-90">
-                        <i className="fa-solid fa-xmark text-2xl"></i>
+                    <button onClick={() => setManagerOpen(false)} className="w-8 h-8 flex items-center justify-center text-[#6b6250] hover:text-[#bf953f] transition-all hover:rotate-90">
+                        <i className="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
 
@@ -35,17 +35,17 @@ export function RoomManagerDrawer() {
                     <div className="bg-gradient-to-br from-[#141420] to-[#0c0c10] p-8 rounded-xl border border-[#bf953f]/20 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-40 h-40 bg-[#bf953f]/5 rotate-45 translate-x-16 -translate-y-16 group-hover:bg-[#bf953f]/10 transition-all duration-700"></div>
                         <div className="relative">
-                            <div className="text-[10px] text-[#bf953f]/60 font-black uppercase tracking-[0.4em] mb-2">领域时空坐标 ID</div>
-                            <div className="text-5xl font-mono font-black golden-text leading-none select-all">{roomId}</div>
-                            <div className="mt-8 flex gap-4">
+                            <div className="text-[9px] text-[#bf953f]/60 font-black uppercase tracking-[0.4em] mb-1.5">房间 ID</div>
+                            <div className="text-4xl font-mono font-black golden-text leading-none select-all">{roomId}</div>
+                            <div className="mt-6 flex gap-3">
                                 <button
                                     onClick={() => {
                                         navigator.clipboard.writeText(roomId || '');
-                                        alert('坐标已复制到剪贴板');
+                                        alert('ID 已复制');
                                     }}
-                                    className="flex-1 bg-[#bf953f]/10 hover:bg-[#bf953f]/20 text-[#bf953f] border border-[#bf953f]/30 px-4 py-3 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-black/20"
+                                    className="flex-1 bg-[#bf953f]/10 hover:bg-[#bf953f]/20 text-[#bf953f] border border-[#bf953f]/30 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-black/20"
                                 >
-                                    复制坐标
+                                    复制 ID
                                 </button>
                                 <button onClick={() => { leaveRoom(); setManagerOpen(false); }} className="flex-1 bg-red-950/20 hover:bg-red-900/40 text-red-500 border border-red-900/30 px-4 py-3 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-black/20">
                                     断开联接
@@ -55,9 +55,9 @@ export function RoomManagerDrawer() {
                     </div>
 
                     {/* Member List */}
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center border-b border-[#bf953f]/10 pb-3">
-                            <h4 className="text-[11px] font-black text-[#6b6250] uppercase tracking-[0.4em]">已同步成员 ({connectedPlayers.length})</h4>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center border-b border-[#bf953f]/10 pb-2">
+                            <h4 className="text-[9px] font-black text-[#6b6250] uppercase tracking-[0.4em]">房间成员 ({connectedPlayers.length})</h4>
                         </div>
                         <ul className="space-y-4">
                             {connectedPlayers.map(p => (
@@ -93,9 +93,9 @@ export function RoomManagerDrawer() {
 
                     {/* Pending Players (HOST ONLY) */}
                     {isHost && (
-                        <div className="pt-6 space-y-6">
-                            <div className="flex justify-between items-center border-b border-amber-900/30 pb-3">
-                                <h4 className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4em]">接入请求 待处理 ({pendingPlayers.length})</h4>
+                        <div className="pt-4 space-y-4">
+                            <div className="flex justify-between items-center border-b border-amber-900/30 pb-2">
+                                <h4 className="text-[9px] font-black text-amber-500 uppercase tracking-[0.4em]">入场待审批 ({pendingPlayers.length})</h4>
                             </div>
                             <ul className="space-y-4">
                                 {pendingPlayers.length === 0 ? (
@@ -127,14 +127,14 @@ export function RoomManagerDrawer() {
                     )}
                 </div>
 
-                <div className="p-8 bg-[#141420] border-t border-[#bf953f]/10 relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
-                    <div className="flex items-center justify-between text-[11px] font-black text-[#6b6250] uppercase tracking-[0.5em]">
-                        <span className="flex items-center gap-3">
-                            <i className="fa-solid fa-tower-broadcast text-[#bf953f]"></i> MQTT 服务活跃
+                <div className="p-6 bg-[#141420] border-t border-[#bf953f]/10 relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
+                    <div className="flex items-center justify-between text-[10px] font-black text-[#6b6250] uppercase tracking-[0.5em]">
+                        <span className="flex items-center gap-2">
+                            <i className="fa-solid fa-tower-broadcast text-[#bf953f] text-[9px]"></i> 联机服务
                         </span>
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-                            <span className="text-emerald-500/80">已建立通讯同步</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                            <span className="text-emerald-500/80">状态: 联机中</span>
                         </div>
                     </div>
                 </div>

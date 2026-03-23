@@ -35,22 +35,35 @@ class MqttService {
 
         this.myName = playerName;
         this.isHost = isHost;
-        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substr(2, 9);
-        this.currentRoomId = roomId || Math.floor(10000 + Math.random() * 90000).toString();
+        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
+        const rawRoomId = roomId || Math.floor(10000 + Math.random() * 90000).toString();
+        this.currentRoomId = rawRoomId;
+
+        // Sanitize Room ID for MQTT topics (UTF-8/Chinese support safely)
+        const safeRoomId = btoa(encodeURIComponent(rawRoomId)).replace(/=/g, '');
+        const topicPrefix = `dnd5r/room/${safeRoomId}`;
 
         this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
 
         this.client.on('connect', () => {
             const topics = isHost ? [
-                `dnd5r/room/${this.currentRoomId}/host`,
-                `dnd5r/room/${this.currentRoomId}/broadcast`
+                `${topicPrefix}/host`,
+                `${topicPrefix}/broadcast`
             ] : [
-                `dnd5r/room/${this.currentRoomId}/broadcast`,
-                `dnd5r/room/${this.currentRoomId}/p/${this.myId}`
+                `${topicPrefix}/broadcast`,
+                `${topicPrefix}/p/${this.myId}`
             ];
 
             this.client?.subscribe(topics);
             this.onConnectHandlers.forEach(cb => cb());
+        });
+
+        this.client.on('error', (err) => {
+            console.error("MQTT Error:", err);
+        });
+
+        this.client.on('offline', () => {
+            console.warn("MQTT Offline");
         });
 
         this.client.on('message', (_topic, message) => {
@@ -79,7 +92,8 @@ class MqttService {
         const msg: RoomMessage = {
             type, senderId: this.myId, senderName: this.myName, timestamp: Date.now(), payload
         };
-        this.client.publish(`dnd5r/room/${this.currentRoomId}/${topicSuffix}`, JSON.stringify(msg));
+        const safeRoomId = btoa(encodeURIComponent(this.currentRoomId)).replace(/=/g, '');
+        this.client.publish(`dnd5r/room/${safeRoomId}/${topicSuffix}`, JSON.stringify(msg));
     }
 
     public broadcast(type: RoomMessage['type'], payload?: Record<string, any>) {

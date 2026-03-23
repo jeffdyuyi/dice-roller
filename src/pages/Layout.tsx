@@ -3,17 +3,33 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
-import { RoomModal } from '../components/RoomModal';
+import RoomModal from '../components/RoomModal';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
-    const { commState, setManagerOpen, roomId } = useMqttContext();
+    const { commState, roomId, latestNotification, setManagerOpen } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const navigate = useNavigate();
 
     return (
         <div className="min-h-screen bg-[#0c0c10] flex flex-col font-sans antialiased text-[#f0ead8] h-screen overflow-hidden relative">
+            {/* Global Notification Toast */}
+            {latestNotification && (
+                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-top-4 duration-300">
+                    <div className={`px-6 py-3 rounded-2xl border flex items-center gap-3 shadow-2xl backdrop-blur-md ${latestNotification.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-500' :
+                            latestNotification.type === 'success' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-500' :
+                                'bg-amber-500/20 border-amber-500/30 text-amber-500'
+                        }`}>
+                        <i className={`fa-solid ${latestNotification.type === 'error' ? 'fa-circle-exclamation' :
+                                latestNotification.type === 'success' ? 'fa-circle-check' :
+                                    'fa-circle-info'
+                            } text-base`}></i>
+                        <span className="text-xs font-black uppercase tracking-widest">{latestNotification.message}</span>
+                    </div>
+                </div>
+            )}
+
             {/* Dark Premium Background Decor */}
             <div className="absolute top-0 right-0 w-[70vw] h-[70vw] bg-amber-900/5 rounded-full blur-[140px] -mr-[35vw] -mt-[35vw] pointer-events-none z-0"></div>
             <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-indigo-900/5 rounded-full blur-[120px] -ml-[25vw] -mb-[25vw] pointer-events-none z-0"></div>
@@ -48,7 +64,7 @@ export function Layout() {
                                 className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[#bf953f]/5 text-[#bf953f] hover:bg-[#bf953f] hover:text-[#141420] transition-all group border border-[#bf953f]/20 shadow-lg shadow-black/20"
                             >
                                 <i className="fa-solid fa-network-wired text-[11px]"></i>
-                                <span className="text-[11px] font-black uppercase tracking-tight">建立联结</span>
+                                <span className="text-[11px] font-black uppercase tracking-tight">房间联机</span>
                             </button>
                         )}
                         {isLoggedIn && (
@@ -77,9 +93,9 @@ export function Layout() {
                         <button onClick={() => {
                             const un = prompt('模拟登录，请输入昵称:');
                             if (un) login(un);
-                        }} className="flex items-center gap-2.5 bg-[#bf953f] hover:bg-[#fcf6ba] text-[#0c0c10] px-6 py-2 rounded-xl shadow-xl shadow-black/40 transition-all active:scale-95 group font-black uppercase text-[11px]">
+                        }} className="flex items-center gap-2.5 bg-[#bf953f] hover:bg-[#fcf6ba] text-[#0c0c10] px-5 py-2 rounded-xl shadow-xl shadow-black/40 transition-all active:scale-95 group font-black uppercase text-[11px]">
                             <i className="fa-solid fa-right-to-bracket text-[11px]"></i>
-                            <span>入境登录</span>
+                            <span>登 录</span>
                         </button>
                     ) : (
                         <div className="flex items-center gap-4 border-l border-[#bf953f]/20 pl-4">
@@ -106,59 +122,58 @@ export function Layout() {
                                 <i className="fa-solid fa-dice-d20 text-[12rem] absolute -right-12 -bottom-12 text-[#bf953f]"></i>
                             </div>
                             <div className="flex flex-col items-center gap-1">
-                                <h2 className="text-[#a89b7a] text-[10px] font-black tracking-[0.4em] uppercase">秘密基地</h2>
-                                <h2 className="golden-text text-xl uppercase tracking-widest">基地成员信息</h2>
+                                <h2 className="text-[#a89b7a] text-[10px] font-black tracking-[0.4em] uppercase">关于工具</h2>
+                                <h2 className="golden-text text-xl uppercase tracking-widest">开发团队与指南</h2>
                             </div>
                             <button onClick={() => setInfoOpen(false)} className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 text-[#f0ead8] flex items-center justify-center hover:bg-[#bf953f]/20 transition-colors">
                                 <i className="fa-solid fa-xmark text-sm"></i>
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
-                            <div className="space-y-5">
-                                <div className="flex items-center gap-5 group">
-                                    <div className="w-14 h-14 bg-[#bf953f]/10 rounded-xl flex items-center justify-center text-[#bf953f] border border-[#bf953f]/20 transition-transform group-hover:scale-110">
-                                        <i className="fa-solid fa-user-gear text-xl"></i>
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 bg-[#bf953f]/10 rounded-xl flex items-center justify-center text-[#bf953f] border border-[#bf953f]/20 transition-transform group-hover:scale-110">
+                                        <i className="fa-solid fa-user-gear text-lg"></i>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">制作者 / 架构师</p>
-                                        <p className="font-black text-[#f0ead8] tracking-tight text-base">不咕鸟（哈基米德）</p>
+                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-1.5">制作者</p>
+                                        <p className="font-black text-[#f0ead8] tracking-tight text-sm">不咕鸟（哈基米德）</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-5 group">
-                                    <div className="w-14 h-14 bg-[#aa771c]/10 rounded-xl flex items-center justify-center text-[#aa771c] border border-[#aa771c]/20 transition-transform group-hover:scale-110">
-                                        <i className="fa-solid fa-robot text-xl"></i>
+                                <div className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 bg-[#aa771c]/10 rounded-xl flex items-center justify-center text-[#aa771c] border border-[#aa771c]/20 transition-transform group-hover:scale-110">
+                                        <i className="fa-solid fa-robot text-lg"></i>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-2">AI 技术辅助</p>
-                                        <p className="font-black text-[#f0ead8] tracking-tight text-base">Antigravity Gemini</p>
+                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest leading-none mb-1.5">AI 技术辅助</p>
+                                        <p className="font-black text-[#f0ead8] tracking-tight text-sm">Antigravity Gemini</p>
                                     </div>
                                 </div>
                             </div>
+                            <div className="h-px bg-[#bf953f]/5"></div>
 
-                            <div className="h-px bg-[#bf953f]/10"></div>
-
-                            <div className="space-y-4">
-                                <div className="p-4 bg-white/5 rounded-xl flex items-start gap-4 hover:bg-[#bf953f]/5 transition-all border border-[#bf953f]/5 hover:border-[#bf953f]/20">
-                                    <i className="fa-solid fa-calendar-check text-[#bf953f] mt-1"></i>
+                            <div className="space-y-3">
+                                <div className="p-3 bg-white/5 rounded-xl flex items-start gap-3 hover:bg-[#bf953f]/5 transition-all border border-[#bf953f]/5 hover:border-[#bf953f]/20">
+                                    <i className="fa-solid fa-calendar-check text-[#bf953f] text-sm mt-0.5"></i>
                                     <div className="flex-1">
-                                        <p className="text-[10px] font-black text-[#6b6250] uppercase tracking-widest mb-1.5">约团日程</p>
-                                        <a href="https://nogubird.top/schedule" target="_blank" rel="noopener" className="text-sm font-bold text-[#fcf6ba] hover:text-[#bf953f] transition-colors">nogubird.top/schedule</a>
+                                        <p className="text-[9px] font-black text-[#6b6250] uppercase tracking-widest mb-1">日常排团</p>
+                                        <a href="https://nogubird.top/schedule" target="_blank" rel="noopener" className="text-xs font-bold text-[#fcf6ba] hover:text-[#bf953f] transition-colors">nogubird.top/schedule</a>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-white/5 rounded-xl flex items-start gap-3 border border-white/5 hover:border-[#bf953f]/20 transition-all">
-                                        <i className="fa-brands fa-qq text-[#a89b7a] mt-1"></i>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 bg-white/5 rounded-xl flex items-start gap-3 border border-white/5 hover:border-[#bf953f]/20 transition-all">
+                                        <i className="fa-brands fa-qq text-[#a89b7a] text-sm mt-0.5"></i>
                                         <div className="flex-1">
-                                            <p className="text-[9px] font-black text-[#6b6250] uppercase tracking-widest mb-1">基地交流群 (QQ)</p>
-                                            <p className="text-sm font-bold text-[#f0ead8] select-all tracking-tight">691707475</p>
+                                            <p className="text-[8px] font-black text-[#6b6250] uppercase tracking-widest mb-0.5">交流群 (QQ)</p>
+                                            <p className="text-xs font-bold text-[#f0ead8] select-all tracking-tight">691707475</p>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-white/5 rounded-xl flex items-start gap-3 border border-white/5 hover:border-[#bf953f]/20 transition-all">
-                                        <i className="fa-solid fa-users text-[#a89b7a] mt-1"></i>
+                                    <div className="p-3 bg-white/5 rounded-xl flex items-start gap-3 border border-white/5 hover:border-[#bf953f]/20 transition-all">
+                                        <i className="fa-solid fa-users text-[#a89b7a] text-sm mt-0.5"></i>
                                         <div className="flex-1">
-                                            <p className="text-[9px] font-black text-[#6b6250] uppercase tracking-widest mb-1">创想俱乐部</p>
-                                            <p className="text-sm font-bold text-[#f0ead8] select-all tracking-tight">261751459</p>
+                                            <p className="text-[8px] font-black text-[#6b6250] uppercase tracking-widest mb-0.5">创想俱乐部</p>
+                                            <p className="text-xs font-bold text-[#f0ead8] select-all tracking-tight">261751459</p>
                                         </div>
                                     </div>
                                 </div>

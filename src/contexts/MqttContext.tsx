@@ -11,6 +11,8 @@ interface MqttContextType {
     pendingPlayers: PlayerNode[];
     diceHistory: any[];
     latestRoll: any | null;
+    connectionError: string | null;
+    latestNotification: { message: string, type: 'info' | 'success' | 'error' } | null;
     myName: string;
     myId: string;
     isManagerOpen: boolean;
@@ -21,8 +23,11 @@ interface MqttContextType {
     rejectPlayer: (id: string) => void;
     kickPlayer: (id: string) => void;
     leaveRoom: () => void;
+    disconnectLocal: () => void;
     addLocalRoll: (payload: any) => void;
     clearHistory: () => void;
+    setConnectionError: (err: string | null) => void;
+    showNotification: (msg: string, type: 'info' | 'success' | 'error') => void;
 }
 
 const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -37,6 +42,13 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [latestRoll, setLatestRoll] = useState<any | null>(null);
     const [myName, setMyName] = useState('Player-' + Math.floor(Math.random() * 1000));
     const [isManagerOpen, setManagerOpen] = useState(false);
+    const [connectionError, setConnectionError] = useState<string | null>(null);
+    const [latestNotification, setLatestNotification] = useState<{ message: string, type: 'info' | 'success' | 'error' } | null>(null);
+
+    const showNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
+        setLatestNotification({ message, type });
+        setTimeout(() => setLatestNotification(null), 4000);
+    }, []);
 
     useEffect(() => {
         const unsubConnect = mqttInstance.onConnect(() => {
@@ -53,6 +65,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 if (mqttInstance.isHost) {
                     setPendingPlayers(prev => {
                         if (prev.find(p => p.id === msg.senderId)) return prev;
+                        showNotification(`收到来自 ${msg.senderName} 的加入请求`, 'info');
                         return [...prev, {
                             id: msg.senderId,
                             name: msg.senderName,
@@ -66,14 +79,15 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             } else if (msg.type === 'JOIN_ACCEPTED') {
                 setCommState('CONNECTED');
                 setRoomId(mqttInstance.currentRoomId);
+                setConnectionError(null);
+                showNotification('成功加入房间', 'success');
             } else if (msg.type === 'JOIN_REJECTED') {
-                alert('加入拒绝！');
+                setConnectionError('被房主拒绝加入');
+                showNotification('被房主拒绝加入', 'error');
                 disconnectLocal();
             } else if (msg.type === 'PLAYER_LIST') {
                 const list = (msg.payload as any).list || msg.payload;
-                if (Array.isArray(list)) {
-                    setConnectedPlayers(list);
-                }
+                if (Array.isArray(list)) setConnectedPlayers(list);
             } else if (msg.type === 'PLAYER_LEFT') {
                 if (mqttInstance.isHost) {
                     setConnectedPlayers(prev => {
@@ -81,10 +95,11 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                         mqttInstance.broadcast('PLAYER_LIST', { list: next });
                         return next;
                     });
+                    showNotification(`${msg.senderName} 离开了房间`, 'info');
                 }
             } else if (msg.type === 'ROOM_CLOSED') {
                 if (!mqttInstance.isHost) {
-                    alert('房间已关闭或你被踢出');
+                    showNotification('房间已关闭或你被移出', 'error');
                     disconnectLocal();
                     setManagerOpen(false);
                 }
@@ -113,18 +128,37 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const createRoom = useCallback((name: string, rid: string) => {
         setMyName(name);
         setCommState('WAITING');
+        setConnectionError(null);
         mqttInstance.init(name, rid || null, true);
-    }, []);
+        showNotification('正在创建房间...', 'info');
+    }, [showNotification]);
 
     const joinRoom = useCallback((name: string, rid: string, charInfo?: any) => {
         if (!rid) return;
         setMyName(name);
         setCommState('WAITING');
+        setConnectionError(null);
         mqttInstance.init(name, rid, false);
+
+        // JOIN_REQUEST Timeout logic
+        const timeoutId = setTimeout(() => {
+            setCommState(prev => {
+                if (prev === 'WAITING') {
+                    setConnectionError('加入超时：未检测到目标房间或房主繁忙');
+                    showNotification('加入超时，请确认房间 ID 是否正确', 'error');
+                    disconnectLocal();
+                    return 'DISCONNECTED';
+                }
+                return prev;
+            });
+        }, 10000);
+
         setTimeout(() => {
             mqttInstance.sendToHost('JOIN_REQUEST', charInfo);
-        }, 500);
-    }, []);
+        }, 800);
+
+        return () => clearTimeout(timeoutId);
+    }, [disconnectLocal, showNotification]);
 
     const acceptPlayer = useCallback((pId: string) => {
         setPendingPlayers(prevPending => {
@@ -183,8 +217,9 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const value = {
         commState, roomId, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, myName, myId: mqttInstance.myId,
-        isManagerOpen, setManagerOpen,
-        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, addLocalRoll, clearHistory
+        isManagerOpen, setManagerOpen, connectionError, latestNotification,
+        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, clearHistory,
+        setConnectionError, showNotification
     };
 
     return <MqttContext.Provider value={value}>{children}</MqttContext.Provider>;
