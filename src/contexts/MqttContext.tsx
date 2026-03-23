@@ -91,7 +91,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             } else if (msg.type === 'DICE_ROLL') {
                 const rollData = { ...msg.payload, userName: msg.senderName, timestamp: msg.timestamp };
                 setLatestRoll(rollData);
-                setDiceHistory(prev => [rollData, ...prev]);
+                setDiceHistory(prev => [...prev, rollData]);
             }
         });
 
@@ -173,7 +173,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const addLocalRoll = useCallback((payload: any) => {
         const data = { ...payload, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
         setLatestRoll(data);
-        setDiceHistory(prev => [data, ...prev]);
+        setDiceHistory(prev => [...prev, data]);
         if (commState === 'CONNECTED') {
             mqttInstance.broadcast('DICE_ROLL', payload);
         }

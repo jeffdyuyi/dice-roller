@@ -82,10 +82,10 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                     <div className="flex flex-col items-end shrink-0">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Total Result</span>
                         <div className={`text-[4.5rem] font-black leading-none drop-shadow-md transition-transform group-hover:scale-110 group-active:scale-95 ${roll.tag?.color.includes('green') || roll.tag?.color.includes('emerald') ? 'text-emerald-500' :
-                                roll.tag?.color.includes('red') ? 'text-red-500' :
-                                    roll.tag?.color.includes('orange') ? 'text-orange-500' :
-                                        roll.tag?.color.includes('purple') ? 'text-purple-600' :
-                                            'text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 to-purple-800'
+                            roll.tag?.color.includes('red') ? 'text-red-500' :
+                                roll.tag?.color.includes('orange') ? 'text-orange-500' :
+                                    roll.tag?.color.includes('purple') ? 'text-purple-600' :
+                                        'text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 to-purple-800'
                             }`}>
                             {roll.total}
                         </div>
@@ -113,7 +113,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         <p className="text-sm font-black tracking-[0.5em] uppercase opacity-30 mt-8">等待时空共鸣 Initializing...</p>
                     </div>
                 ) : (
-                    diceHistory.map((roll, idx) => renderRollCard(roll, idx))
+                    diceHistory.map((roll, idx) => renderRollCard(roll, idx, idx === diceHistory.length - 1))
                 )}
             </div>
 
@@ -122,11 +122,11 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                 <div className="p-8 bg-white/90 backdrop-blur-2xl border-t border-indigo-100 shadow-[0_-20px_50px_rgba(0,0,0,0.08)] relative z-20 animate-in slide-in-from-bottom-6 duration-500 ease-out">
                     <div className="max-w-4xl mx-auto flex items-center gap-10">
                         <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center shadow-2xl relative overflow-hidden transition-all duration-500 hover:scale-110 active:scale-95 ${latestRoll.tag?.color.includes('emerald') ? 'bg-emerald-500 shadow-emerald-200' :
-                                latestRoll.tag?.color.includes('green') ? 'bg-green-500 shadow-green-200' :
-                                    latestRoll.tag?.color.includes('red') ? 'bg-red-500 shadow-red-200' :
-                                        latestRoll.tag?.color.includes('orange') ? 'bg-orange-500 shadow-orange-200' :
-                                            latestRoll.tag?.color.includes('purple') ? 'bg-purple-600 shadow-purple-200' :
-                                                'bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 shadow-indigo-100'
+                            latestRoll.tag?.color.includes('green') ? 'bg-green-500 shadow-green-200' :
+                                latestRoll.tag?.color.includes('red') ? 'bg-red-500 shadow-red-200' :
+                                    latestRoll.tag?.color.includes('orange') ? 'bg-orange-500 shadow-orange-200' :
+                                        latestRoll.tag?.color.includes('purple') ? 'bg-purple-600 shadow-purple-200' :
+                                            'bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 shadow-indigo-100'
                             }`}>
                             <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-1000"></div>
                             <span className="text-7xl font-black text-white relative z-10 drop-shadow-lg">{latestRoll.total}</span>
