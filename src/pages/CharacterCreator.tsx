@@ -15,8 +15,8 @@ export function CharacterCreator() {
 
     if (!isLoggedIn || !user) {
         return (
-            <div className="flex justify-center items-center h-full text-slate-500 bg-[#fdf8f4]">
-                <h2>未登录，无法进行档案录入。</h2>
+            <div className="flex justify-center items-center h-full text-[#6b6250] bg-[#0c0c10]">
+                <h2 className="text-xl font-black uppercase tracking-widest opacity-50">未登录，无法进行档案录入。</h2>
             </div>
         );
     }
@@ -51,80 +51,86 @@ export function CharacterCreator() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row w-full h-full bg-[#fdf8f4]">
+        <div className="flex flex-col lg:flex-row w-full h-full bg-[#0c0c10] text-[#f0ead8] relative">
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 w-[60vw] h-[60vw] bg-amber-900/5 rounded-full blur-[140px] -mr-[30vw] -mt-[30vw] pointer-events-none"></div>
+
             {/* Form Section */}
-            <div className="w-full lg:w-3/5 p-6 md:p-10 bg-white shadow-2xl z-10 overflow-y-auto custom-scrollbar">
-                <div className="flex justify-between items-center mb-10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
-                            <i className="fa-solid fa-wand-magic-sparkles text-xl"></i>
+            <div className="w-full lg:w-3/5 p-6 md:p-12 bg-[#18182a]/95 border-r border-[#bf953f]/10 shadow-[20px_0_100px_rgba(0,0,0,0.6)] z-10 overflow-y-auto custom-scrollbar relative">
+                {/* Noise Texture */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+
+                <div className="flex justify-between items-center mb-16 relative z-10">
+                    <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#bf953f] to-[#aa771c] text-[#0c0c10] rounded-xl flex items-center justify-center shadow-xl shadow-black/40">
+                            <i className="fa-solid fa-wand-magic-sparkles text-2xl"></i>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black text-slate-800">档案录入</h1>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Archive Record Entry</p>
+                            <h1 className="text-3xl font-black golden-text tracking-widest uppercase">档案塑造 Grimoire Entry</h1>
+                            <p className="text-[11px] font-black text-[#6b6250] uppercase tracking-[0.4em] mt-1">灵魂与属性的炼金记录</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-12 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div>
-                            <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-tight">TRPG 核心规则</label>
+                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域核心规则 Core Rules</label>
                             <div className="relative group">
-                                <select value={ruleSystem} onChange={e => { setRuleSystem(e.target.value); setCharData({}); }} className="w-full bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 rounded-2xl px-5 py-3 text-slate-800 font-bold transition-all outline-none appearance-none">
+                                <select value={ruleSystem} onChange={e => { setRuleSystem(e.target.value); setCharData({}); }} className="w-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/60 rounded-xl px-6 py-4 text-[#f0ead8] font-black transition-all outline-none appearance-none hover:bg-[#25253a] shadow-inner">
                                     {Object.values(ruleRegistry).map(r => (
-                                        <option key={r.id} value={r.id}>{r.displayName}</option>
+                                        <option key={r.id} value={r.id} className="bg-[#18182a]">{r.displayName}</option>
                                     ))}
                                 </select>
-                                <i className="fa-solid fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors"></i>
+                                <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-[#6b6250] pointer-events-none group-hover:text-[#bf953f] transition-colors"></i>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-tight">角色姓名</label>
-                            <input type="text" value={charName} onChange={e => setCharName(e.target.value)} className="w-full bg-slate-50 border-2 border-slate-100 focus:border-indigo-500 rounded-2xl px-5 py-3 text-slate-800 font-black text-lg transition-all outline-none" placeholder="输入您的冒险者代号..." />
+                            <label className="block text-[10px] font-black text-[#6b6250] mb-3 uppercase tracking-[0.3em]">领域代号 Character Name</label>
+                            <input type="text" value={charName} onChange={e => setCharName(e.target.value)} className="w-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/60 rounded-xl px-6 py-4 text-[#bf953f] font-black text-xl transition-all outline-none placeholder-[#6b6250]/40 shadow-inner hover:bg-[#25253a]" placeholder="输入您的冒险者代号..." />
                         </div>
                     </div>
 
-                    <div className="pt-10 border-t border-slate-50">
-                        <div className="flex items-center gap-2 mb-8">
-                            <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
-                            <h2 className="text-sm font-black text-slate-700 uppercase tracking-widest">{engine?.displayName} 模组专用字段</h2>
+                    <div className="pt-12 border-t border-[#bf953f]/10">
+                        <div className="flex items-center gap-4 mb-10">
+                            <div className="w-2.5 h-8 bg-[#bf953f] rounded-full shadow-[0_0_15px_rgba(191,149,63,0.6)]"></div>
+                            <h2 className="text-sm font-black text-[#f0ead8] uppercase tracking-[0.5em]">{engine?.displayName} 模组子档案</h2>
                         </div>
-                        <div className="bg-slate-50/50 p-6 rounded-[2rem] border-2 border-slate-100">
+                        <div className="bg-[#141420]/60 p-10 rounded-xl border border-[#bf953f]/10 shadow-2xl">
                             {CreatorComp ? (
                                 <CreatorComp data={charData} onChange={setCharData} />
                             ) : (
-                                <div className="text-slate-500 italic p-10 text-center text-xs">此处为空，该规则尚未定义车卡子组件。</div>
+                                <div className="text-[#6b6250] italic p-16 text-center text-[11px] font-black uppercase tracking-widest opacity-40">此处之扉尚未刻印，该规则缺失塑造界面。</div>
                             )}
                         </div>
                     </div>
 
-                    <div className="pt-8 flex justify-end">
-                        <button onClick={handleSave} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-4 px-12 rounded-[2rem] shadow-2xl shadow-indigo-200 transition-all active:scale-95 flex items-center gap-3">
-                            <i className="fa-solid fa-cloud-arrow-up"></i>
-                            确认并提交云端
+                    <div className="pt-12 flex justify-end">
+                        <button onClick={handleSave} className="bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-5 px-16 rounded-xl shadow-2xl shadow-black/80 transition-all active:scale-95 flex items-center gap-4 uppercase tracking-[0.2em] text-sm">
+                            <i className="fa-solid fa-scroll text-lg opacity-60"></i>
+                            刻印并同步至云端
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Preview Section */}
-            <div className="w-full lg:w-2/5 p-10 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="w-full lg:w-2/5 p-12 flex flex-col items-center justify-center relative overflow-hidden bg-[#0c0c10]">
                 {/* Background Decoration */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white opacity-40 rounded-full blur-3xl"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-900/5 rounded-full blur-[160px] pointer-events-none"></div>
 
                 <div className="relative z-10 w-full max-w-sm flex flex-col">
-                    <div className="flex items-center gap-2 mb-6 self-start">
-                        <i className="fa-solid fa-eye text-orange-500 text-xs shadow-glow-orange"></i>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">档案实时预览</span>
+                    <div className="flex items-center gap-3 mb-8 self-start bg-[#1e1e30] border border-[#bf953f]/20 px-4 py-2 rounded-lg shadow-xl shadow-black/40">
+                        <i className="fa-solid fa-eye text-[#bf953f] text-xs animate-pulse"></i>
+                        <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.4em]">档案实时观测 Preview</span>
                     </div>
 
-                    <div className="transform hover:rotate-1 transition-transform duration-500">
+                    <div className="transform hover:rotate-2 transition-all duration-700">
                         {CardComp && <CardComp data={{ ...charData, name: charName }} />}
-                        {!charName && <div className="text-center mt-4 p-12 bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-200 rounded-[2rem] text-[11px] text-slate-400 font-bold italic leading-relaxed">
-                            <i className="fa-solid fa-signature text-3xl block mb-3 opacity-30"></i>
-                            请先输入姓名以在此处<br />查看档案实时回写预览
+                        {!charName && <div className="text-center mt-6 p-16 bg-[#141420]/80 backdrop-blur-3xl border-2 border-dashed border-[#bf953f]/20 rounded-xl text-[12px] text-[#6b6250] font-black uppercase tracking-widest leading-relaxed shadow-2xl">
+                            <i className="fa-solid fa-fingerprint text-5xl block mb-6 opacity-20 text-[#bf953f] animate-pulse"></i>
+                            请先刻印姓名<br />以便显现档案预览
                         </div>}
                     </div>
                 </div>

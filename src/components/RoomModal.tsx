@@ -93,7 +93,7 @@ export function RoomModal({
                                 <label className="flex items-center gap-4 cursor-pointer group">
                                     <div className="relative">
                                         <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="peer sr-only" />
-                                        <div className="w-12 h-7 bg-white/10 rounded-full peer-checked:bg-amber-600 transition-all border border-white/5 shadow-inner"></div>
+                                        <div className="w-12 h-7 bg-white/10 rounded-full peer-checked:bg-[#bf953f] transition-all border border-white/5 shadow-inner"></div>
                                         <div className="absolute left-1.5 top-1.5 w-4 h-4 bg-slate-400 rounded-full transition-transform peer-checked:translate-x-5 peer-checked:bg-white shadow-md"></div>
                                     </div>
                                     <span className="text-xs font-black text-slate-400 group-hover:text-slate-200 transition-colors">以访客身份加入 (无角色卡导入)</span>
@@ -122,7 +122,7 @@ export function RoomModal({
 
                             <div className="flex gap-4 pt-4">
                                 <button onClick={() => createRoom(inputName, inputRoomId)} className="flex-1 bg-white/5 border border-white/10 hover:border-amber-500/50 hover:text-amber-500 text-slate-400 font-black py-5 rounded-2xl transition-all active:scale-95">创建时空</button>
-                                <button onClick={handleJoin} className="flex-1 bg-amber-600 hover:bg-amber-500 text-black font-black py-5 rounded-2xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30">建立联接</button>
+                                <button onClick={handleJoin} className="flex-1 bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-5 rounded-2xl transition-all active:scale-95 shadow-2xl shadow-amber-900/30">建立联接</button>
                             </div>
                         </div>
                     )}
