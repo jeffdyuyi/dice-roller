@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { DICE_TYPES, type DiceType, rollStandardDice, parseAndRollFormula, rollDaggerheart } from '../lib/diceCore';
+import { useState } from 'react';
+import { DICE_TYPES, rollStandardDice, parseAndRollFormula, rollDaggerheart } from '../lib/diceCore';
 import { useMqttContext } from '../contexts/MqttContext';
 
 interface SidebarProps {
@@ -16,14 +16,6 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
     const [customSides, setCustomSides] = useState(50);
     const [formulaText, setFormulaText] = useState('');
     const [dhMod, setDhMod] = useState(0);
-
-    const diceGroups = useMemo(() => {
-        const groups: Record<string, DiceType[]> = {
-            '常用/Core': ['d20', 'd6', 'd100'],
-            '进阶/Special': ['d4', 'd8', 'd10', 'd12']
-        };
-        return groups;
-    }, []);
 
     const handleStandardRoll = (sides: number) => {
         const result = rollStandardDice(diceCount, sides, diceMod);
@@ -138,37 +130,23 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
                             </div>
                         </div>
 
-                        {/* Dice Grids */}
-                        {Object.entries(diceGroups).map(([groupName, dices]) => (
-                            <div key={groupName} className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1 h-3.5 bg-indigo-600 rounded-full"></div>
-                                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{groupName}</h3>
-                                    </div>
-                                    <div className="h-px flex-1 bg-slate-100 ml-4"></div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4">
-                                    {dices.map(type => (
-                                        <button
-                                            key={type}
-                                            onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
-                                            className={`group relative aspect-square rounded-[2rem] flex flex-col items-center justify-center transition-all active:scale-90 shadow-lg border-2 border-transparent overflow-hidden ${type === 'd20'
-                                                ? 'bg-slate-50 border-indigo-200 text-slate-900 shadow-indigo-100'
-                                                : 'bg-white border-slate-100 text-slate-900 hover:border-indigo-600 shadow-slate-100'
-                                                }`}
-                                        >
-                                            {/* Sparkle effect on d20 */}
-                                            {type === 'd20' && (
-                                                <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/10 blur-xl -mr-4 -mt-4 group-hover:bg-indigo-500/20 transition-all"></div>
-                                            )}
-                                            <i className={`fa-solid ${DICE_TYPES[type].icon} ${type === 'd20' ? 'text-4xl' : 'text-2xl'} mb-1.5 drop-shadow-sm group-hover:translate-y-[-2px] transition-transform text-slate-900`}></i>
-                                            <span className={`text-[10px] font-black tracking-widest uppercase ${type === 'd20' ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-400'}`}>{type}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                        {/* Dice Grid */}
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-5">
+                                {(['d20', 'd6', 'd100', 'd4', 'd8', 'd10', 'd12'] as const).map(type => (
+                                    <button
+                                        key={type}
+                                        onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
+                                        className={`group relative aspect-square rounded-[2rem] flex items-center justify-center transition-all active:scale-95 shadow-md border-[3px] overflow-hidden ${type === 'd20'
+                                            ? 'bg-slate-50 border-indigo-600 text-indigo-600 shadow-indigo-50'
+                                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-400 hover:text-indigo-600'
+                                            }`}
+                                    >
+                                        <span className="text-sm font-black tracking-widest uppercase">{type}</span>
+                                    </button>
+                                ))}
                             </div>
-                        ))}
+                        </div>
 
                         {/* Custom Sides */}
                         <div className="pt-6 border-t-2 border-dashed border-slate-100 space-y-3">
