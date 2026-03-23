@@ -3,11 +3,13 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
+import { RoomModal } from '../components/RoomModal';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
     const { commState, setManagerOpen, roomId } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
+    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const navigate = useNavigate();
 
     return (
@@ -25,17 +27,30 @@ export function Layout() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-xs font-black text-slate-800 leading-none">成都秘密基地</span>
-                            <span className="text-[8px] font-bold text-orange-500 uppercase tracking-tighter mt-0.5">Dice Roller</span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[8px] font-bold text-orange-500 uppercase tracking-tighter">Dice Roller</span>
+                                <span className="text-[7px] font-black text-amber-600/40 uppercase tracking-widest px-1.5 py-0.5 bg-amber-50 rounded-md">v2.5 Stable</span>
+                            </div>
                         </div>
                     </button>
 
-                    <nav className="flex gap-1">
+                    <nav className="flex gap-2">
                         <Link to="/" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-all group">
                             <div className="w-6 h-6 bg-amber-100 text-amber-600 rounded-md flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
                                 <i className="fa-solid fa-dice-d20 text-[10px]"></i>
                             </div>
-                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">联机骰子</span>
+                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">骰子</span>
                         </Link>
+
+                        {commState !== 'CONNECTED' && (
+                            <button
+                                onClick={() => setIsRoomModalOpen(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white transition-all group shadow-sm border border-orange-100"
+                            >
+                                <i className="fa-solid fa-network-wired text-[10px]"></i>
+                                <span className="text-[10px] font-black uppercase tracking-tight">建立时空联结</span>
+                            </button>
+                        )}
                         {isLoggedIn && (
                             <Link to="/characters" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-amber-50 transition-all group">
                                 <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-md flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
@@ -162,6 +177,12 @@ export function Layout() {
 
             {/* Room Management Drawer */}
             <RoomManagerDrawer />
+
+            {/* Global Room Modal */}
+            <RoomModal
+                isOpen={isRoomModalOpen}
+                onClose={() => setIsRoomModalOpen(false)}
+            />
         </div>
     );
 }

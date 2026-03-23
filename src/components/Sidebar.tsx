@@ -1,15 +1,11 @@
 import { useState } from 'react';
 import { DICE_TYPES, rollStandardDice, parseAndRollFormula, rollDaggerheart } from '../lib/diceCore';
-import { useMqttContext } from '../contexts/MqttContext';
 
 interface SidebarProps {
     onRoll: (rollData: any) => void;
-    onOpenRoom: () => void;
-    commState: string;
 }
 
-export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
-    const { setManagerOpen } = useMqttContext();
+export function Sidebar({ onRoll }: SidebarProps) {
     const [activeTab, setActiveTab] = useState<'standard' | 'formula' | 'daggerheart'>('standard');
     const [diceCount, setDiceCount] = useState(1);
     const [diceMod, setDiceMod] = useState(0);
@@ -55,28 +51,6 @@ export function Sidebar({ onRoll, onOpenRoom, commState }: SidebarProps) {
             {/* Background Decor */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-amber-50/60 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-50/40 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
-
-            {/* Top Bar: Connection & Version */}
-            <div className="p-3 border-b border-amber-50 relative z-10 shrink-0 bg-white/40 backdrop-blur-md">
-                <button
-                    onClick={commState === 'CONNECTED' ? () => setManagerOpen(true) : onOpenRoom}
-                    className={`w-full group relative overflow-hidden py-2.5 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95 border-2 mb-2 ${commState === 'CONNECTED'
-                        ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white border-amber-400 shadow-lg shadow-orange-100'
-                        : 'bg-white border-amber-100 text-amber-500 hover:border-amber-500 hover:bg-amber-50/50'
-                        }`}
-                >
-                    <div className="flex items-center gap-2 relative">
-                        <i className={`fa-solid ${commState === 'CONNECTED' ? 'fa-tower-broadcast' : 'fa-network-wired'} text-[10px]`}></i>
-                        <span className="text-[10px] font-black uppercase tracking-[0.1em]">{commState === 'CONNECTED' ? '时空接入管理' : '建立时空联结'}</span>
-                    </div>
-                </button>
-
-                <div className="flex items-center justify-center gap-2 opacity-40">
-                    <div className="w-0.5 h-0.5 bg-amber-400 rounded-full"></div>
-                    <div className="text-[8px] font-black text-amber-600 tracking-[0.3em] uppercase">Engine v2.5 Stable</div>
-                    <div className="w-0.5 h-0.5 bg-amber-400 rounded-full"></div>
-                </div>
-            </div>
 
             {/* Compact Tabs */}
             <div className="flex bg-amber-50/30 border-b border-amber-50 shrink-0 p-1 gap-1">
