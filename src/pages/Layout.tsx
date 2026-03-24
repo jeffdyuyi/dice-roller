@@ -4,13 +4,24 @@ import { useAuth } from '../features/auth/useAuth';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 import { RoomModal } from '../components/RoomModal';
+import { LockScreen } from '../components/LockScreen';
 
 export function Layout() {
     const { user, isLoggedIn, login, logout } = useAuth();
     const { commState, roomId, roomName, latestNotification, setManagerOpen } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+    const [isLocked, setIsLocked] = useState(() => !sessionStorage.getItem('app_unlocked'));
     const navigate = useNavigate();
+
+    const handleUnlock = () => {
+        sessionStorage.setItem('app_unlocked', 'true');
+        setIsLocked(false);
+    };
+
+    if (isLocked) {
+        return <LockScreen onUnlock={handleUnlock} />;
+    }
 
     return (
         <div className="min-h-screen bg-[#0c0c10] flex flex-col font-sans antialiased text-[#f0ead8] h-screen overflow-hidden relative">
