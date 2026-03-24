@@ -2,7 +2,7 @@ import { useMqttContext } from '../contexts/MqttContext';
 
 export function RoomManagerDrawer() {
     const {
-        isManagerOpen, setManagerOpen, commState, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, myId,
+        isManagerOpen, setManagerOpen, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, myId,
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom
     } = useMqttContext();
 
