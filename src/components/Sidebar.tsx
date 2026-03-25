@@ -12,9 +12,11 @@ export function Sidebar({ onRoll }: SidebarProps) {
     const [customSides, setCustomSides] = useState(50);
     const [formulaText, setFormulaText] = useState('');
     const [dhMod, setDhMod] = useState(0);
+    const [standardAdv, setStandardAdv] = useState<'none' | 'advantage' | 'disadvantage'>('none');
+    const [dhAdv, setDhAdv] = useState<'none' | 'advantage' | 'disadvantage'>('none');
 
     const handleStandardRoll = (sides: number) => {
-        const result = rollStandardDice(diceCount, sides, diceMod);
+        const result = rollStandardDice(diceCount, sides, diceMod, standardAdv);
         onRoll(result);
     };
 
@@ -28,7 +30,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
     };
 
     const handleDhRoll = () => {
-        const result = rollDaggerheart(dhMod);
+        const result = rollDaggerheart(dhMod, dhAdv);
         onRoll(result);
     };
 
@@ -89,6 +91,31 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                     <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-[#f0ead8] outline-none text-sm" />
                                     <button onClick={() => adjustValue(setDiceMod, 1)} className="w-10 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-plus text-[10px]"></i></button>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Advantage/Disadvantage Toggle */}
+                        <div className="space-y-2.5 pt-2">
+                            <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">
+                                <i className="fa-solid fa-layer-group text-[#bf953f]"></i> 优势 / 劣势
+                            </label>
+                            <div className="flex bg-[#1e1e30] p-1 rounded-xl border border-[#bf953f]/10 shadow-inner">
+                                {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setStandardAdv(type)}
+                                        className={`flex-1 py-2 text-[10px] font-black rounded-lg transition-all ${standardAdv === type
+                                            ? type === 'advantage'
+                                                ? 'bg-emerald-600 text-white shadow-lg'
+                                                : type === 'disadvantage'
+                                                    ? 'bg-rose-600 text-white shadow-lg'
+                                                    : 'bg-[#bf953f] text-[#0c0c10] shadow-lg'
+                                            : 'text-[#6b6250] hover:text-[#a89b7a] hover:bg-white/5'
+                                            }`}
+                                    >
+                                        {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
@@ -200,6 +227,27 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-black text-[#f0ead8] outline-none text-xl" />
                                 <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-[#6b6250] hover:text-[#f0ead8] transition-colors hover:bg-white/5"><i className="fa-solid fa-plus"></i></button>
                             </div>
+
+                            {/* Daggerheart Advantage Toggle */}
+                            <div className="flex bg-[#1e1e30] p-1 rounded-xl border border-[#bf953f]/10 shadow-inner mx-2">
+                                {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setDhAdv(type)}
+                                        className={`flex-1 py-2.5 text-[10px] font-black rounded-lg transition-all ${dhAdv === type
+                                            ? type === 'advantage'
+                                                ? 'bg-emerald-600 text-white shadow-lg'
+                                                : type === 'disadvantage'
+                                                    ? 'bg-rose-600 text-white shadow-lg'
+                                                    : 'bg-[#bf953f] text-[#0c0c10] shadow-lg'
+                                            : 'text-[#6b6250] hover:text-[#a89b7a] hover:bg-white/5'
+                                            }`}
+                                    >
+                                        {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
+                                    </button>
+                                ))}
+                            </div>
+
                             <button onClick={handleDhRoll} className="w-full bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-4 rounded-xl shadow-2xl shadow-black/60 active:scale-95 transition-all flex items-center justify-center gap-4">
                                 <i className="fa-solid fa-shield-heart text-[#0c0c10]/50 text-xl"></i>
                                 <span className="text-[13px] uppercase tracking-[0.4em]">结 果 判 定</span>

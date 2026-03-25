@@ -69,6 +69,15 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                                     <i className="fa-solid fa-moon text-indigo-400 text-base"></i>
                                     <span className="text-xl font-black text-indigo-400 font-mono">{roll.fear}</span>
                                 </div>
+                                {roll.advDice && (
+                                    <>
+                                        <div className="text-[12px] font-black text-[#6b6250] italic tracking-[0.3em]">{roll.advType === 'advantage' ? '+' : '-'}</div>
+                                        <div className={`flex items-center gap-4 border rounded-xl px-5 py-3 shadow-xl transition-all ${roll.advType === 'advantage' ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' : 'bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10'}`}>
+                                            <i className={`fa-solid fa-dice-d6 ${roll.advType === 'advantage' ? 'text-emerald-400' : 'text-rose-400'} text-base`}></i>
+                                            <span className={`text-xl font-black ${roll.advType === 'advantage' ? 'text-emerald-400' : 'text-rose-400'} font-mono`}>{roll.advDice}</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ) : (
                             <div className="text-[15px] font-bold text-[#a89b7a] font-mono bg-[#0c0c10]/40 px-6 py-4 rounded-xl border border-[#bf953f]/5 break-all leading-relaxed shadow-inner group-hover:border-[#bf953f]/10 transition-colors">
