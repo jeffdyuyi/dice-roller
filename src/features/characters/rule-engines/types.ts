@@ -24,6 +24,11 @@ export interface CardProps {
     compact?: boolean;
 }
 
+export interface HostInspectorProps {
+    data: Record<string, any>;
+    onChange: (newData: Record<string, any>) => void;
+}
+
 export interface AdjustFieldDef {
     id: string;
     label: string;
@@ -35,6 +40,6 @@ export interface RuleEngine {
     displayName: string;
     CreatorComponent: React.ComponentType<CreatorProps>;
     CardComponent: React.ComponentType<CardProps>;
-    adjustableFields: AdjustFieldDef[];
+    HostInspectorComponent?: React.ComponentType<HostInspectorProps>;
     validateData: (data: Record<string, any>) => boolean;
 }

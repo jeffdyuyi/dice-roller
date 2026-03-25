@@ -1,4 +1,6 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { useMqttContext } from '../contexts/MqttContext';
+import { CharacterInspector } from './CharacterInspector';
 
 interface MainAreaProps {
     latestRoll: any;
@@ -7,6 +9,8 @@ interface MainAreaProps {
 
 export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { activeCharacter, myId } = useMqttContext();
+    const [isInspectingSelf, setInspectingSelf] = useState(false);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -156,6 +160,52 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Active Character HUD */}
+            {activeCharacter && (
+                <div className="absolute top-6 left-6 z-[30] animate-in slide-in-from-left-10 duration-700">
+                    <div className="group relative flex items-center gap-4 bg-[#141420]/60 backdrop-blur-3xl border border-[#bf953f]/30 rounded-2xl p-1.5 pr-6 shadow-2xl hover:bg-[#1e1e30]/80 transition-all cursor-pointer"
+                        onClick={() => setInspectingSelf(true)}>
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#bf953f] to-[#aa771c] shadow-lg flex items-center justify-center text-[#0c0c10] overflow-hidden">
+                            {activeCharacter.avatarUrl ? (
+                                <img src={activeCharacter.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <i className="fa-solid fa-user-shield text-xl"></i>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col">
+                            <span className="text-xs font-black text-[#f0ead8] tracking-tight truncate max-w-[120px]">{activeCharacter.name}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[8px] font-black text-[#6b6250] uppercase tracking-widest">{activeCharacter.characterData.class || '冒险者'}</span>
+                                {activeCharacter.characterData.hp && (
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-red-500 to-rose-500 transition-all duration-500"
+                                                style={{ width: `${(activeCharacter.characterData.hp.current / activeCharacter.characterData.hp.max) * 100}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-[8px] font-black text-red-500/80">{activeCharacter.characterData.hp.current}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Hover Tooltip */}
+                        <div className="absolute -bottom-8 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap">
+                            <span className="text-[7px] font-black text-[#bf953f] uppercase tracking-[0.2em] bg-black/80 px-2 py-1 rounded-md border border-[#bf953f]/20 shadow-xl">点击查看详细资料</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isInspectingSelf && myId && (
+                <CharacterInspector
+                    playerId={myId}
+                    onClose={() => setInspectingSelf(false)}
+                />
             )}
         </main>
     );

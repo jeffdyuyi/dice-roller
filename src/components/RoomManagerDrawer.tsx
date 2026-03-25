@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useMqttContext } from '../contexts/MqttContext';
+import { CharacterInspector } from './CharacterInspector';
 
 export function RoomManagerDrawer() {
     const {
         isManagerOpen, setManagerOpen, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, myId,
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom
     } = useMqttContext();
+
+    const [inspectingPlayerId, setInspectingPlayerId] = useState<string | null>(null);
 
     if (!isManagerOpen) return null;
 
@@ -126,14 +130,25 @@ export function RoomManagerDrawer() {
                                             {p.isHost && <div className="text-[7px] font-black text-[#bf953f] uppercase tracking-widest mt-0.5">房主 HOST</div>}
                                         </div>
                                     </div>
-                                    {isHost && p.id !== myId && (
-                                        <button
-                                            onClick={() => kickPlayer(p.id)}
-                                            className="w-8 h-8 text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-red-500/10 rounded-lg"
-                                        >
-                                            <i className="fa-solid fa-user-minus"></i>
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-1">
+                                        {(p.characterData || p.id === myId) && (
+                                            <button
+                                                onClick={() => setInspectingPlayerId(p.id)}
+                                                className="w-8 h-8 text-slate-500 hover:text-amber-500 transition-all flex items-center justify-center hover:bg-amber-500/10 rounded-lg"
+                                                title={isHost ? "管理角色卡" : "查看角色卡"}
+                                            >
+                                                <i className="fa-solid fa-user-pen text-xs"></i>
+                                            </button>
+                                        )}
+                                        {isHost && p.id !== myId && (
+                                            <button
+                                                onClick={() => kickPlayer(p.id)}
+                                                className="w-8 h-8 text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-red-500/10 rounded-lg"
+                                            >
+                                                <i className="fa-solid fa-user-minus"></i>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -150,6 +165,13 @@ export function RoomManagerDrawer() {
                     </button>
                 </div>
             </div>
+
+            {inspectingPlayerId && (
+                <CharacterInspector
+                    playerId={inspectingPlayerId}
+                    onClose={() => setInspectingPlayerId(null)}
+                />
+            )}
         </div>
     );
 }
