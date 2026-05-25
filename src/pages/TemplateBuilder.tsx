@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { CharacterTemplate, SheetModule, ModuleType } from '../features/template-builder/types';
-import { v4 as uuidv4 } from 'uuid';
 
 export function TemplateBuilder() {
     const [template, setTemplate] = useState<CharacterTemplate>({
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         name: '未命名模板',
         description: '',
         author: '系统',
@@ -45,7 +44,7 @@ export function TemplateBuilder() {
                 newModule = { id: baseId, type, label: '新特性区' };
                 break;
             case 'inventory':
-                newModule = { id: baseId, type, label: '新行囊', itemFields: [{ id: uuidv4(), name: '名称', valueType: 'text' }] };
+                newModule = { id: baseId, type, label: '新行囊', itemFields: [{ id: crypto.randomUUID(), name: '名称', valueType: 'text' }] };
                 break;
             case 'memo':
                 newModule = { id: baseId, type, label: '新记录区' };
@@ -120,7 +119,7 @@ export function TemplateBuilder() {
                                         }} className="w-9 h-9 border border-x-border text-x-muted hover:text-white transition-colors font-mono">X</button>
                                     </div>
                                 ))}
-                                <button onClick={() => updateModule(mod.id, { fields: [...mod.fields, { id: uuidv4(), name: '新属性', valueType: 'number' }] })} className="text-[12px] font-mono tracking-xai text-x-muted hover:text-x-white transition-colors border border-dashed border-x-border px-4 py-2 w-full text-center uppercase">
+                                <button onClick={() => updateModule(mod.id, { fields: [...mod.fields, { id: crypto.randomUUID(), name: '新属性', valueType: 'number' }] })} className="text-[12px] font-mono tracking-xai text-x-muted hover:text-x-white transition-colors border border-dashed border-x-border px-4 py-2 w-full text-center uppercase">
                                     + 添加属性
                                 </button>
                             </div>
@@ -149,7 +148,7 @@ export function TemplateBuilder() {
                                         }} className="w-9 h-9 border border-x-border text-x-muted hover:text-white transition-colors font-mono">X</button>
                                     </div>
                                 ))}
-                                <button onClick={() => updateModule(mod.id, { itemFields: [...mod.itemFields, { id: uuidv4(), name: '新字段', valueType: 'text' }] })} className="text-[12px] font-mono tracking-xai text-x-muted hover:text-x-white transition-colors border border-dashed border-x-border px-4 py-2 w-full text-center uppercase">
+                                <button onClick={() => updateModule(mod.id, { itemFields: [...mod.itemFields, { id: crypto.randomUUID(), name: '新字段', valueType: 'text' }] })} className="text-[12px] font-mono tracking-xai text-x-muted hover:text-x-white transition-colors border border-dashed border-x-border px-4 py-2 w-full text-center uppercase">
                                     + 添加字段
                                 </button>
                             </div>
@@ -192,7 +191,7 @@ export function TemplateBuilder() {
                                 <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                         </select>
-                        <button onClick={() => setTemplate({ id: uuidv4(), name: '未命名模板', description: '', author: '系统', modules: [], createdAt: Date.now(), updatedAt: Date.now() })} className="text-[12px] font-mono text-x-muted hover:text-white transition-colors uppercase tracking-xai w-full text-left">
+                        <button onClick={() => setTemplate({ id: crypto.randomUUID(), name: '未命名模板', description: '', author: '系统', modules: [], createdAt: Date.now(), updatedAt: Date.now() })} className="text-[12px] font-mono text-x-muted hover:text-white transition-colors uppercase tracking-xai w-full text-left">
                             + 新建空模板
                         </button>
                     </div>
