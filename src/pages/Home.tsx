@@ -25,36 +25,36 @@ export function Home() {
                 {/* Room Connection */}
                 <button 
                     onClick={openRoomModal}
-                    className="flex-1 group flex flex-col text-left border border-x-border bg-transparent p-8 md:p-12 hover:bg-x-white hover:text-x-dark transition-all duration-300 relative overflow-hidden min-h-[160px]"
+                    className="flex-1 group flex flex-col text-left bg-[#1d1d1f] p-8 md:p-12 hover:bg-[#272729] rounded-2xl shadow-apple transition-all duration-500 ease-out relative overflow-hidden min-h-[160px] border border-white/5"
                 >
-                    <div className="absolute top-8 right-8 font-mono text-x-muted group-hover:text-x-dark/50 text-6xl opacity-20">01</div>
-                    <h2 className="text-[32px] md:text-[40px] font-sans text-x-white group-hover:text-x-dark leading-none mb-4 z-10">联机大厅</h2>
+                    <div className="absolute top-8 right-8 font-sans font-bold text-white/5 text-6xl group-hover:scale-110 transition-transform duration-500 ease-out">01</div>
+                    <h2 className="text-[32px] md:text-[40px] font-sans font-semibold tracking-tight text-white leading-none mb-4 z-10">联机大厅</h2>
                     <div className="mt-auto z-10">
-                        <span className="inline-block border border-x-border group-hover:border-x-dark px-3 py-1 text-[10px] font-mono uppercase tracking-xai group-hover:text-x-dark text-x-white">创建或加入房间</span>
+                        <span className="inline-block px-4 py-2 text-[14px] font-sans text-apple-blue bg-apple-blue/10 rounded-full group-hover:bg-apple-blue/20 transition-colors">创建或加入房间</span>
                     </div>
                 </button>
 
                 {/* Character Library */}
                 <Link 
                     to="/characters"
-                    className="flex-1 group flex flex-col text-left border border-x-border bg-transparent p-8 md:p-12 hover:bg-x-white hover:text-x-dark transition-all duration-300 relative overflow-hidden min-h-[160px]"
+                    className="flex-1 group flex flex-col text-left bg-[#1d1d1f] p-8 md:p-12 hover:bg-[#272729] rounded-2xl shadow-apple transition-all duration-500 ease-out relative overflow-hidden min-h-[160px] border border-white/5"
                 >
-                    <div className="absolute top-8 right-8 font-mono text-x-muted group-hover:text-x-dark/50 text-6xl opacity-20">02</div>
-                    <h2 className="text-[32px] md:text-[40px] font-sans text-x-white group-hover:text-x-dark leading-none mb-4 z-10">角色库</h2>
+                    <div className="absolute top-8 right-8 font-sans font-bold text-white/5 text-6xl group-hover:scale-110 transition-transform duration-500 ease-out">02</div>
+                    <h2 className="text-[32px] md:text-[40px] font-sans font-semibold tracking-tight text-white leading-none mb-4 z-10">角色库</h2>
                     <div className="mt-auto z-10">
-                        <span className="inline-block border border-x-border group-hover:border-x-dark px-3 py-1 text-[10px] font-mono uppercase tracking-xai group-hover:text-x-dark text-x-white">创建/管理/导出卡片</span>
+                        <span className="inline-block px-4 py-2 text-[14px] font-sans text-apple-blue bg-apple-blue/10 rounded-full group-hover:bg-apple-blue/20 transition-colors">创建、管理与导出卡片</span>
                     </div>
                 </Link>
 
                 {/* Template Builder */}
                 <Link 
                     to="/template-builder"
-                    className="flex-1 group flex flex-col text-left border border-x-border bg-transparent p-8 md:p-12 hover:bg-x-white hover:text-x-dark transition-all duration-300 relative overflow-hidden min-h-[160px]"
+                    className="flex-1 group flex flex-col text-left bg-[#1d1d1f] p-8 md:p-12 hover:bg-[#272729] rounded-2xl shadow-apple transition-all duration-500 ease-out relative overflow-hidden min-h-[160px] border border-white/5"
                 >
-                    <div className="absolute top-8 right-8 font-mono text-x-muted group-hover:text-x-dark/50 text-6xl opacity-20">03</div>
-                    <h2 className="text-[32px] md:text-[40px] font-sans text-x-white group-hover:text-x-dark leading-none mb-4 z-10">模板开发</h2>
+                    <div className="absolute top-8 right-8 font-sans font-bold text-white/5 text-6xl group-hover:scale-110 transition-transform duration-500 ease-out">03</div>
+                    <h2 className="text-[32px] md:text-[40px] font-sans font-semibold tracking-tight text-white leading-none mb-4 z-10">模板开发</h2>
                     <div className="mt-auto z-10">
-                        <span className="inline-block border border-x-border group-hover:border-x-dark px-3 py-1 text-[10px] font-mono uppercase tracking-xai group-hover:text-x-dark text-x-white">自定义规则与动态表单</span>
+                        <span className="inline-block px-4 py-2 text-[14px] font-sans text-apple-blue bg-apple-blue/10 rounded-full group-hover:bg-apple-blue/20 transition-colors">自定义规则与动态表单</span>
                     </div>
                 </Link>
 

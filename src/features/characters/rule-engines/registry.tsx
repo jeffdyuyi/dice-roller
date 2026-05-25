@@ -37,8 +37,8 @@ export const ruleRegistry: Record<string, RuleEngine> = {
     }
 };
 
-export function loadCharacterWithEngine(id: string) {
-    const char = getCharacter(id);
+export async function loadCharacterWithEngine(id: string) {
+    const char = await getCharacter(id);
     if (!char) return null;
     const engine = ruleRegistry[char.ruleSystem];
     if (!engine) return null;

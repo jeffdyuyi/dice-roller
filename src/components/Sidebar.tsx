@@ -134,66 +134,67 @@ export function Sidebar({ onRoll }: SidebarProps) {
     };
 
     return (
-        <aside className="w-full md:w-[320px] bg-x-dark border-r border-x-border flex flex-col h-[60%] md:h-full shrink-0 z-20 overflow-hidden relative">
-            <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
+        <aside className="w-full md:w-[320px] bg-black/60 backdrop-blur-3xl border-r border-white/5 flex flex-col h-[60%] md:h-full shrink-0 z-20 overflow-hidden relative">
+            <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 p-2">
 
                 {/* Formula Section */}
-                <div className="border-b border-x-border">
+                <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
                     <button 
                         onClick={() => toggleSection('formula')}
-                        className="w-full flex justify-between items-center p-5 hover:bg-x-surface transition-colors text-left"
+                        className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                     >
-                        <span className="text-[14px] font-sans uppercase tracking-widest text-x-white">公式</span>
-                        <span className="font-mono text-x-muted text-[16px]">{openSections.formula ? '-' : '+'}</span>
+                        <span className="text-[15px] font-sans font-semibold text-white">公式解析</span>
+                        <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.formula ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                     </button>
                     {openSections.formula && (
-                        <div className="px-5 pb-8 space-y-6 animate-in fade-in duration-300">
-                            <div className="bg-transparent border border-x-border p-6 relative">
-                                <div className="flex justify-between items-center mb-4">
-                                    <label className="text-[12px] font-mono text-x-muted uppercase tracking-xai flex items-center gap-2">
-                                        掷骰公式
+                        <div className="px-4 pb-5 space-y-4 animate-in fade-in duration-300">
+                            <div className="bg-[#2c2c2e] rounded-xl p-4 relative shadow-sm">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-[13px] font-sans font-medium text-white/60">
+                                        输入掷骰公式
                                     </label>
-                                    <button onClick={() => setFormulaText('')} className="text-x-muted hover:text-x-white transition-colors font-mono">
-                                        X
+                                    <button onClick={() => setFormulaText('')} className="text-white/40 hover:text-white transition-colors p-1 bg-white/5 hover:bg-white/10 rounded-full">
+                                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M13 1L1 13M1 1L13 13"/></svg>
                                     </button>
                                 </div>
                                 <textarea
                                     value={formulaText}
                                     onChange={e => setFormulaText(e.target.value)}
                                     rows={2}
-                                    className="w-full bg-transparent text-x-white font-mono text-[24px] focus:outline-none placeholder-x-muted resize-none leading-relaxed"
-                                    placeholder="输入公式 如 2d20 + 8"
+                                    className="w-full bg-transparent text-white font-mono text-[22px] focus:outline-none placeholder:text-white/20 resize-none leading-relaxed"
+                                    placeholder="如 2d20 + 8"
                                 />
                                 
-                                <div className="mt-8 pt-4 border-t border-x-border flex justify-between items-center">
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setIsHidden(!isHidden)}
-                                            className={`flex items-center justify-center w-6 h-6 border transition-all ${isHidden ? 'bg-x-white border-x-white' : 'bg-transparent border-x-border hover:border-x-borderStrong'}`}
-                                        >
-                                            {isHidden && <span className="text-x-dark text-[14px] leading-none">×</span>}
-                                        </button>
-                                        <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai cursor-pointer select-none" onClick={() => setIsHidden(!isHidden)}>暗骰</span>
-                                    </div>
-                                    <button onClick={handleFormulaRoll} className="bg-x-white text-x-dark px-10 py-2.5 text-[14px] font-mono uppercase tracking-xai transition-all hover:bg-white/90">执 行</button>
+                                <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <div className="relative flex items-center">
+                                            <input type="checkbox" checked={isHidden} onChange={e => setIsHidden(e.target.checked)} className="peer sr-only" />
+                                            <div className="w-10 h-5.5 bg-white/10 rounded-full peer-checked:bg-apple-blue transition-colors"></div>
+                                            <div className="absolute left-[2px] top-[2px] w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4.5"></div>
+                                        </div>
+                                        <span className="text-[13px] font-sans font-medium text-white/60 group-hover:text-white transition-colors select-none">暗骰</span>
+                                    </label>
+                                    <button onClick={handleFormulaRoll} className="bg-apple-blue text-white px-6 py-2 rounded-full text-[14px] font-sans font-medium transition-all hover:bg-apple-blue/90 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f]">执行</button>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-4 gap-2.5">
+                            <div className="grid grid-cols-4 gap-2">
                                 {/* Dice Shortcuts */}
                                 {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
-                                    <button key={d} onClick={() => insertText(d)} className="h-11 bg-transparent border border-x-border text-[14px] font-mono text-x-muted hover:bg-x-surface hover:text-x-white hover:border-x-borderStrong transition-all">{d.toUpperCase()}</button>
+                                    <button key={d} onClick={() => insertText(d)} className="h-10 bg-[#2c2c2e] hover:bg-[#3a3a3c] rounded-lg text-[14px] font-sans font-medium text-white/80 transition-all shadow-sm">{d.toUpperCase()}</button>
                                 ))}
-                                <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-transparent text-x-muted border border-x-border hover:bg-x-surface hover:text-x-white transition-all font-mono">DEL</button>
+                                <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-10 bg-white/10 hover:bg-red-500/80 rounded-lg text-white font-sans font-medium transition-all shadow-sm flex items-center justify-center">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+                                </button>
 
                                 {/* Number Pad and Operators */}
                                 {[7, 8, 9, '+', 4, 5, 6, '-', 1, 2, 3, 'd', 0].map((item, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => insertText(item.toString())}
-                                        className={`h-11 font-mono transition-all border border-x-border text-[16px] hover:border-x-borderStrong ${typeof item === 'number' || item === '0' || item === 'd'
-                                            ? 'bg-transparent text-x-white hover:bg-x-surface'
-                                            : 'bg-x-surface text-x-white hover:bg-x-borderStrong'
+                                        className={`h-10 font-sans font-medium rounded-lg transition-all shadow-sm text-[16px] ${typeof item === 'number' || item === '0' || item === 'd'
+                                            ? 'bg-[#1c1c1e] border border-white/5 text-white hover:bg-[#2c2c2e]'
+                                            : 'bg-[#2c2c2e] text-apple-blue hover:bg-[#3a3a3c]'
                                             }`}
                                     >
                                         {item}
@@ -201,7 +202,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 ))}
 
                                 {/* Execute Button in Grid */}
-                                <button onClick={handleFormulaRoll} className="col-span-3 h-11 bg-x-white text-x-dark font-mono text-[14px] tracking-xai uppercase hover:bg-white/90 transition-all flex items-center justify-center gap-3">
+                                <button onClick={handleFormulaRoll} className="col-span-3 h-10 bg-apple-blue text-white rounded-lg font-sans font-medium hover:bg-apple-blue/90 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f] transition-all shadow-sm">
                                     执 行
                                 </button>
                             </div>
@@ -210,42 +211,42 @@ export function Sidebar({ onRoll }: SidebarProps) {
                 </div>
 
                 {/* Daggerheart Section */}
-                <div className="border-b border-x-border">
+                <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
                     <button 
                         onClick={() => toggleSection('daggerheart')}
-                        className="w-full flex justify-between items-center p-5 hover:bg-x-surface transition-colors text-left"
+                        className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                     >
-                        <span className="text-[14px] font-sans uppercase tracking-widest text-x-white">二元骰</span>
-                        <span className="font-mono text-x-muted text-[16px]">{openSections.daggerheart ? '-' : '+'}</span>
+                        <span className="text-[15px] font-sans font-semibold text-white">二元系统</span>
+                        <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.daggerheart ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                     </button>
                     {openSections.daggerheart && (
-                        <div className="px-5 pb-8 flex flex-col items-center space-y-8 animate-in fade-in duration-300">
-                            <div className="flex gap-6 items-center bg-transparent p-6 border border-x-border relative w-full justify-center">
-                                <div className="flex flex-col items-center gap-3">
-                                    <span className="text-[14px] font-mono text-x-white tracking-xai uppercase">希望</span>
+                        <div className="px-4 pb-5 flex flex-col items-center space-y-5 animate-in fade-in duration-300">
+                            <div className="flex gap-6 items-center bg-[#2c2c2e] rounded-xl p-5 w-full justify-center shadow-sm">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[14px] font-sans font-medium text-white">希望</span>
                                 </div>
-                                <div className="text-x-muted font-mono text-lg">VS</div>
-                                <div className="flex flex-col items-center gap-3">
-                                    <span className="text-[14px] font-mono text-x-muted tracking-xai uppercase">恐惧</span>
+                                <div className="text-white/30 font-sans italic text-sm">VS</div>
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[14px] font-sans font-medium text-white/50">恐惧</span>
                                 </div>
                             </div>
 
-                            <div className="w-full space-y-6">
-                                <div className="flex items-center justify-center h-14 bg-transparent border border-x-border focus-within:border-x-borderStrong transition-all group">
-                                    <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono">-</button>
-                                    <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-mono text-x-white outline-none text-[20px]" />
-                                    <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono">+</button>
+                            <div className="w-full space-y-4">
+                                <div className="flex items-center justify-center h-12 bg-[#2c2c2e] rounded-xl overflow-hidden shadow-sm">
+                                    <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">-</button>
+                                    <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-full max-w-[80px] bg-transparent text-center font-sans font-medium text-white outline-none text-[20px]" />
+                                    <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">+</button>
                                 </div>
 
                                 {/* Daggerheart Advantage Toggle */}
-                                <div className="flex bg-x-surface p-1 border border-x-border">
+                                <div className="flex bg-black/30 p-1 rounded-xl">
                                     {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
                                         <button
                                             key={type}
                                             onClick={() => setDhAdv(type)}
-                                            className={`flex-1 py-2.5 text-[12px] font-mono tracking-xai uppercase transition-all ${dhAdv === type
-                                                ? 'bg-x-white text-x-dark border border-transparent'
-                                                : 'text-x-muted hover:text-x-white hover:bg-x-surface border border-transparent'
+                                            className={`flex-1 py-2 text-[13px] font-sans font-medium rounded-lg transition-all ${dhAdv === type
+                                                ? 'bg-[#3a3a3c] text-white shadow-sm'
+                                                : 'text-white/50 hover:text-white'
                                                 }`}
                                         >
                                             {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
@@ -253,8 +254,8 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                     ))}
                                 </div>
 
-                                <button onClick={handleDhRoll} className="w-full bg-x-white text-x-dark font-mono py-4 uppercase tracking-xai transition-all hover:bg-white/90">
-                                    结果判定
+                                <button onClick={handleDhRoll} className="w-full bg-apple-blue text-white rounded-full font-sans font-medium py-3 hover:bg-apple-blue/90 transition-all hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f]">
+                                    进行判定
                                 </button>
                             </div>
                         </div>
@@ -265,34 +266,36 @@ export function Sidebar({ onRoll }: SidebarProps) {
                 {commState === 'CONNECTED' && isHost && (
                     <>
                         {/* Host Stats Section */}
-                        <div className="border-b border-x-border">
+                        <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
                             <button 
                                 onClick={() => toggleSection('hostStats')}
-                                className="w-full flex justify-between items-center p-5 hover:bg-x-surface transition-colors text-left"
+                                className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                             >
-                                <span className="text-[14px] font-sans uppercase tracking-widest text-x-white">快速数值管理</span>
-                                <span className="font-mono text-x-muted text-[16px]">{openSections.hostStats ? '-' : '+'}</span>
+                                <span className="text-[15px] font-sans font-semibold text-apple-blue">快速数值管理 (DM)</span>
+                                <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.hostStats ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                             </button>
                             {openSections.hostStats && (
-                                <div className="px-5 pb-8 space-y-4 animate-in fade-in duration-300">
-                                    <div className="group">
-                                        <select value={statTargetPlayer} onChange={e => setStatTargetPlayer(e.target.value)} className="w-full bg-transparent border border-x-border px-4 py-2 text-[14px] font-mono text-x-white outline-none cursor-pointer hover:border-x-borderStrong">
-                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-x-dark">{p.name}</option>)}
+                                <div className="px-4 pb-5 space-y-3 animate-in fade-in duration-300">
+                                    <div className="relative group">
+                                        <select value={statTargetPlayer} onChange={e => setStatTargetPlayer(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-3 text-[14px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
+                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-[#1d1d1f]">{p.name}</option>)}
                                             {validPlayers.length === 0 && <option disabled value="">无存活玩家</option>}
                                         </select>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">▼</span>
                                     </div>
-                                    <div className="group">
-                                        <select value={statTargetModule} onChange={e => setStatTargetModule(e.target.value)} className="w-full bg-transparent border border-x-border px-4 py-2 text-[14px] font-mono text-x-white outline-none cursor-pointer hover:border-x-borderStrong">
-                                            {statModules.map((m: any) => <option key={m.id} value={m.id} className="bg-x-dark">{m.label}</option>)}
+                                    <div className="relative group">
+                                        <select value={statTargetModule} onChange={e => setStatTargetModule(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-3 text-[14px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
+                                            {statModules.map((m: any) => <option key={m.id} value={m.id} className="bg-[#1d1d1f]">{m.label}</option>)}
                                             {statModules.length === 0 && <option disabled value="">无数值模块</option>}
                                         </select>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">▼</span>
                                     </div>
                                     
-                                    <div className="flex items-center justify-center h-12 bg-transparent border border-x-border focus-within:border-x-borderStrong transition-all group mt-2">
+                                    <div className="flex items-center justify-center h-12 bg-[#2c2c2e] rounded-xl overflow-hidden mt-2 shadow-sm">
                                         <button 
                                             onClick={() => setStatValue(currentStatValue - 1)} 
                                             disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="w-12 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono disabled:opacity-50"
+                                            className="w-12 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg disabled:opacity-50"
                                         >
                                             -
                                         </button>
@@ -304,12 +307,12 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                                 setStatValue(isNaN(val) ? 0 : val);
                                             }}
                                             disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="flex-1 bg-transparent text-center font-mono text-x-white outline-none text-[16px] disabled:opacity-50" 
+                                            className="flex-1 bg-transparent text-center font-sans font-medium text-white outline-none text-[18px] disabled:opacity-50" 
                                         />
                                         <button 
                                             onClick={() => setStatValue(currentStatValue + 1)} 
                                             disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="w-12 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono disabled:opacity-50"
+                                            className="w-12 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg disabled:opacity-50"
                                         >
                                             +
                                         </button>
@@ -319,53 +322,54 @@ export function Sidebar({ onRoll }: SidebarProps) {
                         </div>
 
                         {/* Host Items/Memo Section */}
-                        <div className="border-b border-x-border">
+                        <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
                             <button 
                                 onClick={() => toggleSection('hostItems')}
-                                className="w-full flex justify-between items-center p-5 hover:bg-x-surface transition-colors text-left"
+                                className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                             >
-                                <span className="text-[14px] font-sans uppercase tracking-widest text-x-white">发放物品 / 记录</span>
-                                <span className="font-mono text-x-muted text-[16px]">{openSections.hostItems ? '-' : '+'}</span>
+                                <span className="text-[15px] font-sans font-semibold text-apple-blue">空投物品/记录 (DM)</span>
+                                <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.hostItems ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                             </button>
                             {openSections.hostItems && (
-                                <div className="px-5 pb-8 space-y-4 animate-in fade-in duration-300">
-                                    <div className="flex gap-2">
-                                        <select value={itemTargetPlayer} onChange={e => setItemTargetPlayer(e.target.value)} className="flex-1 bg-transparent border border-x-border px-3 py-2 text-[12px] font-mono text-x-white outline-none cursor-pointer">
-                                            <option value="all" className="bg-x-dark">发送给: 全体玩家</option>
-                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-x-dark">仅发送给: {p.name}</option>)}
+                                <div className="px-4 pb-5 space-y-3 animate-in fade-in duration-300">
+                                    <div className="relative">
+                                        <select value={itemTargetPlayer} onChange={e => setItemTargetPlayer(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-2.5 text-[13px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
+                                            <option value="all" className="bg-[#1d1d1f]">发送给: 全体玩家</option>
+                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-[#1d1d1f]">仅发送给: {p.name}</option>)}
                                         </select>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <select value={itemTargetModule} onChange={e => setItemTargetModule(e.target.value)} className="flex-1 bg-transparent border border-x-border px-3 py-2 text-[12px] font-mono text-x-white outline-none cursor-pointer">
-                                            {itemModules.map((m: any) => <option key={m.id} value={m.id} className="bg-x-dark">接收区: {m.label}</option>)}
+                                    <div className="relative">
+                                        <select value={itemTargetModule} onChange={e => setItemTargetModule(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-2.5 text-[13px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
+                                            {itemModules.map((m: any) => <option key={m.id} value={m.id} className="bg-[#1d1d1f]">接收区: {m.label}</option>)}
                                             {itemModules.length === 0 && <option disabled value="">无适用模块</option>}
                                         </select>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
                                     </div>
-                                    <div>
-                                        <div className="flex gap-1 mb-2 bg-x-surface border border-x-border p-1">
-                                            <button onClick={() => insertMarkdown('**', '**')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-sans font-bold" title="加粗">B</button>
-                                            <button onClick={() => insertMarkdown('*', '*')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-sans italic" title="斜体">I</button>
-                                            <button onClick={() => insertMarkdown('~~', '~~')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-sans line-through" title="删除线">S</button>
-                                            <div className="w-px bg-x-border mx-1 my-1"></div>
-                                            <button onClick={() => insertMarkdown('> ')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-mono" title="引用">&gt;</button>
-                                            <button onClick={() => insertMarkdown('- ')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-mono" title="列表">•</button>
-                                            <button onClick={() => insertMarkdown('`', '`')} className="w-8 h-8 flex items-center justify-center text-x-muted hover:text-x-white hover:bg-x-dark transition-colors font-mono text-[10px]" title="代码">&lt;/&gt;</button>
+                                    <div className="bg-[#2c2c2e] rounded-xl overflow-hidden shadow-sm">
+                                        <div className="flex gap-1 p-1.5 border-b border-white/5">
+                                            <button onClick={() => insertMarkdown('**', '**')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans font-bold" title="加粗">B</button>
+                                            <button onClick={() => insertMarkdown('*', '*')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans italic" title="斜体">I</button>
+                                            <button onClick={() => insertMarkdown('~~', '~~')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans line-through" title="删除线">S</button>
+                                            <div className="w-px bg-white/5 mx-1 my-1"></div>
+                                            <button onClick={() => insertMarkdown('> ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-mono" title="引用">&gt;</button>
+                                            <button onClick={() => insertMarkdown('- ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-mono" title="列表">•</button>
                                         </div>
                                         <textarea
                                             ref={textareaRef}
                                             value={itemText}
                                             onChange={e => setItemText(e.target.value)}
                                             rows={4}
-                                            className="w-full bg-transparent border border-x-border focus:border-x-borderStrong text-x-white font-mono text-[14px] outline-none resize-none p-3 placeholder:text-x-muted"
-                                            placeholder="输入包含 Markdown 的说明文本..."
+                                            className="w-full bg-transparent text-white font-sans text-[14px] outline-none resize-none p-4 placeholder:text-white/30"
+                                            placeholder="输入说明文本..."
                                         />
                                     </div>
                                     <button 
                                         onClick={handleItemSend} 
                                         disabled={!itemText.trim() || itemModules.length === 0}
-                                        className="w-full bg-x-white text-x-dark font-mono py-3 uppercase tracking-xai transition-all hover:bg-white/90 disabled:opacity-50"
+                                        className="w-full bg-apple-blue text-white rounded-full font-sans font-medium py-3 transition-all hover:bg-apple-blue/90 disabled:opacity-50 disabled:hover:scale-100 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f]"
                                     >
-                                        立即发放
+                                        确认发放
                                     </button>
                                 </div>
                             )}

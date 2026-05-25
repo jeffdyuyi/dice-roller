@@ -35,9 +35,9 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Base Form Resets for Brutalist Style */
+/* Base Form Resets */
 input, textarea, button {
-  border-radius: 0;
+  /* Removed border-radius: 0 to allow Apple style rounded corners */
 }
 
 /* Animations */

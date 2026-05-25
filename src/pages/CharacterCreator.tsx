@@ -55,57 +55,62 @@ export function CharacterCreator() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row w-full h-full bg-x-dark text-x-white relative font-sans overflow-hidden">
+        <div className="flex flex-col lg:flex-row w-full h-full bg-black text-white relative font-sans overflow-hidden">
             {/* Form Section */}
-            <div className="w-full lg:w-3/5 p-6 md:p-12 border-r border-x-border z-10 overflow-y-auto custom-scrollbar relative">
-                <div className="flex justify-between items-center mb-16 pb-4 border-b border-x-border">
+            <div className="w-full lg:w-3/5 p-6 md:p-12 z-10 overflow-y-auto custom-scrollbar relative border-r border-white/5">
+                <div className="flex justify-between items-center mb-12">
                     <div>
-                        <h1 className="text-[32px] font-sans leading-none uppercase">塑造角色档案</h1>
-                        <p className="text-[10px] font-mono text-x-muted tracking-xai uppercase mt-2">基于动态模板创建</p>
+                        <h1 className="text-[34px] font-sans font-semibold tracking-tight text-white leading-tight">塑造角色档案</h1>
+                        <p className="text-[14px] font-sans text-white/50 mt-1">基于动态规则模板创建</p>
                     </div>
                 </div>
 
-                <div className="space-y-12">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div>
-                            <label className="block text-[10px] font-mono text-x-muted mb-2 uppercase tracking-xai">模板规则系统</label>
-                            <select 
-                                value={selectedTemplateId} 
-                                onChange={e => { setSelectedTemplateId(e.target.value); setCharData({}); }} 
-                                className="w-full bg-transparent border border-x-border px-4 py-3 text-x-white font-mono text-[14px] outline-none"
-                            >
-                                {templates.map(t => (
-                                    <option key={t.id} value={t.id} className="bg-x-dark">{t.name}</option>
-                                ))}
-                                {templates.length === 0 && <option value="" disabled>暂无模板，请前往模板编辑器创建</option>}
-                            </select>
+                <div className="space-y-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="group">
+                            <label className="block text-[13px] font-sans font-medium text-white/60 mb-2 transition-colors group-focus-within:text-white">模板规则系统</label>
+                            <div className="relative">
+                                <select 
+                                    value={selectedTemplateId} 
+                                    onChange={e => { setSelectedTemplateId(e.target.value); setCharData({}); }} 
+                                    className="w-full bg-[#1d1d1f] rounded-xl px-4 py-3 text-[15px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue appearance-none cursor-pointer transition-all shadow-sm"
+                                >
+                                    {templates.map(t => (
+                                        <option key={t.id} value={t.id} className="bg-[#1d1d1f]">{t.name}</option>
+                                    ))}
+                                    {templates.length === 0 && <option value="" disabled>暂无模板，请前往模板编辑器创建</option>}
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-[10px] font-mono text-x-muted mb-2 uppercase tracking-xai">角色姓名</label>
+                        <div className="group">
+                            <label className="block text-[13px] font-sans font-medium text-white/60 mb-2 transition-colors group-focus-within:text-white">角色姓名</label>
                             <input 
                                 type="text" 
                                 value={charName} 
                                 onChange={e => setCharName(e.target.value)} 
-                                className="w-full bg-transparent border border-x-border px-4 py-3 text-x-white font-sans text-[16px] outline-none placeholder-x-muted" 
+                                className="w-full bg-[#1d1d1f] focus:bg-[#272729] rounded-xl px-4 py-3 text-[15px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue transition-all placeholder:text-white/30 shadow-sm" 
                                 placeholder="输入姓名..." 
                             />
                         </div>
                     </div>
 
-                    <div className="pt-8">
-                        <div className="mb-6 flex items-center gap-4">
-                            <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai px-3 py-1 border border-x-border">填写区</span>
+                    <div className="pt-6">
+                        <div className="mb-6">
+                            <h2 className="text-[18px] font-sans font-medium text-white tracking-tight">属性与资料填写</h2>
                         </div>
-                        {template ? (
-                            <DynamicSheetRenderer template={template} data={charData} onChange={(id, val) => setCharData(p => ({ ...p, [id]: val }))} />
-                        ) : (
-                            <div className="border border-dashed border-x-border p-16 text-center text-[12px] font-mono text-x-muted uppercase tracking-xai">暂无可用模板</div>
-                        )}
+                        <div className="bg-[#1d1d1f] rounded-2xl p-6 shadow-sm border border-white/5">
+                            {template ? (
+                                <DynamicSheetRenderer template={template} data={charData} onChange={(id, val) => setCharData(p => ({ ...p, [id]: val }))} />
+                            ) : (
+                                <div className="p-16 text-center text-[14px] font-sans text-white/40">暂无可用模板</div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="pt-12 border-t border-x-border flex justify-end">
-                        <button onClick={handleSave} className="bg-x-white text-x-dark hover:bg-white/90 font-mono py-4 px-12 text-[14px] uppercase tracking-xai transition-all">
+                    <div className="pt-8 flex justify-end">
+                        <button onClick={handleSave} className="bg-apple-blue text-white rounded-full font-sans font-medium py-3 px-10 text-[16px] transition-all hover:bg-apple-blue/90 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f] shadow-sm">
                             保存角色卡数据
                         </button>
                     </div>
@@ -113,18 +118,20 @@ export function CharacterCreator() {
             </div>
 
             {/* Preview Section */}
-            <div className="w-full lg:w-2/5 p-12 bg-x-surface relative overflow-y-auto custom-scrollbar">
-                <div className="flex items-center gap-3 mb-8 self-start border border-x-border bg-x-dark px-4 py-2">
-                    <span className="text-[10px] font-mono text-x-muted uppercase tracking-xai">最终数据预览</span>
+            <div className="w-full lg:w-2/5 p-6 md:p-12 bg-[#1c1c1e] relative overflow-y-auto custom-scrollbar flex flex-col items-center">
+                <div className="bg-black/30 rounded-full px-4 py-1.5 mb-8 text-[12px] font-sans text-white/50 shadow-sm border border-white/5">
+                    最终数据预览
                 </div>
                 {template && charName ? (
-                    <div className="bg-x-dark border border-x-border p-8 shadow-2xl">
-                        <h2 className="text-[24px] font-sans text-x-white mb-2">{charName}</h2>
-                        <div className="text-[10px] font-mono text-x-muted uppercase tracking-xai mb-8 pb-4 border-b border-x-border">模板: {template.name}</div>
+                    <div className="bg-[#1d1d1f] rounded-3xl p-8 md:p-10 shadow-apple w-full max-w-lg border border-white/5 animate-in fade-in zoom-in-95 duration-500">
+                        <div className="text-center mb-10 border-b border-white/5 pb-8">
+                            <h2 className="text-[32px] font-sans font-semibold tracking-tight text-white mb-2">{charName}</h2>
+                            <div className="inline-block px-3 py-1 bg-white/5 rounded-full text-[13px] font-sans font-medium text-white/50">{template.name}</div>
+                        </div>
                         <DynamicSheetRenderer template={template} data={charData} readonly />
                     </div>
                 ) : (
-                    <div className="border border-dashed border-x-border p-16 text-center text-[12px] font-mono text-x-muted uppercase tracking-xai">输入姓名查看预览</div>
+                    <div className="w-full max-w-lg rounded-3xl border border-dashed border-white/10 p-16 text-center text-[14px] font-sans text-white/30">输入姓名查看预览</div>
                 )}
             </div>
         </div>
