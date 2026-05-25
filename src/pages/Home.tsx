@@ -5,7 +5,7 @@ import { useOutletContext, Link } from 'react-router-dom';
 import { useState } from 'react';
 
 export function Home() {
-    const { diceHistory, latestRoll, addLocalRoll, commState } = useMqttContext();
+    const { diceHistory, addLocalRoll, commState } = useMqttContext();
     const { openRoomModal } = useOutletContext<{ openRoomModal: () => void }>();
     const [forceLocalDice, setForceLocalDice] = useState(false);
 
