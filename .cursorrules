@@ -1,0 +1,6 @@
+# Project UI Rules
+
+1. **Full Chinese Localization (全中文化)**:
+   - All visual text presented to the user MUST be in Chinese.
+   - Do NOT use English aesthetic strings, subtitles, or decorative text (e.g., avoid "MULTIPLAYER ROOM", "SYSTEM.CORE", "SAVE", "BACK").
+   - Maintain the minimalist/Brutalist/Apple layout and typography, but use matching Chinese characters for all labels, headings, and hints.

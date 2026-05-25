@@ -171,8 +171,7 @@ export function TemplateBuilder() {
             {/* Left Panel - Library / Builder Controls */}
             <aside className="w-72 border-r border-x-border flex flex-col shrink-0">
                 <div className="p-6 border-b border-x-border">
-                    <h2 className="text-[16px] font-sans leading-none mb-2">模板配置</h2>
-                    <p className="text-[10px] font-mono text-x-muted tracking-xai uppercase">SYSTEM / TEMPLATE_BUILDER</p>
+                    <h2 className="text-[16px] font-sans leading-none">模板配置</h2>
                 </div>
                 
                 <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
@@ -227,7 +226,7 @@ export function TemplateBuilder() {
 
                 <div className="p-6 border-t border-x-border">
                     <button onClick={saveTemplate} className="w-full bg-x-white text-x-dark py-4 font-mono uppercase tracking-xai hover:bg-white/90 transition-colors text-[14px]">
-                        保存模板 / SAVE
+                        保存模板
                     </button>
                 </div>
             </aside>
@@ -255,7 +254,7 @@ export function TemplateBuilder() {
                     <div className="space-y-6">
                         {template.modules.length === 0 ? (
                             <div className="h-64 border border-dashed border-x-border flex items-center justify-center">
-                                <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai">从左侧面板添加模块 / ADD MODULES</span>
+                                <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai">从左侧面板添加功能模块</span>
                             </div>
                         ) : (
                             template.modules.map(mod => renderModuleEditor(mod))

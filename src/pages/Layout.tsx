@@ -50,7 +50,7 @@ export function Layout() {
 
                     <nav className="flex gap-4">
                         <Link to="/" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                            <span>掷骰</span>
+                            <span>主控制台</span>
                         </Link>
 
                         {commState !== 'CONNECTED' && (
@@ -58,14 +58,14 @@ export function Layout() {
                                 onClick={() => setIsRoomModalOpen(true)}
                                 className="flex items-center gap-2 px-3 py-2 text-x-white border border-x-borderStrong hover:bg-x-surface transition-all font-mono text-[14px] uppercase tracking-xai"
                             >
-                                房间联机
+                                联机大厅
                             </button>
                         )}
                         <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                            <span>角色档案</span>
+                            <span>角色库</span>
                         </Link>
                         <Link to="/template-builder" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                            <span>模板编辑</span>
+                            <span>模板开发</span>
                         </Link>
                     </nav>
                 </div>
@@ -140,7 +140,7 @@ export function Layout() {
                             </div>
 
                             <a href="https://ifdian.net/a/nogubird" target="_blank" rel="noopener" className="block w-full bg-x-white text-x-dark py-3 text-center font-mono text-[14px] tracking-xai uppercase hover:bg-white/90 transition-all">
-                                为作者加油 / SUPPORT
+                                为作者加油
                             </a>
                         </div>
                     </div>

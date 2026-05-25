@@ -114,7 +114,7 @@ export function CharacterCreator() {
             {/* Preview Section */}
             <div className="w-full lg:w-2/5 p-12 bg-x-surface relative overflow-y-auto custom-scrollbar">
                 <div className="flex items-center gap-3 mb-8 self-start border border-x-border bg-x-dark px-4 py-2">
-                    <span className="text-[10px] font-mono text-x-muted uppercase tracking-xai">最终数据预览 / PREVIEW</span>
+                    <span className="text-[10px] font-mono text-x-muted uppercase tracking-xai">最终数据预览</span>
                 </div>
                 {template && charName ? (
                     <div className="bg-x-dark border border-x-border p-8 shadow-2xl">

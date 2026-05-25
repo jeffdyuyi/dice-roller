@@ -28,7 +28,6 @@ export function CharacterLibrary() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6 relative z-10 pb-6 border-b border-x-border">
                 <div>
                     <h1 className="text-[32px] font-sans leading-none uppercase">本地角色库</h1>
-                    <p className="text-[10px] font-mono text-x-muted uppercase tracking-xai mt-2">基于模板实例化的数据 / INSTANCES</p>
                 </div>
                 <button 
                     onClick={() => navigate('/characters/new')} 
