@@ -164,7 +164,7 @@ export function Layout() {
 
             {/* Main Content Viewport */}
             <main className="flex-1 w-full overflow-hidden relative z-10 flex border-t border-x-border">
-                <Outlet />
+                <Outlet context={{ openRoomModal: () => setIsRoomModalOpen(true) }} />
             </main>
 
             {/* Room Management Drawer */}
