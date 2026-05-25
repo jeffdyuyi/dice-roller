@@ -9,8 +9,9 @@ interface MainAreaProps {
 
 export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const { activeCharacter, myId } = useMqttContext();
+    const { activeCharacter, myId, sendChatMessage, commState } = useMqttContext();
     const [isInspectingSelf, setInspectingSelf] = useState(false);
+    const [chatInput, setChatInput] = useState('');
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -18,7 +19,29 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
         }
     }, [diceHistory]);
 
+    const handleSendChat = () => {
+        if (!chatInput.trim()) return;
+        sendChatMessage(chatInput.trim());
+        setChatInput('');
+    };
+
     const renderRollCard = (roll: any, idx: number, isLatest: boolean = false) => {
+        if (roll.type === 'chat') {
+            return (
+                <div key={idx} className={`bg-transparent border border-x-border p-4 transition-all duration-500`}>
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[14px] font-sans text-x-white">{roll.userName}</span>
+                        <span className="text-[10px] font-mono text-x-muted tracking-xai uppercase">
+                            {new Date(roll.timestamp).toLocaleTimeString()}
+                        </span>
+                    </div>
+                    <div className="text-[14px] font-sans text-x-white leading-relaxed">
+                        {roll.text}
+                    </div>
+                </div>
+            );
+        }
+
         const isDaggerheart = roll.historyTitle === '匕首心';
 
         return (
@@ -36,6 +59,11 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                                 {roll.tag && (
                                     <span className={`text-[10px] font-mono border border-x-border px-2 py-1 uppercase tracking-xai text-x-white`}>
                                         {roll.tag.text}
+                                    </span>
+                                )}
+                                {roll.isHidden && (
+                                    <span className={`text-[10px] font-mono bg-x-white text-x-dark px-2 py-1 uppercase tracking-xai`}>
+                                        暗骰
                                     </span>
                                 )}
                             </div>
@@ -95,7 +123,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
 
     return (
         <main className="flex-1 flex flex-col overflow-hidden bg-x-dark relative">
-            <div className="flex-1 overflow-y-auto p-4 md:p-12 md:custom-scrollbar space-y-12 relative z-10" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto p-4 md:p-12 md:custom-scrollbar space-y-6 relative z-10" ref={scrollRef}>
                 {diceHistory.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-1000">
                         <span className="font-mono text-x-muted text-[48px] opacity-20">_</span>
@@ -105,6 +133,28 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                     diceHistory.map((roll, idx) => renderRollCard(roll, idx, idx === diceHistory.length - 1))
                 )}
             </div>
+
+            {/* Chat Input Area */}
+            {commState === 'CONNECTED' && (
+                <div className="p-4 border-t border-x-border bg-x-dark relative z-20 shrink-0">
+                    <div className="max-w-6xl mx-auto flex gap-4">
+                        <input 
+                            type="text" 
+                            value={chatInput} 
+                            onChange={e => setChatInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSendChat()}
+                            placeholder="输入消息..." 
+                            className="flex-1 bg-transparent border border-x-border focus:border-x-borderStrong px-4 py-3 text-x-white font-sans text-[14px] outline-none transition-all placeholder:text-x-muted"
+                        />
+                        <button 
+                            onClick={handleSendChat}
+                            className="bg-x-white text-x-dark px-8 font-mono text-[14px] uppercase tracking-xai hover:bg-white/90 transition-all border border-transparent hover:border-x-borderStrong"
+                        >
+                            发送
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Premium Latest Result Banner - Style Guide: bg-panel */}
             {latestRoll && (

@@ -19,7 +19,8 @@ export function RoomModal({
     const [inputName, setInputName] = useState(initialName);
     const [inputRoomId, setInputRoomId] = useState('');
     const [inputRoomName, setInputRoomName] = useState('新联机房间');
-    const [selectedRuleSystem, setSelectedRuleSystem] = useState('D&D 5E');
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [guestMode, setGuestMode] = useState(false);
 
     // Character selection state
@@ -33,6 +34,13 @@ export function RoomModal({
                 const chars = getMyCharacters(user.id);
                 setMyCharacters(chars);
                 if (chars.length > 0) setSelectedCharId(chars[0].id);
+            }
+            
+            const storedTemplates = localStorage.getItem('dice_roller_templates');
+            if (storedTemplates) {
+                const parsed = JSON.parse(storedTemplates);
+                setTemplates(parsed);
+                if (parsed.length > 0) setSelectedTemplateId(parsed[0].id);
             }
         }
     }, [isOpen]);
@@ -52,7 +60,7 @@ export function RoomModal({
             charInfo = {
                 guestMode: false,
                 characterId: char.id,
-                ruleSystem: char.ruleSystem,
+                templateId: (char as any).templateId || char.ruleSystem, // backward compatibility
                 characterData: char.characterData
             };
         }
@@ -100,13 +108,13 @@ export function RoomModal({
                                             <input type="text" value={inputRoomName} onChange={e => setInputRoomName(e.target.value)} placeholder="给房间起个名字..." className="w-full bg-transparent border border-x-border focus:border-x-borderStrong px-5 py-3 text-x-white font-mono outline-none transition-all placeholder:text-x-muted text-[14px]" />
                                         </div>
                                         <div className="group">
-                                            <label className="block text-[12px] font-mono text-x-muted mb-2 uppercase tracking-xai group-within:text-x-white transition-colors">游戏规则</label>
+                                            <label className="block text-[12px] font-mono text-x-muted mb-2 uppercase tracking-xai group-within:text-x-white transition-colors">选用规则模板</label>
                                             <div className="relative">
-                                                <select value={selectedRuleSystem} onChange={e => setSelectedRuleSystem(e.target.value)} className="w-full bg-transparent border border-x-border focus:border-x-borderStrong px-5 py-3 text-[14px] font-mono text-x-white outline-none appearance-none cursor-pointer transition-all hover:bg-x-surface">
-                                                    <option value="D&D 5E" className="bg-x-dark">D&D 5E</option>
-                                                    <option value="Daggerheart" className="bg-x-dark">Daggerheart</option>
-                                                    <option value="COC 7th" className="bg-x-dark">COC 7th</option>
-                                                    <option value="Other" className="bg-x-dark">其他规则系统</option>
+                                                <select value={selectedTemplateId} onChange={e => setSelectedTemplateId(e.target.value)} className="w-full bg-transparent border border-x-border focus:border-x-borderStrong px-5 py-3 text-[14px] font-mono text-x-white outline-none appearance-none cursor-pointer transition-all hover:bg-x-surface">
+                                                    {templates.map(t => (
+                                                        <option key={t.id} value={t.id} className="bg-x-dark">{t.name}</option>
+                                                    ))}
+                                                    {templates.length === 0 && <option value="" disabled>暂无本地模板</option>}
                                                 </select>
                                                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-x-muted pointer-events-none font-mono">v</span>
                                             </div>
@@ -137,7 +145,7 @@ export function RoomModal({
                                                 <div className="relative group">
                                                     <select value={selectedCharId} onChange={e => setSelectedCharId(e.target.value)} className="w-full bg-transparent border border-x-border focus:border-x-borderStrong px-4 py-3 text-[14px] font-mono text-x-white outline-none appearance-none cursor-pointer transition-all">
                                                         {myCharacters.map(c => (
-                                                            <option key={c.id} value={c.id} className="bg-x-dark text-x-white">{c.name} ({c.ruleSystem})</option>
+                                                            <option key={c.id} value={c.id} className="bg-x-dark text-x-white">{c.name} ({c.summary || '无模板'})</option>
                                                         ))}
                                                     </select>
                                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-x-muted group-hover:text-x-white transition-colors pointer-events-none font-mono">v</span>
@@ -157,7 +165,15 @@ export function RoomModal({
 
                             <div className="pt-2">
                                 {mode === 'create' ? (
-                                    <button onClick={() => createRoom(inputName, inputRoomId, inputRoomName, selectedRuleSystem)} className="w-full bg-x-white text-x-dark font-mono py-4 uppercase tracking-xai text-[14px] transition-all hover:bg-white/90">立即开启房间</button>
+                                    <button 
+                                        onClick={() => {
+                                            const t = templates.find(x => x.id === selectedTemplateId);
+                                            createRoom(inputName, inputRoomId, inputRoomName, t || null);
+                                        }} 
+                                        className="w-full bg-x-white text-x-dark font-mono py-4 uppercase tracking-xai text-[14px] transition-all hover:bg-white/90"
+                                    >
+                                        立即开启房间
+                                    </button>
                                 ) : (
                                     <button onClick={handleJoin} className="w-full bg-x-white text-x-dark font-mono py-4 uppercase tracking-xai text-[14px] transition-all hover:bg-white/90">发送入场请求</button>
                                 )}

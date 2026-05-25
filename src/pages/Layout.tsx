@@ -64,9 +64,14 @@ export function Layout() {
                             </button>
                         )}
                         {isLoggedIn && (
-                            <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                                <span>角色档案</span>
-                            </Link>
+                            <>
+                                <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
+                                    <span>角色档案</span>
+                                </Link>
+                                <Link to="/template-builder" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
+                                    <span>模板编辑</span>
+                                </Link>
+                            </>
                         )}
                     </nav>
                 </div>

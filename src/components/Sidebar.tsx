@@ -14,16 +14,17 @@ export function Sidebar({ onRoll }: SidebarProps) {
     const [dhMod, setDhMod] = useState(0);
     const [standardAdv, setStandardAdv] = useState<'none' | 'advantage' | 'disadvantage'>('none');
     const [dhAdv, setDhAdv] = useState<'none' | 'advantage' | 'disadvantage'>('none');
+    const [isHidden, setIsHidden] = useState(false);
 
     const handleStandardRoll = (sides: number) => {
         const result = rollStandardDice(diceCount, sides, diceMod, standardAdv);
-        onRoll(result);
+        onRoll({ ...result, isHidden });
     };
 
     const handleFormulaRoll = () => {
         try {
             const result = parseAndRollFormula(formulaText || '0');
-            onRoll(result);
+            onRoll({ ...result, isHidden });
         } catch (e: any) {
             alert(e.message || '公式格式错误');
         }
@@ -31,7 +32,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
 
     const handleDhRoll = () => {
         const result = rollDaggerheart(dhMod, dhAdv);
-        onRoll(result);
+        onRoll({ ...result, isHidden });
     };
 
     const insertText = (text: string) => {
@@ -111,6 +112,17 @@ export function Sidebar({ onRoll }: SidebarProps) {
                             </div>
                         </div>
 
+                        {/* Hidden Roll Toggle */}
+                        <div className="flex items-center gap-3 pt-2">
+                            <button
+                                onClick={() => setIsHidden(!isHidden)}
+                                className={`flex items-center justify-center w-6 h-6 border transition-all ${isHidden ? 'bg-x-white border-x-white' : 'bg-transparent border-x-border hover:border-x-borderStrong'}`}
+                            >
+                                {isHidden && <span className="text-x-dark text-[14px] leading-none">×</span>}
+                            </button>
+                            <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai cursor-pointer select-none" onClick={() => setIsHidden(!isHidden)}>暗骰 (仅主持可见)</span>
+                        </div>
+
                         {/* Custom Dice Field */}
                         <div className="pt-2 flex gap-4 h-11">
                             <div className="relative flex-1 group border border-x-border focus-within:border-x-borderStrong">
@@ -160,7 +172,17 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 className="w-full bg-transparent text-x-white font-mono text-[24px] focus:outline-none placeholder-x-muted resize-none leading-relaxed"
                                 placeholder="输入公式 如 2d20 + 8"
                             />
-                            <div className="mt-8 pt-4 border-t border-x-border flex justify-end items-center">
+                            
+                            <div className="mt-8 pt-4 border-t border-x-border flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setIsHidden(!isHidden)}
+                                        className={`flex items-center justify-center w-6 h-6 border transition-all ${isHidden ? 'bg-x-white border-x-white' : 'bg-transparent border-x-border hover:border-x-borderStrong'}`}
+                                    >
+                                        {isHidden && <span className="text-x-dark text-[14px] leading-none">×</span>}
+                                    </button>
+                                    <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai cursor-pointer select-none" onClick={() => setIsHidden(!isHidden)}>暗骰</span>
+                                </div>
                                 <button onClick={handleFormulaRoll} className="bg-x-white text-x-dark px-10 py-2.5 text-[14px] font-mono uppercase tracking-xai transition-all hover:bg-white/90">执 行</button>
                             </div>
                         </div>

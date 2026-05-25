@@ -9,7 +9,7 @@ interface MqttContextType {
     commState: RoomCommState;
     roomId: string | null;
     roomName: string | null;
-    ruleSystem: string | null;
+    roomTemplate: any | null;
     isHost: boolean;
     connectedPlayers: PlayerNode[];
     pendingPlayers: PlayerNode[];
@@ -22,7 +22,7 @@ interface MqttContextType {
     myId: string;
     isManagerOpen: boolean;
     setManagerOpen: (open: boolean) => void;
-    createRoom: (name: string, rid: string, roomName: string, ruleSystem: string) => void;
+    createRoom: (name: string, rid: string, roomName: string, template: any) => void;
     joinRoom: (name: string, rid: string, charInfo?: any) => void;
     acceptPlayer: (id: string, name: string) => void;
     rejectPlayer: (id: string) => void;
@@ -30,6 +30,7 @@ interface MqttContextType {
     leaveRoom: () => void;
     disconnectLocal: () => void;
     addLocalRoll: (payload: any) => void;
+    sendChatMessage: (text: string) => void;
     adjustCharacter: (playerId: string, charData: Record<string, any>) => void;
     clearHistory: () => void;
     setConnectionError: (err: string | null) => void;
@@ -42,7 +43,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [commState, setCommState] = useState<RoomCommState>('DISCONNECTED');
     const [roomId, setRoomId] = useState<string | null>(null);
     const [roomName, setRoomName] = useState<string | null>(null);
-    const [ruleSystem, setRuleSystem] = useState<string | null>(null);
+    const [roomTemplate, setRoomTemplate] = useState<any | null>(null);
     const [isHost, setIsHost] = useState(false);
     const [connectedPlayers, setConnectedPlayers] = useState<PlayerNode[]>([]);
     const [pendingPlayers, setPendingPlayers] = useState<PlayerNode[]>([]);
@@ -81,7 +82,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                             name: msg.senderName,
                             guestMode: msg.payload?.guestMode,
                             characterId: msg.payload?.characterId,
-                            ruleSystem: msg.payload?.ruleSystem,
+                            templateId: msg.payload?.templateId,
                             characterData: msg.payload?.characterData
                         }];
                     });
@@ -90,7 +91,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 setCommState('CONNECTED');
                 setRoomId(mqttInstance.currentRoomId);
                 setRoomName(msg.payload?.roomName || null);
-                setRuleSystem(msg.payload?.ruleSystem || null);
+                setRoomTemplate(msg.payload?.roomTemplate || null);
                 setConnectionError(null);
                 showNotification(`成功加入 [${msg.payload?.roomName || '联机房间'}]`, 'success');
             } else if (msg.type === 'JOIN_REJECTED') {
@@ -116,9 +117,13 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                     setManagerOpen(false);
                 }
             } else if (msg.type === 'DICE_ROLL') {
+                if (msg.payload?.isHidden && !mqttInstance.isHost) return;
                 const rollData = { ...msg.payload, userName: msg.senderName, timestamp: msg.timestamp };
                 setLatestRoll(rollData);
                 setDiceHistory(prev => [...prev, rollData]);
+            } else if (msg.type === 'CHAT_MESSAGE') {
+                const chatData = { type: 'chat', text: msg.payload?.text, userName: msg.senderName, timestamp: msg.timestamp };
+                setDiceHistory(prev => [...prev, chatData]);
             } else if (msg.type === 'CHARACTER_ADJUST') {
                 // Host modified MY character (if I'm a player)
                 if (!mqttInstance.isHost) {
@@ -155,16 +160,16 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setCommState('DISCONNECTED');
         setRoomId(null);
         setRoomName(null);
-        setRuleSystem(null);
+        setRoomTemplate(null);
         setIsHost(false);
         setConnectedPlayers([]);
         setPendingPlayers([]);
     }, []);
 
-    const createRoom = useCallback((name: string, rid: string, rName: string, rSystem: string) => {
+    const createRoom = useCallback((name: string, rid: string, rName: string, template: any) => {
         setMyName(name);
         setRoomName(rName);
-        setRuleSystem(rSystem);
+        setRoomTemplate(template);
         setCommState('WAITING');
         setConnectionError(null);
         mqttInstance.init(name, rid || null, true);
@@ -210,7 +215,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                     mqttInstance.broadcast('PLAYER_LIST', {
                         list: next,
                         roomName: roomName,
-                        ruleSystem: ruleSystem
+                        roomTemplate: roomTemplate
                     } as any);
 
                     // Sync latest roll if it exists
@@ -223,8 +228,8 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             }
             return prevPending.filter(p => p.id !== pId);
         });
-        mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED', { roomName, ruleSystem });
-    }, [latestRoll, roomName, ruleSystem]);
+        mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED', { roomName, roomTemplate });
+    }, [latestRoll, roomName, roomTemplate]);
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));
@@ -254,7 +259,22 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setLatestRoll(data);
         setDiceHistory(prev => [...prev, data]);
         if (commState === 'CONNECTED') {
-            mqttInstance.broadcast('DICE_ROLL', payload);
+            if (payload.isHidden && isHost) {
+                // Host sending a hidden roll? Usually players send hidden rolls to host. 
+                // We broadcast it anyway, non-hosts will ignore it.
+                mqttInstance.broadcast('DICE_ROLL', payload);
+            } else {
+                mqttInstance.broadcast('DICE_ROLL', payload);
+            }
+        }
+    }, [myName, commState, isHost]);
+
+    const sendChatMessage = useCallback((text: string) => {
+        const payload = { text };
+        const data = { type: 'chat', text, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
+        setDiceHistory(prev => [...prev, data]);
+        if (commState === 'CONNECTED') {
+            mqttInstance.broadcast('CHAT_MESSAGE', payload);
         }
     }, [myName, commState]);
 
@@ -271,9 +291,9 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     }, [isHost]);
 
     const value = {
-        commState, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
+        commState, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
         isManagerOpen, setManagerOpen, connectionError, latestNotification,
-        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, adjustCharacter, clearHistory,
+        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, adjustCharacter, clearHistory,
         setConnectionError, showNotification
     };
 

@@ -4,7 +4,7 @@ import { CharacterInspector } from './CharacterInspector';
 
 export function RoomManagerDrawer() {
     const {
-        isManagerOpen, setManagerOpen, roomId, roomName, ruleSystem, isHost, connectedPlayers, pendingPlayers, myId,
+        isManagerOpen, setManagerOpen, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, myId,
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom
     } = useMqttContext();
 
@@ -43,8 +43,8 @@ export function RoomManagerDrawer() {
                                     <div className="text-[32px] font-mono text-x-white leading-none select-all">{roomId}</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] font-mono text-x-muted uppercase tracking-xai mb-1">使用规则</div>
-                                    <div className="text-[12px] font-mono text-x-white bg-transparent px-2 py-1 border border-x-border">{ruleSystem || '未定义'}</div>
+                                    <div className="text-[10px] font-mono text-x-muted uppercase tracking-xai mb-1">选用模板</div>
+                                    <div className="text-[12px] font-mono text-x-white bg-transparent px-2 py-1 border border-x-border">{roomTemplate?.name || '无模板'}</div>
                                 </div>
                             </div>
 
