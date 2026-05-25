@@ -1,18 +1,15 @@
 import { useState } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../features/auth/useAuth';
+import { Outlet, Link } from 'react-router-dom';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 import { RoomModal } from '../components/RoomModal';
 import { LockScreen } from '../components/LockScreen';
 
 export function Layout() {
-    const { user, isLoggedIn, login, logout } = useAuth();
-    const { commState, roomId, roomName, latestNotification, setManagerOpen } = useMqttContext();
+    const { commState, roomId, roomName, myName, latestNotification, setManagerOpen } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(() => !sessionStorage.getItem('app_unlocked'));
-    const navigate = useNavigate();
 
     const handleUnlock = () => {
         sessionStorage.setItem('app_unlocked', 'true');
@@ -63,46 +60,30 @@ export function Layout() {
                                 房间联机
                             </button>
                         )}
-                        {isLoggedIn && (
-                            <>
-                                <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                                    <span>角色档案</span>
-                                </Link>
-                                <Link to="/template-builder" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                                    <span>模板编辑</span>
-                                </Link>
-                            </>
-                        )}
+                        <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
+                            <span>角色档案</span>
+                        </Link>
+                        <Link to="/template-builder" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
+                            <span>模板编辑</span>
+                        </Link>
                     </nav>
                 </div>
 
                 <div className="flex items-center gap-6">
                     {commState === 'CONNECTED' && (
-                        <button
-                            onClick={() => setManagerOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 border border-x-borderStrong text-x-white hover:bg-x-surface transition-all font-mono text-[12px] uppercase tracking-xai"
-                        >
-                            联机中: {roomName || roomId}
-                        </button>
-                    )}
-
-                    {!isLoggedIn ? (
-                        <button onClick={() => {
-                            const un = prompt('请输入昵称:');
-                            if (un) login(un);
-                        }} className="bg-x-white text-x-dark px-6 py-2 transition-all hover:bg-white/90 font-mono uppercase text-[14px] tracking-xai">
-                            登 录
-                        </button>
-                    ) : (
-                        <div className="flex items-center gap-4 border-l border-x-border pl-4">
-                            <div className="flex flex-col items-end">
-                                <span className="text-[14px] font-sans text-x-white leading-none">{user?.displayName}</span>
-                                <button onClick={() => { logout(); navigate('/'); }} className="text-[12px] font-mono text-x-muted hover:text-white transition-colors uppercase tracking-xai mt-1.5 focus:outline-none">退出登录</button>
+                        <>
+                            <button
+                                onClick={() => setManagerOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 border border-x-borderStrong text-x-white hover:bg-x-surface transition-all font-mono text-[12px] uppercase tracking-xai"
+                            >
+                                联机中: {roomName || roomId}
+                            </button>
+                            <div className="flex items-center gap-4 border-l border-x-border pl-4">
+                                <div className="w-10 h-10 border border-x-border bg-x-surface flex items-center justify-center text-x-white text-sm font-mono">
+                                    {myName?.[0] || '?'}
+                                </div>
                             </div>
-                            <div className="w-10 h-10 border border-x-border bg-x-surface flex items-center justify-center text-x-white text-sm font-mono">
-                                {user?.displayName[0]}
-                            </div>
-                        </div>
+                        </>
                     )}
                 </div>
             </header>

@@ -28,14 +28,14 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
     const renderRollCard = (roll: any, idx: number, isLatest: boolean = false) => {
         if (roll.type === 'chat') {
             return (
-                <div key={idx} className={`bg-transparent border border-x-border p-4 transition-all duration-500`}>
-                    <div className="flex items-center gap-3 mb-2">
+                <div key={idx} className="flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-baseline gap-2 mb-1">
                         <span className="text-[14px] font-sans text-x-white">{roll.userName}</span>
                         <span className="text-[10px] font-mono text-x-muted tracking-xai uppercase">
                             {new Date(roll.timestamp).toLocaleTimeString()}
                         </span>
                     </div>
-                    <div className="text-[14px] font-sans text-x-white leading-relaxed">
+                    <div className="bg-x-surface border border-x-border px-4 py-3 text-[14px] font-sans text-x-white leading-relaxed inline-block max-w-[85%]">
                         {roll.text}
                     </div>
                 </div>
@@ -45,76 +45,46 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
         const isDaggerheart = roll.historyTitle === '匕首心';
 
         return (
-            <div key={idx} className={`bg-transparent border p-6 transition-all duration-500 relative ${isLatest ? 'border-x-white z-10' : 'border-x-border'
-                }`}>
-                <div className="flex justify-between items-center mb-5 pb-4 border-b border-x-border">
-                    <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 flex items-center justify-center border border-x-border ${isDaggerheart ? 'bg-x-white text-x-dark' : 'bg-transparent text-x-white'
-                            }`}>
-                            <span className="font-mono text-xl">{roll.historyTitle === '公式' ? 'F' : isDaggerheart ? 'H' : 'D'}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[16px] font-sans text-x-white">{roll.userName || '未知领域者'}</span>
-                                {roll.tag && (
-                                    <span className={`text-[10px] font-mono border border-x-border px-2 py-1 uppercase tracking-xai text-x-white`}>
-                                        {roll.tag.text}
-                                    </span>
-                                )}
-                                {roll.isHidden && (
-                                    <span className={`text-[10px] font-mono bg-x-white text-x-dark px-2 py-1 uppercase tracking-xai`}>
-                                        暗骰
-                                    </span>
-                                )}
-                            </div>
-                            <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai mt-2 flex items-center gap-2">
-                                {roll.historyTitle} · {new Date(roll.timestamp).toLocaleTimeString()}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-[12px] font-mono text-x-muted uppercase tracking-xai mb-2 leading-none">操作指令</div>
-                        <div className="text-[14px] font-mono text-x-white px-4 py-2 border border-x-border bg-x-surface">{roll.historyFormula}</div>
-                    </div>
+            <div key={idx} className={`flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isLatest ? 'opacity-100' : 'opacity-80 hover:opacity-100 transition-opacity'}`}>
+                <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-[14px] font-sans text-x-white">{roll.userName || '未知领域者'}</span>
+                    <span className="text-[10px] font-mono text-x-muted tracking-xai uppercase">
+                        {new Date(roll.timestamp).toLocaleTimeString()}
+                    </span>
+                    {roll.tag && (
+                        <span className="text-[10px] font-mono border border-x-border px-1.5 py-0.5 uppercase tracking-xai text-x-white ml-2">
+                            {roll.tag.text}
+                        </span>
+                    )}
+                    {roll.isHidden && (
+                        <span className="text-[10px] font-mono bg-x-white text-x-dark px-1.5 py-0.5 uppercase tracking-xai ml-2">
+                            暗骰
+                        </span>
+                    )}
                 </div>
-
-                <div className="flex items-center justify-between px-2 gap-10">
-                    <div className="flex-1 flex flex-col gap-4 min-w-0">
-                        <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai leading-none">掷骰详情分析</span>
-
-                        {isDaggerheart ? (
-                            <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-4 border border-x-border px-5 py-3 text-x-white">
-                                    <span className="text-[14px] font-mono tracking-xai uppercase">希望</span>
-                                    <span className="text-[20px] font-mono">{roll.hope}</span>
-                                </div>
-                                <div className="text-[14px] font-mono text-x-muted tracking-xai">VS</div>
-                                <div className="flex items-center gap-4 border border-x-border px-5 py-3 text-x-muted">
-                                    <span className="text-[14px] font-mono tracking-xai uppercase">恐惧</span>
-                                    <span className="text-[20px] font-mono">{roll.fear}</span>
-                                </div>
-                                {roll.advDice && (
-                                    <>
-                                        <div className="text-[14px] font-mono text-x-muted tracking-xai">{roll.advType === 'advantage' ? '+' : '-'}</div>
-                                        <div className={`flex items-center gap-4 border border-x-border px-5 py-3 ${roll.advType === 'advantage' ? 'text-x-white' : 'text-x-muted'}`}>
-                                            <span className="text-[14px] font-mono tracking-xai uppercase">{roll.advType === 'advantage' ? '优势' : '劣势'}</span>
-                                            <span className={`text-[20px] font-mono`}>{roll.advDice}</span>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="text-[16px] font-mono text-x-white px-6 py-4 border border-x-border break-all leading-relaxed bg-x-surface">
-                                {roll.breakdown}
-                            </div>
-                        )}
+                
+                <div className="bg-transparent border border-x-border p-3 inline-flex flex-wrap items-center gap-4 max-w-[85%]">
+                    <div className="flex flex-col min-w-[80px]">
+                        <span className="text-[10px] font-mono text-x-muted uppercase tracking-xai mb-0.5">{roll.historyTitle || '系统判定'}</span>
+                        <span className="text-[14px] font-mono text-x-white bg-x-surface px-2 py-0.5 border border-x-border inline-block w-fit">{roll.historyFormula}</span>
                     </div>
-
-                    <div className="flex flex-col items-end shrink-0">
-                        <span className="text-[12px] font-mono text-x-muted uppercase tracking-xai mb-2">结果</span>
-                        <div className="text-[48px] font-mono text-x-white leading-none">
+                    
+                    <div className="hidden sm:block h-8 w-px bg-x-border"></div>
+                    
+                    <div className="flex items-center gap-3 flex-1 min-w-[150px]">
+                        {isDaggerheart ? (
+                            <span className="text-[12px] font-mono text-x-muted">
+                                希 <span className="text-x-white">{roll.hope}</span> / 惧 <span className="text-x-white">{roll.fear}</span>
+                                {roll.advDice && ` / ${roll.advType === 'advantage' ? '+' : '-'}${roll.advDice}`}
+                            </span>
+                        ) : (
+                            <span className="text-[12px] font-mono text-x-muted truncate max-w-[250px]" title={roll.breakdown}>
+                                {roll.breakdown}
+                            </span>
+                        )}
+                        <span className="text-[24px] font-mono text-x-white leading-none ml-auto pl-4 border-l border-x-border border-dashed">
                             {roll.total}
-                        </div>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -156,42 +126,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                 </div>
             )}
 
-            {/* Premium Latest Result Banner - Style Guide: bg-panel */}
-            {latestRoll && (
-                <div className="p-6 md:p-8 bg-x-dark border-t border-x-border relative z-20">
-                    <div className="max-w-6xl mx-auto flex items-center gap-10">
-                        <div className={`w-32 h-32 flex items-center justify-center border border-x-border bg-x-surface`}>
-                            <span className="text-[64px] font-mono text-x-white">{latestRoll.total}</span>
-                        </div>
 
-                        <div className="flex-1 flex flex-col justify-center">
-                            <div className="flex items-center gap-6 mb-4">
-                                <span className="border border-x-border text-x-white text-[12px] font-mono px-4 py-2 uppercase tracking-xai">
-                                    最新结果
-                                </span>
-                                {latestRoll.tag && (
-                                    <span className={`text-[12px] font-mono border border-x-borderStrong px-4 py-2 text-x-white uppercase tracking-xai`}>
-                                        {latestRoll.tag.text}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="flex items-baseline gap-5">
-                                <span className="text-[30px] font-sans text-x-white">{latestRoll.userName}</span>
-                                <span className="text-[16px] font-sans text-x-muted">掷出了</span>
-                                <span className="text-[48px] font-mono text-x-white leading-none">{latestRoll.total}</span>
-                            </div>
-
-                            <div className="mt-6 flex items-center gap-5">
-                                <p className="text-[14px] font-mono text-x-muted tracking-xai uppercase flex items-center gap-4">
-                                    <span className="text-x-white border-b border-x-borderStrong pb-0.5">[{latestRoll.historyTitle}]</span>
-                                    <span>{latestRoll.breakdown}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Active Character HUD */}
             {activeCharacter && (

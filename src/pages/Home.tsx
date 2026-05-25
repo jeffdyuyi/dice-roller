@@ -32,9 +32,8 @@ export function Home() {
         <div className="flex-1 h-full w-full bg-x-dark p-8 overflow-y-auto custom-scrollbar flex flex-col items-center justify-center">
             <div className="max-w-6xl w-full">
                 
-                <div className="mb-12 border-b border-x-border pb-6">
+                <div className="mb-12">
                     <h1 className="text-[48px] md:text-[80px] font-sans font-black text-x-white leading-none tracking-tight mb-2">SYSTEM.CORE</h1>
-                    <p className="text-[14px] md:text-[18px] font-mono text-x-muted uppercase tracking-xai">TRPG 动态架构与联机引擎 / V2.5</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
