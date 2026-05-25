@@ -22,7 +22,7 @@ export function Home() {
                     </button>
                 )}
                 <Sidebar onRoll={addLocalRoll} />
-                <MainArea latestRoll={latestRoll} diceHistory={diceHistory} />
+                <MainArea diceHistory={diceHistory} />
             </div>
         );
     }

@@ -4,6 +4,7 @@ import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 import { RoomModal } from '../components/RoomModal';
 import { LockScreen } from '../components/LockScreen';
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen } = useMqttContext();
@@ -85,6 +86,9 @@ export function Layout() {
                             </div>
                         </>
                     )}
+                    <div className="border-l border-x-border pl-6 ml-2">
+                        <ThemeSwitcher />
+                    </div>
                 </div>
             </header>
 

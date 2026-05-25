@@ -3,11 +3,10 @@ import { useMqttContext } from '../contexts/MqttContext';
 import { CharacterInspector } from './CharacterInspector';
 
 interface MainAreaProps {
-    latestRoll: any;
     diceHistory: any[];
 }
 
-export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
+export function MainArea({ diceHistory }: MainAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const { activeCharacter, myId, sendChatMessage, commState } = useMqttContext();
     const [isInspectingSelf, setInspectingSelf] = useState(false);
@@ -118,7 +117,7 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
                         />
                         <button 
                             onClick={handleSendChat}
-                            className="bg-x-white text-x-dark px-8 font-mono text-[14px] uppercase tracking-xai hover:bg-white/90 transition-all border border-transparent hover:border-x-borderStrong"
+                            className="bg-x-accent text-x-accentText px-8 font-mono text-[14px] uppercase tracking-xai hover:opacity-90 transition-all border border-transparent hover:border-x-borderStrong"
                         >
                             发送
                         </button>

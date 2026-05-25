@@ -11,13 +11,15 @@ export default {
           base: '#1f2228',
         },
         x: {
-          dark: '#1f2228',
-          white: '#ffffff',
-          muted: 'rgba(255, 255, 255, 0.5)',
-          border: 'rgba(255, 255, 255, 0.1)',
-          borderStrong: 'rgba(255, 255, 255, 0.2)',
-          surface: 'rgba(255, 255, 255, 0.03)',
-          surfaceHover: 'rgba(255, 255, 255, 0.08)'
+          dark: 'var(--bg-primary)',
+          white: 'var(--text-primary)',
+          muted: 'var(--text-muted)',
+          border: 'var(--border-color)',
+          borderStrong: 'var(--border-strong)',
+          surface: 'var(--surface-color)',
+          surfaceHover: 'var(--surface-hover)',
+          accent: 'var(--accent-color)',
+          accentText: 'var(--accent-text)',
         }
       },
       letterSpacing: {
