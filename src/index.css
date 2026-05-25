@@ -1,70 +1,27 @@
 @import "tailwindcss";
 
-
-
 :root {
-  --bg-deep: #0c0c10;
-  --bg-card: #141420;
-  --bg-panel: #18182a;
-  --bg-input: #1e1e30;
-
-  --gold-1: #bf953f;
-  --gold-2: #fcf6ba;
-  --gold-3: #b38728;
-  --gold-4: #fbf5b7;
-  --gold-5: #aa771c;
-
-  --text-main: #f0ead8;
-  --text-helper: #a89b7a;
-  --text-muted: #6b6250;
-}
-
-/* Import Font if needed - for now setting family */
-@font-face {
-  font-family: 'LXGW WenKai';
-  src: url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css');
+  --bg-xai: #1f2228;
+  --text-xai: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --border-xai: rgba(255, 255, 255, 0.1);
+  --surface-xai: rgba(255, 255, 255, 0.03);
 }
 
 body {
-  font-family: 'LXGW WenKai', '霞鹜文楷', 'Inter', system-ui, sans-serif;
-  color: #f0ead8;
-  background-color: #0c0c10;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(12, 12, 16, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, rgba(24, 24, 42, 0.4) 0, transparent 50%);
-  position: relative;
+  font-family: 'universalSans', Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-xai);
+  background-color: var(--bg-xai);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Noise Texture Overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  opacity: 0.1;
-  z-index: 9999;
+/* Base Form Resets for Brutalist Style */
+input, textarea, button {
+  border-radius: 0;
 }
 
-/* --- Golden Shimmer Effect --- */
-.golden-text {
-  background: linear-gradient(to right,
-      #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c, #fcf6ba, #bf953f);
-  background-size: 200% auto;
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: shine 3s linear infinite;
-  font-weight: 800;
-}
-
-@keyframes shine {
-  to {
-    background-position: 200% center;
-  }
-}
-
+/* Animations */
 @layer utilities {
   .animate-shake {
     animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
@@ -72,98 +29,21 @@ body::before {
 }
 
 @keyframes shake {
-
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-
-  40%,
-  60% {
-    transform: translate3d(4px, 0, 0);
-  }
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-/* --- Gold Glow Pulse --- */
-.gold-glow {
-  animation: glow-pulse 2s ease-in-out infinite;
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
-@keyframes glow-pulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 8px 2px rgba(191, 149, 63, 0.4);
-  }
-
-  50% {
-    box-shadow: 0 0 16px 4px rgba(252, 246, 186, 0.5);
-  }
-}
-
-/* --- Common UI Overrides --- */
-.bg-panel {
-  background-color: var(--bg-panel);
-}
-
-.bg-card {
-  background-color: var(--bg-card);
-}
-
-.bg-input {
-  background-color: var(--bg-input);
-}
-
-.border-gold {
-  border-color: rgba(191, 149, 63, 0.2);
-}
-
-.text-gold {
-  color: var(--gold-1);
-}
-
-.text-gold-light {
-  color: var(--gold-2);
-}
-
-/* --- Animations --- */
-.dice-btn {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.dice-btn:active {
-  transform: scale(0.95);
-}
-
-.dice-btn::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
-}
-
-.dice-btn:active::after {
-  width: 200%;
-  height: 200%;
+.input-error {
+  animation: error-shake 0.3s ease-in-out;
+  border-color: #ef4444 !important;
 }
 
 .result-enter {
@@ -171,98 +51,8 @@ body::before {
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* --- Dice Shake/Roll Animation --- */
-@keyframes shake {
-  0% {
-    transform: translate(1px, 1px) rotate(0deg);
-  }
-
-  10% {
-    transform: translate(-1px, -2px) rotate(-5deg);
-  }
-
-  20% {
-    transform: translate(-3px, 0px) rotate(5deg);
-  }
-
-  30% {
-    transform: translate(3px, 2px) rotate(0deg);
-  }
-
-  40% {
-    transform: translate(1px, -1px) rotate(5deg);
-  }
-
-  50% {
-    transform: translate(-1px, 2px) rotate(-5deg);
-  }
-
-  60% {
-    transform: translate(-3px, 1px) rotate(0deg);
-  }
-
-  70% {
-    transform: translate(3px, 1px) rotate(-5deg);
-  }
-
-  80% {
-    transform: translate(-1px, -1px) rotate(5deg);
-  }
-
-  90% {
-    transform: translate(1px, 2px) rotate(0deg);
-  }
-
-  100% {
-    transform: translate(1px, -2px) rotate(-5deg);
-  }
-}
-
-@keyframes error-shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-4px);
-  }
-
-  75% {
-    transform: translateX(4px);
-  }
-}
-
-.input-error {
-  animation: error-shake 0.3s ease-in-out;
-  border-color: #ef4444 !important;
-  /* Red 500 */
-}
-
-.rolling-dice {
-  animation: shake 0.5s infinite;
-}
-
-.rolling-icon {
-  animation: spin 0.5s linear infinite;
-}
-
-@keyframes spin {
-  100% {
-    transform: rotate(360deg);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- Scrollbar --- */
@@ -270,31 +60,25 @@ body::before {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.4);
 }
-
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 
 /* --- Daggerheart Specifics --- */
 .dh-hope {
-  color: #facc15;
-  text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
-
 .dh-fear {
-  color: #a855f7;
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+  color: rgba(255, 255, 255, 0.5);
 }

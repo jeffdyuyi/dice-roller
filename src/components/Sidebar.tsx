@@ -49,20 +49,16 @@ export function Sidebar({ onRoll }: SidebarProps) {
     };
 
     return (
-        <aside className="w-full md:w-[320px] bg-[#18182a] border-r border-[#bf953f]/10 flex flex-col h-[60%] md:h-full shrink-0 shadow-2xl z-20 overflow-hidden relative">
-            {/* Dark Background Decor */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#bf953f]/5 rounded-full blur-[80px] -mr-24 -mt-24 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-900/5 rounded-full blur-[60px] -ml-16 -mb-16 pointer-events-none"></div>
-
+        <aside className="w-full md:w-[320px] bg-x-dark border-r border-x-border flex flex-col h-[60%] md:h-full shrink-0 z-20 overflow-hidden relative">
             {/* Premium Tabs */}
-            <div className="flex bg-[#0c0c10]/40 border-b border-[#bf953f]/10 shrink-0 p-2 gap-2 backdrop-blur-md">
+            <div className="flex border-b border-x-border shrink-0 p-2 gap-2">
                 {(['standard', 'formula', 'daggerheart'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-1.5 text-[11px] font-black uppercase tracking-wider transition-all rounded-lg border ${activeTab === tab
-                            ? 'bg-[#bf953f] text-[#0c0c10] border-[#fcf6ba] shadow-lg shadow-[#bf953f]/20'
-                            : 'text-[#6b6250] border-transparent hover:text-[#a89b7a] hover:bg-white/5'
+                        className={`flex-1 py-2 text-[12px] font-mono tracking-xai uppercase transition-all border ${activeTab === tab
+                            ? 'bg-x-white text-x-dark border-x-white'
+                            : 'bg-transparent text-x-muted border-transparent hover:text-x-white hover:bg-x-surface'
                             }`}
                     >
                         {tab === 'standard' ? '标 准' : tab === 'formula' ? '公 式' : '判 定'}
@@ -77,40 +73,36 @@ export function Sidebar({ onRoll }: SidebarProps) {
                         {/* Compact Counter & Mod */}
                         <div className="grid grid-cols-2 gap-5">
                             <div className="space-y-2.5">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">骰子数量</label>
-                                <div className="flex items-center h-11 bg-[#1e1e30] border border-[#bf953f]/10 rounded-xl focus-within:border-[#bf953f]/50 transition-all overflow-hidden backdrop-blur-sm shadow-inner group">
-                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-10 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[10px]"></i></button>
-                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-black text-[#f0ead8] outline-none text-sm" />
-                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-10 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-plus text-[10px]"></i></button>
+                                <label className="flex items-center gap-2 text-[12px] font-mono text-x-muted uppercase tracking-xai leading-none mb-1">骰子数量</label>
+                                <div className="flex items-center h-11 bg-transparent border border-x-border focus-within:border-x-borderStrong transition-all group">
+                                    <button onClick={() => adjustValue(setDiceCount, -1, 1)} className="w-10 h-full text-x-muted hover:text-x-white hover:bg-x-surface transition-colors font-mono">-</button>
+                                    <input type="number" value={diceCount} onChange={e => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 w-full bg-transparent text-center font-mono text-x-white outline-none text-[16px]" />
+                                    <button onClick={() => adjustValue(setDiceCount, 1)} className="w-10 h-full text-x-muted hover:text-x-white hover:bg-x-surface transition-colors font-mono">+</button>
                                 </div>
                             </div>
                             <div className="space-y-2.5">
-                                <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">数值修正</label>
-                                <div className="flex items-center h-11 bg-[#1e1e30] border border-[#bf953f]/10 rounded-xl focus-within:border-[#bf953f]/50 transition-all overflow-hidden backdrop-blur-sm shadow-inner group">
-                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-10 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-minus text-[10px]"></i></button>
-                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-black text-[#f0ead8] outline-none text-sm" />
-                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-10 h-full text-[#6b6250] hover:text-[#bf953f] hover:bg-white/5 transition-colors"><i className="fa-solid fa-plus text-[10px]"></i></button>
+                                <label className="flex items-center gap-2 text-[12px] font-mono text-x-muted uppercase tracking-xai leading-none mb-1">数值修正</label>
+                                <div className="flex items-center h-11 bg-transparent border border-x-border focus-within:border-x-borderStrong transition-all group">
+                                    <button onClick={() => adjustValue(setDiceMod, -1)} className="w-10 h-full text-x-muted hover:text-x-white hover:bg-x-surface transition-colors font-mono">-</button>
+                                    <input type="number" value={diceMod} onChange={e => setDiceMod(parseInt(e.target.value) || 0)} className="flex-1 w-full bg-transparent text-center font-mono text-x-white outline-none text-[16px]" />
+                                    <button onClick={() => adjustValue(setDiceMod, 1)} className="w-10 h-full text-x-muted hover:text-x-white hover:bg-x-surface transition-colors font-mono">+</button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Advantage/Disadvantage Toggle */}
                         <div className="space-y-2.5 pt-2">
-                            <label className="flex items-center gap-2 text-[10px] font-black text-[#6b6250] uppercase tracking-[0.2em] leading-none mb-1">
-                                <i className="fa-solid fa-layer-group text-[#bf953f]"></i> 优势 / 劣势
+                            <label className="flex items-center gap-2 text-[12px] font-mono text-x-muted uppercase tracking-xai leading-none mb-1">
+                                优势 / 劣势
                             </label>
-                            <div className="flex bg-[#1e1e30] p-1 rounded-xl border border-[#bf953f]/10 shadow-inner">
+                            <div className="flex border border-x-border p-1 bg-x-surface">
                                 {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => setStandardAdv(type)}
-                                        className={`flex-1 py-2 text-[10px] font-black rounded-lg transition-all ${standardAdv === type
-                                            ? type === 'advantage'
-                                                ? 'bg-emerald-600 text-white shadow-lg'
-                                                : type === 'disadvantage'
-                                                    ? 'bg-rose-600 text-white shadow-lg'
-                                                    : 'bg-[#bf953f] text-[#0c0c10] shadow-lg'
-                                            : 'text-[#6b6250] hover:text-[#a89b7a] hover:bg-white/5'
+                                        className={`flex-1 py-2 text-[12px] font-mono tracking-xai transition-all border ${standardAdv === type
+                                            ? 'bg-x-white text-x-dark border-transparent'
+                                            : 'text-x-muted border-transparent hover:text-x-white hover:bg-x-surface'
                                             }`}
                                     >
                                         {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
@@ -121,14 +113,13 @@ export function Sidebar({ onRoll }: SidebarProps) {
 
                         {/* Custom Dice Field */}
                         <div className="pt-2 flex gap-4 h-11">
-                            <div className="relative flex-1 group">
+                            <div className="relative flex-1 group border border-x-border focus-within:border-x-borderStrong">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none opacity-40 group-focus-within:opacity-100 transition-opacity">
-                                    <i className="fa-solid fa-dice-d6 text-[#bf953f] text-[12px]"></i>
-                                    <span className="text-[#bf953f] font-mono text-[11px] font-black">D</span>
+                                    <span className="text-x-white font-mono text-[14px]">D</span>
                                 </div>
-                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-[#1e1e30] border border-[#bf953f]/10 focus:border-[#bf953f]/50 pl-14 pr-4 rounded-xl text-[#f0ead8] font-black outline-none transition-all text-[13px] backdrop-blur-sm" placeholder="自定义面数" />
+                                <input type="number" value={customSides} onChange={e => setCustomSides(parseInt(e.target.value) || 0)} className="w-full h-full bg-transparent pl-10 pr-4 text-x-white font-mono outline-none transition-all text-[14px]" placeholder="自定义面数" />
                             </div>
-                            <button onClick={() => handleStandardRoll(customSides)} className="bg-gradient-to-br from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-6 rounded-xl flex items-center gap-2 transition-all active:scale-95 shadow-xl shadow-black/40 font-black text-[11px] uppercase tracking-widest">
+                            <button onClick={() => handleStandardRoll(customSides)} className="bg-x-white text-x-dark hover:bg-white/90 px-6 flex items-center gap-2 transition-all font-mono text-[14px] uppercase tracking-xai border border-transparent hover:border-x-borderStrong">
                                 <span>掷骰</span>
                             </button>
                         </div>
@@ -139,13 +130,12 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 <button
                                     key={type}
                                     onClick={() => handleStandardRoll(DICE_TYPES[type].sides)}
-                                    className={`group relative aspect-square rounded-xl flex items-center justify-center transition-all active:scale-90 border-2 ${type === 'd20'
-                                        ? 'bg-[#bf953f]/10 border-[#bf953f] text-[#bf953f] shadow-[0_0_15px_rgba(191,149,63,0.1)] gold-glow'
-                                        : 'bg-[#1e1e30] border-transparent text-[#6b6250] hover:border-[#bf953f]/30 hover:text-[#bf953f] hover:bg-white/5'
+                                    className={`group relative aspect-square flex items-center justify-center transition-all border ${type === 'd20'
+                                        ? 'bg-x-white text-x-dark border-x-white'
+                                        : 'bg-transparent border-x-border text-x-muted hover:border-x-borderStrong hover:text-x-white hover:bg-x-surface'
                                         }`}
                                 >
-                                    <span className={`text-[12px] font-black tracking-tight uppercase ${type === 'd20' ? 'golden-text' : ''}`}>{type}</span>
-                                    <div className="absolute inset-0 rounded-xl transition-opacity duration-300 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-[#bf953f]/5 to-transparent pointer-events-none"></div>
+                                    <span className={`text-[16px] font-mono tracking-xai uppercase`}>{type}</span>
                                 </button>
                             ))}
                         </div>
@@ -154,52 +144,50 @@ export function Sidebar({ onRoll }: SidebarProps) {
 
                 {activeTab === 'formula' && (
                     <div className="animate-in fade-in slide-in-from-right-2 duration-500 space-y-6">
-                        <div className="bg-[#1e1e30] rounded-xl p-6 shadow-2xl border border-[#bf953f]/10 relative overflow-hidden group backdrop-blur-xl">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#bf953f]/5 blur-3xl pointer-events-none"></div>
+                        <div className="bg-transparent border border-x-border p-6 relative">
                             <div className="flex justify-between items-center mb-4">
-                                <label className="text-[10px] font-black text-[#6b6250] uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <i className="fa-solid fa-scroll text-[#bf953f]"></i> 掷骰公式
+                                <label className="text-[12px] font-mono text-x-muted uppercase tracking-xai flex items-center gap-2">
+                                    掷骰公式
                                 </label>
-                                <button onClick={() => setFormulaText('')} className="text-[#6b6250] hover:text-red-500 transition-colors">
-                                    <i className="fa-solid fa-circle-xmark"></i>
+                                <button onClick={() => setFormulaText('')} className="text-x-muted hover:text-x-white transition-colors font-mono">
+                                    X
                                 </button>
                             </div>
                             <textarea
                                 value={formulaText}
                                 onChange={e => setFormulaText(e.target.value)}
                                 rows={2}
-                                className="w-full bg-transparent text-[#fcf6ba] font-mono text-2xl focus:outline-none placeholder-[#6b6250]/40 resize-none leading-relaxed"
+                                className="w-full bg-transparent text-x-white font-mono text-[24px] focus:outline-none placeholder-x-muted resize-none leading-relaxed"
                                 placeholder="输入公式 如 2d20 + 8"
                             />
-                            <div className="mt-8 pt-4 border-t border-[#bf953f]/10 flex justify-end items-center">
-                                <button onClick={handleFormulaRoll} className="bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] px-10 py-2.5 rounded-lg text-[12px] font-black uppercase tracking-widest transition-all shadow-lg shadow-black/40">执 行</button>
+                            <div className="mt-8 pt-4 border-t border-x-border flex justify-end items-center">
+                                <button onClick={handleFormulaRoll} className="bg-x-white text-x-dark px-10 py-2.5 text-[14px] font-mono uppercase tracking-xai transition-all hover:bg-white/90">执 行</button>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-2.5">
                             {/* Dice Shortcuts */}
                             {['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => (
-                                <button key={d} onClick={() => insertText(d)} className="h-11 bg-[#1e1e30] border border-transparent rounded-lg text-[10px] font-black text-[#a89b7a] hover:bg-[#bf953f] hover:text-[#0c0c10] transition-all active:scale-95">{d.toUpperCase()}</button>
+                                <button key={d} onClick={() => insertText(d)} className="h-11 bg-transparent border border-x-border text-[14px] font-mono text-x-muted hover:bg-x-surface hover:text-x-white hover:border-x-borderStrong transition-all">{d.toUpperCase()}</button>
                             ))}
-                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-red-500/5 text-red-500 rounded-lg flex items-center justify-center border border-red-500/10 hover:bg-red-500 hover:text-white transition-all"><i className="fa-solid fa-delete-left text-lg"></i></button>
+                            <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-11 bg-transparent text-x-muted border border-x-border hover:bg-x-surface hover:text-x-white transition-all font-mono">DEL</button>
 
                             {/* Number Pad and Operators */}
                             {[7, 8, 9, '+', 4, 5, 6, '-', 1, 2, 3, 'd', 0].map((item, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => insertText(item.toString())}
-                                    className={`h-11 rounded-lg font-black transition-all active:scale-95 ${typeof item === 'number' || item === '0' || item === 'd'
-                                        ? 'bg-[#1e1e30]/60 text-[#f0ead8] text-base hover:bg-white/5 border border-white/5'
-                                        : 'bg-[#1e1e30] text-[#bf953f] text-xl border border-[#bf953f]/10 hover:bg-[#bf953f] hover:text-[#0c0c10]'
-                                        } ${item === 'd' ? 'italic font-serif lowercase' : ''}`}
+                                    className={`h-11 font-mono transition-all border border-x-border text-[16px] hover:border-x-borderStrong ${typeof item === 'number' || item === '0' || item === 'd'
+                                        ? 'bg-transparent text-x-white hover:bg-x-surface'
+                                        : 'bg-x-surface text-x-white hover:bg-x-borderStrong'
+                                        }`}
                                 >
                                     {item}
                                 </button>
                             ))}
 
                             {/* Execute Button in Grid */}
-                            <button onClick={handleFormulaRoll} className="col-span-3 h-11 bg-gradient-to-br from-[#bf953f] to-[#aa771c] text-[#0c0c10] rounded-lg font-black text-sm shadow-xl shadow-black/40 active:scale-95 hover:from-[#fcf6ba] hover:to-[#bf953f] transition-all flex items-center justify-center gap-3">
-                                <i className="fa-solid fa-wand-magic-sparkles"></i>
+                            <button onClick={handleFormulaRoll} className="col-span-3 h-11 bg-x-white text-x-dark font-mono text-[14px] tracking-xai uppercase hover:bg-white/90 transition-all flex items-center justify-center gap-3">
                                 执 行
                             </button>
                         </div>
@@ -208,39 +196,32 @@ export function Sidebar({ onRoll }: SidebarProps) {
 
                 {activeTab === 'daggerheart' && (
                     <div className="animate-in fade-in slide-in-from-right-2 duration-500 flex flex-col items-center space-y-8">
-                        <div className="flex gap-6 items-center bg-[#1e1e30] p-6 rounded-xl shadow-2xl border border-[#bf953f]/10 backdrop-blur-md relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#bf953f]/5 to-transparent pointer-events-none"></div>
-                            <div className="flex flex-col items-center gap-3 group relative z-10">
-                                <div className="w-16 h-16 bg-gradient-to-br from-[#bf953f] to-[#aa771c] rounded-xl shadow-xl shadow-black/40 flex items-center justify-center text-[#0c0c10] text-2xl group-hover:scale-110 group-hover:rotate-3 transition-all"><i className="fa-solid fa-sun text-shadow-sm"></i></div>
-                                <span className="text-[11px] font-black text-[#bf953f] uppercase tracking-[0.4em]">希 望</span>
+                        <div className="flex gap-6 items-center bg-transparent p-6 border border-x-border relative w-full justify-center">
+                            <div className="flex flex-col items-center gap-3">
+                                <span className="text-[14px] font-mono text-x-white tracking-xai uppercase">希望</span>
                             </div>
-                            <div className="text-[#6b6250] font-black italic text-lg select-none relative z-10">VS</div>
-                            <div className="flex flex-col items-center gap-3 group relative z-10">
-                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-700 to-purple-900 rounded-xl shadow-xl shadow-black/40 flex items-center justify-center text-white text-2xl group-hover:scale-110 group-hover:-rotate-3 transition-all"><i className="fa-solid fa-moon"></i></div>
-                                <span className="text-[11px] font-black text-indigo-400 uppercase tracking-[0.4em]">恐 惧</span>
+                            <div className="text-x-muted font-mono text-lg">VS</div>
+                            <div className="flex flex-col items-center gap-3">
+                                <span className="text-[14px] font-mono text-x-muted tracking-xai uppercase">恐惧</span>
                             </div>
                         </div>
 
                         <div className="w-full space-y-6">
-                            <div className="flex items-center justify-center h-14 bg-[#1e1e30] border border-[#bf953f]/10 rounded-xl focus-within:border-[#bf953f]/50 transition-all overflow-hidden backdrop-blur-sm mx-2 group">
-                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-[#6b6250] hover:text-[#f0ead8] transition-colors hover:bg-white/5"><i className="fa-solid fa-minus"></i></button>
-                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-black text-[#f0ead8] outline-none text-xl" />
-                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-[#6b6250] hover:text-[#f0ead8] transition-colors hover:bg-white/5"><i className="fa-solid fa-plus"></i></button>
+                            <div className="flex items-center justify-center h-14 bg-transparent border border-x-border focus-within:border-x-borderStrong transition-all group">
+                                <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono">-</button>
+                                <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-20 bg-transparent text-center font-mono text-x-white outline-none text-[20px]" />
+                                <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-x-muted hover:text-x-white transition-colors hover:bg-x-surface font-mono">+</button>
                             </div>
 
                             {/* Daggerheart Advantage Toggle */}
-                            <div className="flex bg-[#1e1e30] p-1 rounded-xl border border-[#bf953f]/10 shadow-inner mx-2">
+                            <div className="flex bg-x-surface p-1 border border-x-border">
                                 {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => setDhAdv(type)}
-                                        className={`flex-1 py-2.5 text-[10px] font-black rounded-lg transition-all ${dhAdv === type
-                                            ? type === 'advantage'
-                                                ? 'bg-emerald-600 text-white shadow-lg'
-                                                : type === 'disadvantage'
-                                                    ? 'bg-rose-600 text-white shadow-lg'
-                                                    : 'bg-[#bf953f] text-[#0c0c10] shadow-lg'
-                                            : 'text-[#6b6250] hover:text-[#a89b7a] hover:bg-white/5'
+                                        className={`flex-1 py-2.5 text-[12px] font-mono tracking-xai uppercase transition-all ${dhAdv === type
+                                            ? 'bg-x-white text-x-dark border border-transparent'
+                                            : 'text-x-muted hover:text-x-white hover:bg-x-surface border border-transparent'
                                             }`}
                                     >
                                         {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
@@ -248,9 +229,8 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 ))}
                             </div>
 
-                            <button onClick={handleDhRoll} className="w-full bg-gradient-to-r from-[#bf953f] to-[#aa771c] hover:from-[#fcf6ba] hover:to-[#bf953f] text-[#0c0c10] font-black py-4 rounded-xl shadow-2xl shadow-black/60 active:scale-95 transition-all flex items-center justify-center gap-4">
-                                <i className="fa-solid fa-shield-heart text-[#0c0c10]/50 text-xl"></i>
-                                <span className="text-[13px] uppercase tracking-[0.4em]">结 果 判 定</span>
+                            <button onClick={handleDhRoll} className="w-full bg-x-white text-x-dark font-mono py-4 uppercase tracking-xai transition-all hover:bg-white/90">
+                                结果判定
                             </button>
                         </div>
                     </div>
