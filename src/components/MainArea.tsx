@@ -95,10 +95,6 @@ export function MainArea({ latestRoll, diceHistory }: MainAreaProps) {
 
     return (
         <main className="flex-1 flex flex-col overflow-hidden bg-x-dark relative">
-            {/* Deep Dark Background Decor */}
-            <div className="absolute top-0 right-0 w-[60vw] h-[60vw] bg-amber-900/5 rounded-full blur-[140px] -mr-[30vw] -mt-[30vw] pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-indigo-950/5 rounded-full blur-[120px] -ml-[25vw] -mb-[25vw] pointer-events-none"></div>
-
             <div className="flex-1 overflow-y-auto p-4 md:p-12 md:custom-scrollbar space-y-12 relative z-10" ref={scrollRef}>
                 {diceHistory.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-1000">
