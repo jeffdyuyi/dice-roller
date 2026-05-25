@@ -49,7 +49,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                             </div>
                             <div>
                                 <p className="text-[12px] font-mono text-x-muted uppercase tracking-xai mb-1">官方社群</p>
-                                <p className="font-sans text-x-white text-[16px]">创想俱乐部</p>
+                                <p className="font-sans text-x-white text-[16px]">创想俱乐部 (261751459)</p>
                             </div>
                         </div>
                     </div>
