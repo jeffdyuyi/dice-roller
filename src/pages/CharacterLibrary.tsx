@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyCharacters, deleteCharacter } from '../features/characters/api';
+import type { Character } from '../features/characters/rule-engines/types';
 import { useAuth } from '../features/auth/useAuth';
 
 export function CharacterLibrary() {
     const { user, isLoggedIn } = useAuth();
     const navigate = useNavigate();
-    const [characters, setCharacters] = useState(getMyCharacters(user?.id || ''));
+    const [characters, setCharacters] = useState<Character[]>([]);
+
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            getMyCharacters(user.id).then(setCharacters);
+        }
+    }, [isLoggedIn, user]);
 
     if (!isLoggedIn) {
         return (
@@ -17,10 +24,11 @@ export function CharacterLibrary() {
         );
     }
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (!confirm('确认删除角色卡吗？')) return;
-        deleteCharacter(id);
-        setCharacters(getMyCharacters(user?.id || ''));
+        await deleteCharacter(id);
+        const chars = await getMyCharacters(user?.id || '');
+        setCharacters(chars);
     };
 
     return (

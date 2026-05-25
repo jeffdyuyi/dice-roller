@@ -1,54 +1,38 @@
 import type { Character } from './rule-engines/types';
+import { Storage } from '../../lib/storage';
 
 const STORAGE_KEY = 'mock_characters';
 
 // 模拟 API: 获取当前用户的所有角色
-export function getMyCharacters(userId: string): Character[] {
-    const data = localStorage.getItem(STORAGE_KEY);
+export async function getMyCharacters(userId: string): Promise<Character[]> {
+    const data = await Storage.get<Character[]>(STORAGE_KEY);
     if (!data) return [];
-    try {
-        const all: Character[] = JSON.parse(data);
-        return all.filter(c => c.userId === userId);
-    } catch {
-        return [];
-    }
+    return data.filter(c => c.userId === userId);
 }
 
 // 模拟 API: 获取单张角色卡
-export function getCharacter(id: string): Character | null {
-    const data = localStorage.getItem(STORAGE_KEY);
+export async function getCharacter(id: string): Promise<Character | null> {
+    const data = await Storage.get<Character[]>(STORAGE_KEY);
     if (!data) return null;
-    try {
-        const all: Character[] = JSON.parse(data);
-        return all.find(c => c.id === id) || null;
-    } catch {
-        return null;
-    }
+    return data.find(c => c.id === id) || null;
 }
 
 // 模拟 API: 保存/新建角色
-export function saveCharacter(char: Character): void {
-    const data = localStorage.getItem(STORAGE_KEY);
-    let all: Character[] = [];
-    if (data) {
-        try { all = JSON.parse(data); } catch { }
-    }
+export async function saveCharacter(char: Character): Promise<void> {
+    let all = await Storage.get<Character[]>(STORAGE_KEY) || [];
     const idx = all.findIndex(c => c.id === char.id);
     if (idx >= 0) {
         all[idx] = char;
     } else {
         all.push(char);
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    await Storage.set(STORAGE_KEY, all);
 }
 
 // 模拟 API: 删除角色
-export function deleteCharacter(id: string): void {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) return;
-    try {
-        let all: Character[] = JSON.parse(data);
-        all = all.filter(c => c.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-    } catch { }
+export async function deleteCharacter(id: string): Promise<void> {
+    let all = await Storage.get<Character[]>(STORAGE_KEY);
+    if (!all) return;
+    all = all.filter(c => c.id !== id);
+    await Storage.set(STORAGE_KEY, all);
 }

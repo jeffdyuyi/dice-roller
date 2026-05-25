@@ -7,15 +7,14 @@ interface CharacterInspectorProps {
 }
 
 export function CharacterInspector({ playerId, onClose }: CharacterInspectorProps) {
-    const { connectedPlayers, isHost, roomTemplate, adjustCharacter } = useMqttContext();
+    const { connectedPlayers, isHost, roomTemplate, patchCharacter } = useMqttContext();
 
     const player = connectedPlayers.find(p => p.id === playerId);
     if (!player) return null;
 
-    const handleAdjust = (moduleId: string, value: any) => {
+    const handleAdjust = (moduleId: string, value: unknown) => {
         if (!player.characterData) return;
-        const newData = { ...player.characterData, [moduleId]: value };
-        adjustCharacter(playerId, newData);
+        patchCharacter(playerId, moduleId, value);
     };
 
     return (

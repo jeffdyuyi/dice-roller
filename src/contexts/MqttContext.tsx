@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { mqttInstance, type PlayerNode, type RoomMessage } from '../lib/mqttService';
 import { saveCharacter } from '../features/characters/api';
 import type { Character } from '../features/characters/rule-engines/types';
+import type { CharacterTemplate } from '../features/template-builder/types';
 
 export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
 
@@ -9,12 +10,12 @@ interface MqttContextType {
     commState: RoomCommState;
     roomId: string | null;
     roomName: string | null;
-    roomTemplate: any | null;
+    roomTemplate: CharacterTemplate | null;
     isHost: boolean;
     connectedPlayers: PlayerNode[];
     pendingPlayers: PlayerNode[];
-    diceHistory: any[];
-    latestRoll: any | null;
+    diceHistory: unknown[];
+    latestRoll: unknown | null;
     activeCharacter: Character | null;
     connectionError: string | null;
     latestNotification: { message: string, type: 'info' | 'success' | 'error' } | null;
@@ -22,16 +23,16 @@ interface MqttContextType {
     myId: string;
     isManagerOpen: boolean;
     setManagerOpen: (open: boolean) => void;
-    createRoom: (name: string, rid: string, roomName: string, template: any) => void;
-    joinRoom: (name: string, rid: string, charInfo?: any) => void;
+    createRoom: (name: string, rid: string, roomName: string, template: CharacterTemplate | null) => void;
+    joinRoom: (name: string, rid: string, charInfo?: unknown) => void;
     acceptPlayer: (id: string, name: string) => void;
     rejectPlayer: (id: string) => void;
     kickPlayer: (id: string) => void;
     leaveRoom: () => void;
     disconnectLocal: () => void;
-    addLocalRoll: (payload: any) => void;
+    addLocalRoll: (payload: unknown) => void;
     sendChatMessage: (text: string) => void;
-    adjustCharacter: (playerId: string, charData: Record<string, any>) => void;
+    patchCharacter: (playerId: string, moduleId: string, moduleData: unknown) => void;
     clearHistory: () => void;
     setConnectionError: (err: string | null) => void;
     showNotification: (msg: string, type: 'info' | 'success' | 'error') => void;
@@ -43,12 +44,12 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [commState, setCommState] = useState<RoomCommState>('DISCONNECTED');
     const [roomId, setRoomId] = useState<string | null>(null);
     const [roomName, setRoomName] = useState<string | null>(null);
-    const [roomTemplate, setRoomTemplate] = useState<any | null>(null);
+    const [roomTemplate, setRoomTemplate] = useState<CharacterTemplate | null>(null);
     const [isHost, setIsHost] = useState(false);
     const [connectedPlayers, setConnectedPlayers] = useState<PlayerNode[]>([]);
     const [pendingPlayers, setPendingPlayers] = useState<PlayerNode[]>([]);
-    const [diceHistory, setDiceHistory] = useState<any[]>([]);
-    const [latestRoll, setLatestRoll] = useState<any | null>(null);
+    const [diceHistory, setDiceHistory] = useState<unknown[]>([]);
+    const [latestRoll, setLatestRoll] = useState<unknown | null>(null);
     const [activeCharacter, setActiveCharacter] = useState<Character | null>(null);
     const [myName, setMyName] = useState('Player-' + Math.floor(Math.random() * 1000));
     const [isManagerOpen, setManagerOpen] = useState(false);
@@ -99,7 +100,9 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 showNotification('被房主拒绝加入', 'error');
                 disconnectLocal();
             } else if (msg.type === 'PLAYER_LIST') {
-                const list = (msg.payload as any).list || msg.payload;
+                const list = msg.payload && typeof msg.payload === 'object' && 'list' in msg.payload 
+                    ? (msg.payload as any).list 
+                    : msg.payload;
                 if (Array.isArray(list)) setConnectedPlayers(list);
             } else if (msg.type === 'PLAYER_LEFT') {
                 if (mqttInstance.isHost) {
@@ -125,19 +128,31 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const chatData = { type: 'chat', text: msg.payload?.text, userName: msg.senderName, timestamp: msg.timestamp };
                 setDiceHistory(prev => [...prev, chatData]);
             } else if (msg.type === 'CHARACTER_ADJUST') {
-                // Host modified MY character (if I'm a player)
+                // Backward compatibility if needed, though deprecated
                 if (!mqttInstance.isHost) {
                     const adjustedData = msg.payload?.characterData;
                     setActiveCharacter(prev => {
                         if (!prev) return null;
                         const next = { ...prev, characterData: adjustedData };
-                        // Persist immediately
                         saveCharacter(next);
-                        // Broadcast back to room so others see the update
                         mqttInstance.broadcast('CHARACTER_SYNC', { characterData: adjustedData });
                         return next;
                     });
-                    showNotification('主持人优化了您的角色卡属性', 'success');
+                    showNotification('您的角色卡已更新', 'success');
+                }
+            } else if (msg.type === 'CHARACTER_PATCH') {
+                // PM-1: 强化接收反馈
+                if (!mqttInstance.isHost) {
+                    const { moduleId, moduleData } = msg.payload || {};
+                    setActiveCharacter(prev => {
+                        if (!prev) return null;
+                        const nextData = { ...prev.characterData, [moduleId as string]: moduleData };
+                        const next = { ...prev, characterData: nextData };
+                        saveCharacter(next);
+                        mqttInstance.broadcast('CHARACTER_SYNC', { characterData: nextData });
+                        return next;
+                    });
+                    showNotification('系统: 主持人向您的角色卡发送了新内容', 'success');
                 }
             } else if (msg.type === 'CHARACTER_SYNC') {
                 // Update specific player in the list
@@ -166,7 +181,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setPendingPlayers([]);
     }, []);
 
-    const createRoom = useCallback((name: string, rid: string, rName: string, template: any) => {
+    const createRoom = useCallback((name: string, rid: string, rName: string, template: CharacterTemplate | null) => {
         setMyName(name);
         setRoomName(rName);
         setRoomTemplate(template);
@@ -176,7 +191,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         showNotification(`正在创建房间: ${rName}...`, 'info');
     }, [showNotification]);
 
-    const joinRoom = useCallback((name: string, rid: string, charInfo?: any) => {
+    const joinRoom = useCallback((name: string, rid: string, charInfo?: unknown) => {
         if (!rid) return;
         setMyName(name);
         setCommState('WAITING');
@@ -197,9 +212,9 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         }, 10000);
 
         setTimeout(() => {
-            mqttInstance.sendToHost('JOIN_REQUEST', charInfo);
-            if (charInfo?.fullCharacter) {
-                setActiveCharacter(charInfo.fullCharacter);
+            mqttInstance.sendToHost('JOIN_REQUEST', charInfo as Record<string, any>);
+            if ((charInfo as any)?.fullCharacter) {
+                setActiveCharacter((charInfo as any).fullCharacter);
             }
         }, 800);
 
@@ -254,17 +269,17 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setTimeout(() => disconnectLocal(), 300);
     }, [isHost, disconnectLocal]);
 
-    const addLocalRoll = useCallback((payload: any) => {
-        const data = { ...payload, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
+    const addLocalRoll = useCallback((payload: unknown) => {
+        const data = { ...(payload as any), userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
         setLatestRoll(data);
         setDiceHistory(prev => [...prev, data]);
         if (commState === 'CONNECTED') {
-            if (payload.isHidden && isHost) {
+            if ((payload as any).isHidden && isHost) {
                 // Host sending a hidden roll? Usually players send hidden rolls to host. 
                 // We broadcast it anyway, non-hosts will ignore it.
-                mqttInstance.broadcast('DICE_ROLL', payload);
+                mqttInstance.broadcast('DICE_ROLL', payload as Record<string, any>);
             } else {
-                mqttInstance.broadcast('DICE_ROLL', payload);
+                mqttInstance.broadcast('DICE_ROLL', payload as Record<string, any>);
             }
         }
     }, [myName, commState, isHost]);
@@ -280,20 +295,29 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const clearHistory = useCallback(() => setDiceHistory([]), []);
 
-    const adjustCharacter = useCallback((pId: string, charData: Record<string, any>) => {
+    const patchCharacter = useCallback((pId: string, moduleId: string, moduleData: unknown) => {
         if (!isHost) return;
-        mqttInstance.sendToPlayer(pId, 'CHARACTER_ADJUST', { characterData: charData });
+        mqttInstance.sendToPlayer(pId, 'CHARACTER_PATCH', { moduleId, moduleData });
 
         // Optimistically update host's local player list view
-        setConnectedPlayers(prev => prev.map(p =>
-            p.id === pId ? { ...p, characterData: charData } : p
-        ));
+        setConnectedPlayers(prev => prev.map(p => {
+            if (p.id === pId && p.characterData) {
+                return {
+                    ...p,
+                    characterData: {
+                        ...p.characterData,
+                        [moduleId]: moduleData
+                    }
+                };
+            }
+            return p;
+        }));
     }, [isHost]);
 
     const value = {
         commState, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
         isManagerOpen, setManagerOpen, connectionError, latestNotification,
-        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, adjustCharacter, clearHistory,
+        createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, patchCharacter, clearHistory,
         setConnectionError, showNotification
     };
 

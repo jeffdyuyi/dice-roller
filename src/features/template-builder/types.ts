@@ -34,18 +34,10 @@ export interface TraitModule {
 }
 
 // 4. 背包物品模块 (如 装备栏, 消耗品)
-// 不限数量，用户自定义物品含有哪些可编辑条目
-export interface InventoryField {
-    id: string;
-    name: string; // 例如："名称", "伤害", "重量"
-    valueType: 'number' | 'text';
-}
-
 export interface InventoryModule {
     id: string;
     type: 'inventory';
     label: string; // 例如："行囊", "装备"
-    itemFields: InventoryField[];
 }
 
 // 5. 冒险记录模块 (支持 Markdown 记录的便签区)
@@ -67,19 +59,6 @@ export interface CharacterTemplate {
     modules: SheetModule[];
     createdAt: number;
     updatedAt: number;
-}
-
-// --- 根据模板实例化的角色卡数据结构 ---
-export interface TraitItem {
-    id: string;
-    name: string;
-    requirement: string;
-    effect: string;
-}
-
-export interface InventoryItem {
-    id: string;
-    values: Record<string, any>; // Key 是 InventoryField 的 id
 }
 
 export interface CharacterInstance {

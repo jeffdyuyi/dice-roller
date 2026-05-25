@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getMyCharacters } from '../features/characters/api';
 import type { Character } from '../features/characters/rule-engines/types';
 import { useMqttContext } from '../contexts/MqttContext';
+import { Storage } from '../lib/storage';
 
 interface RoomModalProps {
     isOpen: boolean;
@@ -31,19 +32,27 @@ export function RoomModal({
         if (isOpen) {
             const user = JSON.parse(localStorage.getItem('mock_user') || '{}');
             if (user.id) {
-                const chars = getMyCharacters(user.id);
-                setMyCharacters(chars);
-                if (chars.length > 0) setSelectedCharId(chars[0].id);
+                getMyCharacters(user.id).then(chars => {
+                    setMyCharacters(chars);
+                    if (chars.length > 0) setSelectedCharId(chars[0].id);
+                });
             }
             
-            const storedTemplates = localStorage.getItem('dice_roller_templates');
-            if (storedTemplates) {
-                const parsed = JSON.parse(storedTemplates);
-                setTemplates(parsed);
-                if (parsed.length > 0) setSelectedTemplateId(parsed[0].id);
-            }
+            Storage.get<any[]>('dice_roller_templates').then(storedTemplates => {
+                if (storedTemplates) {
+                    setTemplates(storedTemplates);
+                    if (storedTemplates.length > 0) setSelectedTemplateId(storedTemplates[0].id);
+                }
+            });
         }
     }, [isOpen]);
+
+    // Flat flow: auto-close modal when connected
+    useEffect(() => {
+        if (commState === 'CONNECTED' && isOpen) {
+            onClose();
+        }
+    }, [commState, isOpen, onClose]);
 
     if (!isOpen) return null;
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { CharacterTemplate, SheetModule } from '../features/template-builder/types';
 
 interface DynamicSheetRendererProps {
@@ -5,6 +6,31 @@ interface DynamicSheetRendererProps {
     data: Record<string, any>;
     onChange?: (moduleId: string, value: any) => void;
     readonly?: boolean;
+}
+
+function DebouncedTextarea({ value, onChange, disabled, className, placeholder }: any) {
+    const [localVal, setLocalVal] = useState(value);
+
+    useEffect(() => {
+        setLocalVal(value);
+    }, [value]);
+
+    const handleBlur = () => {
+        if (localVal !== value) {
+            onChange(localVal);
+        }
+    };
+
+    return (
+        <textarea
+            value={localVal}
+            onChange={e => setLocalVal(e.target.value)}
+            onBlur={handleBlur}
+            disabled={disabled}
+            className={className}
+            placeholder={placeholder}
+        />
+    );
 }
 
 export function DynamicSheetRenderer({ template, data, onChange, readonly = false }: DynamicSheetRendererProps) {
@@ -66,108 +92,61 @@ export function DynamicSheetRenderer({ template, data, onChange, readonly = fals
                     </div>
                 );
             case 'trait':
-                const traits: any[] = modData.list || [];
-                return (
-                    <div key={mod.id} className="border border-x-border p-5">
-                        <div className="flex justify-between items-center mb-4 pb-2 border-b border-x-border">
-                            <h3 className="text-[12px] font-mono text-x-muted tracking-xai uppercase">{mod.label}</h3>
-                            {!readonly && (
-                                <button 
-                                    onClick={() => handleChange(mod.id, { list: [...traits, { id: Date.now().toString(), name: '新特性', requirement: '', effect: '' }] })}
-                                    className="text-[10px] font-mono text-x-muted hover:text-x-white uppercase tracking-xai border border-x-border px-2 py-1"
-                                >
-                                    + 添加
-                                </button>
-                            )}
-                        </div>
-                        <div className="space-y-4">
-                            {traits.map((t, idx) => (
-                                <div key={t.id} className="bg-x-surface border border-x-border p-3 space-y-2 relative">
-                                    {!readonly && (
-                                        <button 
-                                            onClick={() => handleChange(mod.id, { list: traits.filter(x => x.id !== t.id) })}
-                                            className="absolute top-2 right-2 text-x-muted hover:text-x-white font-mono"
-                                        >X</button>
-                                    )}
-                                    <input 
-                                        type="text" value={t.name} disabled={readonly}
-                                        onChange={e => { const nl = [...traits]; nl[idx].name = e.target.value; handleChange(mod.id, { list: nl }); }}
-                                        className="w-full bg-transparent text-[14px] font-bold text-x-white outline-none disabled:opacity-50" placeholder="特性名称"
-                                    />
-                                    <input 
-                                        type="text" value={t.requirement} disabled={readonly}
-                                        onChange={e => { const nl = [...traits]; nl[idx].requirement = e.target.value; handleChange(mod.id, { list: nl }); }}
-                                        className="w-full bg-transparent text-[12px] font-mono text-x-muted outline-none disabled:opacity-50" placeholder="需求/细节"
-                                    />
-                                    <textarea 
-                                        value={t.effect} disabled={readonly} rows={2}
-                                        onChange={e => { const nl = [...traits]; nl[idx].effect = e.target.value; handleChange(mod.id, { list: nl }); }}
-                                        className="w-full bg-transparent text-[12px] font-sans text-x-white outline-none resize-none mt-1 disabled:opacity-50" placeholder="效果描述"
-                                    />
-                                </div>
-                            ))}
-                            {traits.length === 0 && <div className="text-x-muted text-[12px] font-mono italic">暂无内容</div>}
-                        </div>
-                    </div>
-                );
             case 'inventory':
-                const items: any[] = modData.list || [];
-                return (
-                    <div key={mod.id} className="border border-x-border p-5">
-                        <div className="flex justify-between items-center mb-4 pb-2 border-b border-x-border">
-                            <h3 className="text-[12px] font-mono text-x-muted tracking-xai uppercase">{mod.label}</h3>
-                            {!readonly && (
-                                <button 
-                                    onClick={() => handleChange(mod.id, { list: [...items, { id: Date.now().toString(), values: {} }] })}
-                                    className="text-[10px] font-mono text-x-muted hover:text-x-white uppercase tracking-xai border border-x-border px-2 py-1"
-                                >
-                                    + 添加物品
-                                </button>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            {items.map((item, idx) => (
-                                <div key={item.id} className="flex items-start gap-2 relative bg-x-surface p-2 border border-x-border">
-                                    <div className="flex-1 grid grid-cols-2 gap-2">
-                                        {mod.itemFields.map(f => (
-                                            <input 
-                                                key={f.id}
-                                                type={f.valueType === 'number' ? 'number' : 'text'}
-                                                value={item.values[f.id] || ''}
-                                                disabled={readonly}
-                                                onChange={e => {
-                                                    const nl = [...items]; 
-                                                    nl[idx].values = { ...nl[idx].values, [f.id]: f.valueType === 'number' ? parseFloat(e.target.value) : e.target.value };
-                                                    handleChange(mod.id, { list: nl });
-                                                }}
-                                                className="bg-transparent border-b border-x-border p-1 text-x-white font-sans text-[12px] outline-none disabled:opacity-50" 
-                                                placeholder={f.name}
-                                            />
-                                        ))}
-                                    </div>
-                                    {!readonly && (
-                                        <button 
-                                            onClick={() => handleChange(mod.id, { list: items.filter(x => x.id !== item.id) })}
-                                            className="text-x-muted hover:text-x-white font-mono px-2"
-                                        >X</button>
-                                    )}
-                                </div>
-                            ))}
-                            {items.length === 0 && <div className="text-x-muted text-[12px] font-mono italic">暂无物品</div>}
-                        </div>
-                    </div>
-                );
             case 'memo':
+                const items: any[] = modData.list || [];
+                // Migration: if they had text, convert to list
+                if (items.length === 0 && modData.text) {
+                    items.push({ id: Date.now().toString(), text: modData.text });
+                }
+
                 return (
                     <div key={mod.id} className="border border-x-border p-5 h-full flex flex-col">
-                        <h3 className="text-[12px] font-mono text-x-muted tracking-xai uppercase mb-4 pb-2 border-b border-x-border">{mod.label}</h3>
-                        <textarea 
-                            value={modData.text || ''}
-                            disabled={readonly}
-                            onChange={e => handleChange(mod.id, { text: e.target.value })}
-                            className="flex-1 w-full bg-transparent text-[14px] font-mono text-x-white outline-none resize-none disabled:opacity-50 min-h-[120px]"
-                            placeholder="输入 Markdown 文本..."
-                        />
+                        <div className="flex justify-between items-center mb-4 pb-2 border-b border-x-border">
+                            <h3 className="text-[12px] font-mono text-x-muted tracking-xai uppercase">{mod.label}</h3>
+                            {!readonly && (
+                                <button 
+                                    onClick={() => handleChange(mod.id, { list: [...items, { id: Date.now().toString(), text: '' }] })}
+                                    className="text-[10px] font-mono text-x-muted hover:text-x-white uppercase tracking-xai border border-x-border px-2 py-1 transition-colors"
+                                >
+                                    + 添加条目
+                                </button>
+                            )}
+                        </div>
+                        <div className="space-y-4 flex-1">
+                            {items.map((item, idx) => {
+                                // Graceful handling of old structured data
+                                const itemText = item.text !== undefined 
+                                    ? item.text 
+                                    : (item.name ? `**${item.name}**\n${item.requirement || ''}\n${item.effect || ''}` : '');
+
+                                return (
+                                    <div key={item.id} className="bg-x-surface border border-x-border p-3 relative group">
+                                        {!readonly && (
+                                            <button 
+                                                onClick={() => handleChange(mod.id, { list: items.filter(x => x.id !== item.id) })}
+                                                className="absolute top-2 right-2 text-x-muted hover:text-red-500 transition-colors text-lg leading-none opacity-0 group-hover:opacity-100"
+                                                title="删除该条目"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                        <DebouncedTextarea 
+                                            value={itemText}
+                                            disabled={readonly}
+                                            onChange={(val: string) => {
+                                                const nl = [...items];
+                                                nl[idx] = { ...nl[idx], text: val };
+                                                handleChange(mod.id, { list: nl });
+                                            }}
+                                            className="w-full bg-transparent text-[14px] font-mono text-x-white outline-none resize-y min-h-[60px] disabled:opacity-50 pr-6 mt-1"
+                                            placeholder="输入 Markdown 内容..."
+                                        />
+                                    </div>
+                                );
+                            })}
+                            {items.length === 0 && <div className="text-x-muted text-[12px] font-mono italic">暂无内容</div>}
+                        </div>
                     </div>
                 );
             default:

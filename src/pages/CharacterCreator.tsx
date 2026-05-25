@@ -4,6 +4,7 @@ import { useAuth } from '../features/auth/useAuth';
 import { saveCharacter } from '../features/characters/api';
 import type { CharacterTemplate } from '../features/template-builder/types';
 import { DynamicSheetRenderer } from '../components/DynamicSheetRenderer';
+import { Storage } from '../lib/storage';
 
 export function CharacterCreator() {
     const { user, isLoggedIn } = useAuth();
@@ -15,12 +16,12 @@ export function CharacterCreator() {
     const [charData, setCharData] = useState<Record<string, any>>({});
 
     useEffect(() => {
-        const stored = localStorage.getItem('dice_roller_templates');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            setTemplates(parsed);
-            if (parsed.length > 0) setSelectedTemplateId(parsed[0].id);
-        }
+        Storage.get<CharacterTemplate[]>('dice_roller_templates').then(stored => {
+            if (stored) {
+                setTemplates(stored);
+                if (stored.length > 0) setSelectedTemplateId(stored[0].id);
+            }
+        });
     }, []);
 
     if (!isLoggedIn || !user) {
@@ -33,7 +34,7 @@ export function CharacterCreator() {
 
     const template = templates.find(t => t.id === selectedTemplateId);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!charName) return alert('角色名不能为空！');
         if (!template) return alert('请选择一个模板！');
 
@@ -48,7 +49,7 @@ export function CharacterCreator() {
             createdAt: Date.now()
         };
 
-        saveCharacter(newChar as any);
+        await saveCharacter(newChar as any);
         alert('角色卡已成功保存！');
         navigate('/characters');
     };
