@@ -42,7 +42,7 @@ export function CharacterCreator() {
                 <div className="flex justify-between items-center mb-12 border-b border-white/5 pb-6">
                     <div>
                         <h1 className="text-[34px] font-sans font-semibold tracking-tight text-white leading-tight">新建备忘库存</h1>
-                        <p className="text-[14px] font-sans text-white/50 mt-1">创建一个空白的备忘录，用于存放规则速查、物品或者角色设定</p>
+                        <p className="text-[14px] font-sans text-white/70 mt-1">创建一个空白的备忘录，用于存放规则速查、物品或者角色设定</p>
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@ export function CharacterCreator() {
                             type="text" 
                             value={memoName} 
                             onChange={e => setMemoName(e.target.value)} 
-                            className="w-full bg-[#1d1d1f] focus:bg-[#272729] rounded-2xl px-6 py-4 text-[16px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue transition-all placeholder:text-white/30 shadow-sm border border-white/5" 
+                            className="w-full bg-[#1d1d1f] focus:bg-[#272729] rounded-2xl px-6 py-4 text-[16px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue transition-all placeholder:text-white/70 shadow-sm border border-white/5" 
                             placeholder="如：DND 5E 战士背包 / 赛博朋克调查笔记..." 
                         />
                     </div>
@@ -63,7 +63,7 @@ export function CharacterCreator() {
                         <textarea
                             value={memoContent}
                             onChange={e => setMemoContent(e.target.value)}
-                            className="w-full bg-[#1d1d1f] focus:bg-[#272729] rounded-2xl px-6 py-4 text-[15px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue transition-all placeholder:text-white/30 shadow-sm border border-white/5 min-h-[300px] resize-y custom-scrollbar"
+                            className="w-full bg-[#1d1d1f] focus:bg-[#272729] rounded-2xl px-6 py-4 text-[15px] font-sans text-white outline-none focus:ring-2 focus:ring-apple-blue transition-all placeholder:text-white/70 shadow-sm border border-white/5 min-h-[300px] resize-y custom-scrollbar"
                             placeholder="您可以提前写下一些角色的初始设定、自带物品清单..."
                         />
                     </div>

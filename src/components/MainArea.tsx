@@ -28,8 +28,8 @@ export function MainArea({ diceHistory }: MainAreaProps) {
             return (
                 <div key={idx} className={`flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full ${isLocal ? 'items-end' : 'items-start'}`}>
                     <div className={`flex items-baseline gap-2 mb-1.5 ${isLocal ? 'mr-1 flex-row-reverse' : 'ml-1'}`}>
-                        <span className="text-[12px] font-sans font-medium text-white/60">{roll.userName}</span>
-                        <span className="text-[10px] font-sans text-white/30">
+                        <span className="text-[12px] font-sans font-medium text-white/80">{roll.userName}</span>
+                        <span className="text-[10px] font-sans text-white/70">
                             {new Date(roll.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                     </div>
@@ -50,7 +50,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
             <div key={idx} className={`flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isLatest ? 'opacity-100' : 'opacity-80 hover:opacity-100 transition-opacity'}`}>
                 <div className="flex items-baseline gap-2 mb-1.5 ml-1">
                     <span className="text-[14px] font-sans font-medium text-white/90">{roll.userName || '未知领域者'}</span>
-                    <span className="text-[11px] font-sans text-white/40">
+                    <span className="text-[11px] font-sans text-white/80">
                         {new Date(roll.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                     {roll.tag && (
@@ -67,7 +67,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                 
                 <div className="bg-[#1c1c1e] rounded-2xl rounded-tl-sm p-4 inline-flex flex-wrap items-center gap-5 max-w-[85%] shadow-sm border border-white/5">
                     <div className="flex flex-col min-w-[80px]">
-                        <span className="text-[12px] font-sans text-white/50 mb-1">{roll.historyTitle || '系统判定'}</span>
+                        <span className="text-[12px] font-sans text-white/70 mb-1">{roll.historyTitle || '系统判定'}</span>
                         <span className="text-[14px] font-mono text-white/90 bg-[#2c2c2e] px-2.5 py-1 rounded-md inline-block w-fit">{roll.historyFormula}</span>
                     </div>
                     
@@ -75,12 +75,12 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                     
                     <div className="flex items-center gap-4 flex-1 min-w-[150px]">
                         {isDaggerheart ? (
-                            <span className="text-[13px] font-sans text-white/60">
+                            <span className="text-[13px] font-sans text-white/80">
                                 希望 <span className="text-white font-medium">{roll.hope}</span> / 恐惧 <span className="text-white font-medium">{roll.fear}</span>
                                 {roll.advDice && <span className="ml-1 opacity-70">({roll.advType === 'advantage' ? '+' : '-'}{roll.advDice})</span>}
                             </span>
                         ) : (
-                            <span className="text-[13px] font-sans text-white/60 truncate max-w-[250px]" title={roll.breakdown}>
+                            <span className="text-[13px] font-sans text-white/80 truncate max-w-[250px]" title={roll.breakdown}>
                                 {roll.breakdown}
                             </span>
                         )}
@@ -101,7 +101,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-6">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-white/20" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         </div>
-                        <p className="text-[14px] font-sans text-white/40 tracking-wide mt-2">没有任何活动记录</p>
+                        <p className="text-[14px] font-sans text-white/80 tracking-wide mt-2">没有任何活动记录</p>
                     </div>
                 ) : (
                     diceHistory.map((roll, idx) => renderRollCard(roll, idx, idx === diceHistory.length - 1))
@@ -118,7 +118,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                             onChange={e => setChatInput(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleSendChat()}
                             placeholder="输入消息..." 
-                            className="flex-1 bg-transparent px-4 py-2 text-white font-sans text-[15px] outline-none transition-all placeholder:text-white/30"
+                            className="flex-1 bg-transparent px-4 py-2 text-white font-sans text-[15px] outline-none transition-all placeholder:text-white/70"
                         />
                         <button 
                             onClick={handleSendChat}
@@ -147,7 +147,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                         <div className="flex flex-col pr-2">
                             <span className="text-[14px] font-sans font-medium text-white truncate max-w-[120px]">{activeCharacter.name}</span>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[11px] font-sans text-white/60">{activeCharacter.summary || '备忘录激活'}</span>
+                                <span className="text-[11px] font-sans text-white/80">{activeCharacter.summary || '备忘录激活'}</span>
                             </div>
                         </div>
                     </div>

@@ -112,16 +112,16 @@ export function Sidebar({ onRoll }: SidebarProps) {
                         className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                     >
                         <span className="text-[15px] font-sans font-semibold text-white">公式解析</span>
-                        <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.formula ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+                        <span className="font-mono text-white/80 text-[18px] transition-transform duration-300" style={{ transform: openSections.formula ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                     </button>
                     {openSections.formula && (
                         <div className="px-4 pb-5 space-y-4 animate-in fade-in duration-300">
                             <div className="bg-[#2c2c2e] rounded-xl p-4 relative shadow-sm">
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-[13px] font-sans font-medium text-white/60">
+                                    <label className="text-[13px] font-sans font-medium text-white/80">
                                         输入掷骰公式
                                     </label>
-                                    <button onClick={() => setFormulaText('')} className="text-white/40 hover:text-white transition-colors p-1 bg-white/5 hover:bg-white/10 rounded-full">
+                                    <button onClick={() => setFormulaText('')} className="text-white/80 hover:text-white transition-colors p-1 bg-white/5 hover:bg-white/10 rounded-full">
                                         <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M13 1L1 13M1 1L13 13"/></svg>
                                     </button>
                                 </div>
@@ -140,7 +140,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                             <div className="w-10 h-5.5 bg-white/10 rounded-full peer-checked:bg-apple-blue transition-colors"></div>
                                             <div className="absolute left-[2px] top-[2px] w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4.5"></div>
                                         </div>
-                                        <span className="text-[13px] font-sans font-medium text-white/60 group-hover:text-white transition-colors select-none">暗骰</span>
+                                        <span className="text-[13px] font-sans font-medium text-white/80 group-hover:text-white transition-colors select-none">暗骰</span>
                                     </label>
                                     <button onClick={handleFormulaRoll} className="bg-apple-blue text-white px-6 py-2 rounded-full text-[14px] font-sans font-medium transition-all hover:bg-apple-blue/90 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f]">执行</button>
                                 </div>
@@ -185,7 +185,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                         className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                     >
                         <span className="text-[15px] font-sans font-semibold text-white">二元系统</span>
-                        <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.daggerheart ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+                        <span className="font-mono text-white/80 text-[18px] transition-transform duration-300" style={{ transform: openSections.daggerheart ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                     </button>
                     {openSections.daggerheart && (
                         <div className="px-4 pb-5 flex flex-col items-center space-y-5 animate-in fade-in duration-300">
@@ -193,17 +193,17 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 <div className="flex flex-col items-center">
                                     <span className="text-[14px] font-sans font-medium text-white">希望</span>
                                 </div>
-                                <div className="text-white/30 font-sans italic text-sm">VS</div>
+                                <div className="text-white/70 font-sans italic text-sm">VS</div>
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[14px] font-sans font-medium text-white/50">恐惧</span>
+                                    <span className="text-[14px] font-sans font-medium text-white/70">恐惧</span>
                                 </div>
                             </div>
 
                             <div className="w-full space-y-4">
                                 <div className="flex items-center justify-center h-12 bg-[#2c2c2e] rounded-xl overflow-hidden shadow-sm">
-                                    <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">-</button>
+                                    <button onClick={() => adjustValue(setDhMod, -1)} className="w-16 h-full text-white/70 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">-</button>
                                     <input type="number" value={dhMod} onChange={e => setDhMod(parseInt(e.target.value) || 0)} className="w-full max-w-[80px] bg-transparent text-center font-sans font-medium text-white outline-none text-[20px]" />
-                                    <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">+</button>
+                                    <button onClick={() => adjustValue(setDhMod, 1)} className="w-16 h-full text-white/70 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg">+</button>
                                 </div>
 
                                 {/* Daggerheart Advantage Toggle */}
@@ -214,7 +214,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                             onClick={() => setDhAdv(type)}
                                             className={`flex-1 py-2 text-[13px] font-sans font-medium rounded-lg transition-all ${dhAdv === type
                                                 ? 'bg-[#3a3a3c] text-white shadow-sm'
-                                                : 'text-white/50 hover:text-white'
+                                                : 'text-white/70 hover:text-white'
                                                 }`}
                                         >
                                             {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
@@ -241,7 +241,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
                             >
                                 <span className="text-[15px] font-sans font-semibold text-apple-blue">空投物品/记录 (DM)</span>
-                                <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.hostItems ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+                                <span className="font-mono text-white/80 text-[18px] transition-transform duration-300" style={{ transform: openSections.hostItems ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                             </button>
                             {openSections.hostItems && (
                                 <div className="px-4 pb-5 space-y-3 animate-in fade-in duration-300">
@@ -250,24 +250,24 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                             <option value="all" className="bg-[#1d1d1f]">发送给: 全体玩家</option>
                                             {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-[#1d1d1f]">仅发送给: {p.name}</option>)}
                                         </select>
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 pointer-events-none text-xs">▼</span>
                                     </div>
 
                                     <div className="bg-[#2c2c2e] rounded-xl overflow-hidden shadow-sm">
                                         <div className="flex gap-1 p-1.5 border-b border-white/5">
-                                            <button onClick={() => insertMarkdown('**', '**')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans font-bold" title="加粗">B</button>
-                                            <button onClick={() => insertMarkdown('*', '*')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans italic" title="斜体">I</button>
-                                            <button onClick={() => insertMarkdown('~~', '~~')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans line-through" title="删除线">S</button>
+                                            <button onClick={() => insertMarkdown('**', '**')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors font-sans font-bold" title="加粗">B</button>
+                                            <button onClick={() => insertMarkdown('*', '*')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors font-sans italic" title="斜体">I</button>
+                                            <button onClick={() => insertMarkdown('~~', '~~')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors font-sans line-through" title="删除线">S</button>
                                             <div className="w-px bg-white/5 mx-1 my-1"></div>
-                                            <button onClick={() => insertMarkdown('> ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-mono" title="引用">&gt;</button>
-                                            <button onClick={() => insertMarkdown('- ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-mono" title="列表">•</button>
+                                            <button onClick={() => insertMarkdown('> ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors font-mono" title="引用">&gt;</button>
+                                            <button onClick={() => insertMarkdown('- ')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors font-mono" title="列表">•</button>
                                         </div>
                                         <textarea
                                             ref={textareaRef}
                                             value={itemText}
                                             onChange={e => setItemText(e.target.value)}
                                             rows={4}
-                                            className="w-full bg-transparent text-white font-sans text-[14px] outline-none resize-none p-4 placeholder:text-white/30"
+                                            className="w-full bg-transparent text-white font-sans text-[14px] outline-none resize-none p-4 placeholder:text-white/70"
                                             placeholder="输入说明文本..."
                                         />
                                     </div>

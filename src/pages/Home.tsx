@@ -9,7 +9,7 @@ export function Home() {
     // For now, if connected, just show the dashboard so the user can navigate.
     if (commState === 'CONNECTED') {
         return (
-            <div className="flex-1 flex items-center justify-center text-white/50 font-sans">
+            <div className="flex-1 flex items-center justify-center text-white/70 font-sans">
                 房间已连接，请在左侧或浮层查看房间界面。
             </div>
         );
