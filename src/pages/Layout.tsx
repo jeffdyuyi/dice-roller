@@ -5,9 +5,11 @@ import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 import { RoomModal } from '../components/RoomModal';
 import { LockScreen } from '../components/LockScreen';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { Sidebar } from '../components/Sidebar';
+import { MainArea } from '../components/MainArea';
 
 export function Layout() {
-    const { commState, roomId, roomName, myName, latestNotification, setManagerOpen } = useMqttContext();
+    const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(() => !sessionStorage.getItem('app_unlocked'));
@@ -62,10 +64,7 @@ export function Layout() {
                             </button>
                         )}
                         <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                            <span>角色库</span>
-                        </Link>
-                        <Link to="/template-builder" className="flex items-center gap-2 px-3 py-2 text-x-white hover:text-x-muted transition-colors font-sans text-[14px]">
-                            <span>模板开发</span>
+                            <span>备忘库存</span>
                         </Link>
                     </nav>
                 </div>
@@ -149,7 +148,15 @@ export function Layout() {
 
             {/* Main Content Viewport */}
             <main className="flex-1 w-full overflow-hidden relative z-10 flex border-t border-x-border">
-                <Outlet context={{ openRoomModal: () => setIsRoomModalOpen(true) }} />
+                {commState === 'CONNECTED' && (
+                    <div className="flex flex-col md:flex-row h-full w-[350px] md:w-[700px] shrink-0 border-r border-white/5 bg-black z-20">
+                        <Sidebar onRoll={addLocalRoll} />
+                        <MainArea diceHistory={diceHistory} />
+                    </div>
+                )}
+                <div className="flex-1 h-full overflow-hidden relative">
+                    <Outlet context={{ openRoomModal: () => setIsRoomModalOpen(true) }} />
+                </div>
             </main>
 
             {/* Room Management Drawer */}

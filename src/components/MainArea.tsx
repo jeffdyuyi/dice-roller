@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMqttContext } from '../contexts/MqttContext';
-import { CharacterInspector } from './CharacterInspector';
 
 interface MainAreaProps {
     diceHistory: any[];
@@ -8,8 +7,7 @@ interface MainAreaProps {
 
 export function MainArea({ diceHistory }: MainAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const { activeCharacter, myId, sendChatMessage, commState } = useMqttContext();
-    const [isInspectingSelf, setInspectingSelf] = useState(false);
+    const { activeCharacter, myName, sendChatMessage, commState } = useMqttContext();
     const [chatInput, setChatInput] = useState('');
 
     useEffect(() => {
@@ -26,15 +24,20 @@ export function MainArea({ diceHistory }: MainAreaProps) {
 
     const renderRollCard = (roll: any, idx: number, isLatest: boolean = false) => {
         if (roll.type === 'chat') {
+            const isLocal = roll.userName === myName || roll.isLocal;
             return (
-                <div key={idx} className="flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex items-baseline gap-2 mb-1.5 ml-1">
-                        <span className="text-[14px] font-sans font-medium text-white/90">{roll.userName}</span>
-                        <span className="text-[11px] font-sans text-white/40">
+                <div key={idx} className={`flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full ${isLocal ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex items-baseline gap-2 mb-1.5 ${isLocal ? 'mr-1 flex-row-reverse' : 'ml-1'}`}>
+                        <span className="text-[12px] font-sans font-medium text-white/60">{roll.userName}</span>
+                        <span className="text-[10px] font-sans text-white/30">
                             {new Date(roll.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                     </div>
-                    <div className="bg-[#2c2c2e] rounded-2xl rounded-tl-sm px-4 py-3 text-[15px] font-sans text-white/90 leading-relaxed inline-block max-w-[85%] shadow-sm">
+                    <div className={`rounded-2xl px-4 py-2.5 text-[15px] font-sans leading-relaxed inline-block max-w-[85%] shadow-sm ${
+                        isLocal 
+                        ? 'bg-apple-blue text-white rounded-tr-sm' 
+                        : 'bg-[#2c2c2e] text-white/90 rounded-tl-sm'
+                    }`}>
                         {roll.text}
                     </div>
                 </div>
@@ -132,8 +135,7 @@ export function MainArea({ diceHistory }: MainAreaProps) {
             {/* Active Character HUD */}
             {activeCharacter && (
                 <div className="absolute top-6 left-6 z-[30]">
-                    <div className="group relative flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full p-1.5 pr-5 hover:bg-black/60 transition-all cursor-pointer shadow-apple"
-                        onClick={() => setInspectingSelf(true)}>
+                    <div className="group relative flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full p-1.5 pr-5 shadow-apple cursor-default">
                         <div className="w-10 h-10 rounded-full bg-[#2c2c2e] flex items-center justify-center text-white overflow-hidden shadow-sm">
                             {activeCharacter.avatarUrl ? (
                                 <img src={activeCharacter.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -145,26 +147,11 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                         <div className="flex flex-col pr-2">
                             <span className="text-[14px] font-sans font-medium text-white truncate max-w-[120px]">{activeCharacter.name}</span>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[11px] font-sans text-white/60">{activeCharacter.characterData.class || '冒险者'}</span>
-                                {activeCharacter.characterData.hp && (
-                                    <span className="text-[11px] font-sans text-white/80 bg-white/10 px-1.5 rounded-sm">HP {activeCharacter.characterData.hp.current}</span>
-                                )}
+                                <span className="text-[11px] font-sans text-white/60">{activeCharacter.summary || '备忘录激活'}</span>
                             </div>
-                        </div>
-
-                        {/* Hover Tooltip */}
-                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap">
-                            <span className="text-[12px] font-sans bg-[#1d1d1f] text-white px-3 py-1.5 rounded-lg shadow-md border border-white/10">点击查看资料</span>
                         </div>
                     </div>
                 </div>
-            )}
-
-            {isInspectingSelf && myId && (
-                <CharacterInspector
-                    playerId={myId}
-                    onClose={() => setInspectingSelf(false)}
-                />
             )}
         </main>
     );

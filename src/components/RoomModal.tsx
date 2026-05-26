@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getMyCharacters } from '../features/characters/api';
-import type { Character } from '../features/characters/rule-engines/types';
+import type { Character } from '../features/characters/types';
 import { useMqttContext } from '../contexts/MqttContext';
 import { Storage } from '../lib/storage';
 
@@ -68,9 +68,7 @@ export function RoomModal({
             }
             charInfo = {
                 guestMode: false,
-                characterId: char.id,
-                templateId: (char as any).templateId || char.ruleSystem, // backward compatibility
-                characterData: char.characterData
+                characterId: char.id
             };
         }
         joinRoom(inputName, inputRoomId, charInfo);

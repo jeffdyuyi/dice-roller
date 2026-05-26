@@ -1,4 +1,4 @@
-import type { Character } from './rule-engines/types';
+import type { Character } from './types';
 import { Storage } from '../../lib/storage';
 
 const STORAGE_KEY = 'mock_characters';

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyCharacters, deleteCharacter } from '../features/characters/api';
-import type { Character } from '../features/characters/rule-engines/types';
+import type { Character } from '../features/characters/types';
 import { useAuth } from '../features/auth/useAuth';
 
 export function CharacterLibrary() {
@@ -51,7 +51,7 @@ export function CharacterLibrary() {
                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-white/20" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
-                    <p className="text-white/40 font-sans text-[15px]">档案库为空，暂无角色</p>
+                    <p className="text-white/40 font-sans text-[15px]">备忘库存为空，暂无记录</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 relative z-10">
@@ -65,7 +65,7 @@ export function CharacterLibrary() {
                                     <div>
                                         <h3 className="text-[18px] font-sans font-semibold text-white tracking-tight">{c.name}</h3>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[12px] font-sans px-2.5 py-1 bg-white/5 rounded-md text-white/50">模板: {c.summary || '未知'}</span>
+                                            <span className="text-[12px] font-sans px-2.5 py-1 bg-white/5 rounded-md text-white/50">{c.summary || '未分类'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -74,7 +74,7 @@ export function CharacterLibrary() {
                             <div className="flex-1"></div>
 
                             <div className="pt-5 border-t border-white/5 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <button className="flex-1 bg-[#2c2c2e] hover:bg-[#3a3a3c] rounded-full py-2.5 text-[13px] text-white font-sans font-medium transition-colors shadow-sm" onClick={() => alert('档案详情系统即将开放')}>
+                                <button className="flex-1 bg-[#2c2c2e] hover:bg-[#3a3a3c] rounded-full py-2.5 text-[13px] text-white font-sans font-medium transition-colors shadow-sm" onClick={() => alert('备忘详情编辑功能即将开放')}>
                                     查看详情
                                 </button>
                                 <button className="w-10 h-10 rounded-full hover:bg-red-500/10 text-white/40 hover:text-red-400 flex items-center justify-center transition-colors" onClick={() => handleDelete(c.id)}>

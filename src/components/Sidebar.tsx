@@ -7,12 +7,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onRoll }: SidebarProps) {
-    const { isHost, connectedPlayers, roomTemplate, patchCharacter, commState } = useMqttContext();
+    const { isHost, connectedPlayers, patchCharacter, commState } = useMqttContext();
 
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
         formula: true,
         daggerheart: false,
-        hostStats: true,
         hostItems: false
     });
 
@@ -28,10 +27,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
     const [isHidden, setIsHidden] = useState(false);
 
     // Host Tools State
-    const [statTargetPlayer, setStatTargetPlayer] = useState<string>('');
-    const [statTargetModule, setStatTargetModule] = useState<string>('');
     const [itemTargetPlayer, setItemTargetPlayer] = useState<string>('all');
-    const [itemTargetModule, setItemTargetModule] = useState<string>('');
     const [itemText, setItemText] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -56,30 +52,10 @@ export function Sidebar({ onRoll }: SidebarProps) {
         }, 0);
     };
 
-    const validPlayers = connectedPlayers.filter(p => !p.isHost && p.characterData);
-    const statModules = roomTemplate?.modules?.filter((m: any) => m.type === 'variable_stat') || [];
-    const itemModules = roomTemplate?.modules?.filter((m: any) => m.type === 'trait' || m.type === 'inventory' || m.type === 'memo') || [];
-
-    // Auto-select first available options
-    if (!statTargetPlayer && validPlayers.length > 0) setStatTargetPlayer(validPlayers[0].id);
-    if (!statTargetModule && statModules.length > 0) setStatTargetModule(statModules[0].id);
-    if (!itemTargetModule && itemModules.length > 0) setItemTargetModule(itemModules[0].id);
-
-    const selectedPlayerForStat = connectedPlayers.find(p => p.id === statTargetPlayer);
-    const currentStatValue = selectedPlayerForStat?.characterData?.[statTargetModule]?.current ?? 0;
-
-    const setStatValue = (val: number) => {
-        if (!statTargetPlayer || !statTargetModule) return;
-        const player = connectedPlayers.find(p => p.id === statTargetPlayer);
-        if (!player || !player.characterData) return;
-        
-        const currentData = player.characterData[statTargetModule] || { current: 0 };
-        const newData = { ...currentData, current: val };
-        patchCharacter(statTargetPlayer, statTargetModule, newData);
-    };
+    const validPlayers = connectedPlayers.filter(p => !p.isHost && p.characterId); // Using characterId to identify valid players with memos
 
     const handleItemSend = () => {
-        if (!itemTargetModule || !itemText.trim()) return;
+        if (!itemText.trim()) return;
         
         const targetIds = itemTargetPlayer === 'all' 
             ? validPlayers.map(p => p.id)
@@ -90,16 +66,8 @@ export function Sidebar({ onRoll }: SidebarProps) {
             return;
         }
 
-        const newItem = { id: crypto.randomUUID(), text: itemText };
-
         targetIds.forEach(id => {
-            const player = connectedPlayers.find(p => p.id === id);
-            if (!player || !player.characterData) return;
-
-            const modData = player.characterData[itemTargetModule] || { list: [] };
-            const list = Array.isArray(modData.list) ? modData.list : [];
-            const newData = { ...modData, list: [...list, newItem] };
-            patchCharacter(id, itemTargetModule, newData);
+            patchCharacter(id, itemText);
         });
 
         setItemText('');
@@ -265,61 +233,6 @@ export function Sidebar({ onRoll }: SidebarProps) {
                 {/* Host Tools */}
                 {commState === 'CONNECTED' && isHost && (
                     <>
-                        {/* Host Stats Section */}
-                        <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
-                            <button 
-                                onClick={() => toggleSection('hostStats')}
-                                className="w-full flex justify-between items-center px-5 py-4 hover:bg-white/5 transition-colors text-left"
-                            >
-                                <span className="text-[15px] font-sans font-semibold text-apple-blue">快速数值管理 (DM)</span>
-                                <span className="font-mono text-white/40 text-[18px] transition-transform duration-300" style={{ transform: openSections.hostStats ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
-                            </button>
-                            {openSections.hostStats && (
-                                <div className="px-4 pb-5 space-y-3 animate-in fade-in duration-300">
-                                    <div className="relative group">
-                                        <select value={statTargetPlayer} onChange={e => setStatTargetPlayer(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-3 text-[14px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
-                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-[#1d1d1f]">{p.name}</option>)}
-                                            {validPlayers.length === 0 && <option disabled value="">无存活玩家</option>}
-                                        </select>
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">▼</span>
-                                    </div>
-                                    <div className="relative group">
-                                        <select value={statTargetModule} onChange={e => setStatTargetModule(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-3 text-[14px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
-                                            {statModules.map((m: any) => <option key={m.id} value={m.id} className="bg-[#1d1d1f]">{m.label}</option>)}
-                                            {statModules.length === 0 && <option disabled value="">无数值模块</option>}
-                                        </select>
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">▼</span>
-                                    </div>
-                                    
-                                    <div className="flex items-center justify-center h-12 bg-[#2c2c2e] rounded-xl overflow-hidden mt-2 shadow-sm">
-                                        <button 
-                                            onClick={() => setStatValue(currentStatValue - 1)} 
-                                            disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="w-12 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg disabled:opacity-50"
-                                        >
-                                            -
-                                        </button>
-                                        <input 
-                                            type="number" 
-                                            value={currentStatValue} 
-                                            onChange={e => {
-                                                const val = parseInt(e.target.value);
-                                                setStatValue(isNaN(val) ? 0 : val);
-                                            }}
-                                            disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="flex-1 bg-transparent text-center font-sans font-medium text-white outline-none text-[18px] disabled:opacity-50" 
-                                        />
-                                        <button 
-                                            onClick={() => setStatValue(currentStatValue + 1)} 
-                                            disabled={validPlayers.length === 0 || statModules.length === 0}
-                                            className="w-12 h-full text-white/50 hover:text-white hover:bg-white/10 transition-colors font-sans text-lg disabled:opacity-50"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
 
                         {/* Host Items/Memo Section */}
                         <div className="mb-2 bg-[#1d1d1f] rounded-2xl overflow-hidden">
@@ -339,13 +252,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                         </select>
                                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
                                     </div>
-                                    <div className="relative">
-                                        <select value={itemTargetModule} onChange={e => setItemTargetModule(e.target.value)} className="w-full bg-[#2c2c2e] rounded-xl px-4 py-2.5 text-[13px] font-sans font-medium text-white outline-none cursor-pointer appearance-none">
-                                            {itemModules.map((m: any) => <option key={m.id} value={m.id} className="bg-[#1d1d1f]">接收区: {m.label}</option>)}
-                                            {itemModules.length === 0 && <option disabled value="">无适用模块</option>}
-                                        </select>
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none text-xs">▼</span>
-                                    </div>
+
                                     <div className="bg-[#2c2c2e] rounded-xl overflow-hidden shadow-sm">
                                         <div className="flex gap-1 p-1.5 border-b border-white/5">
                                             <button onClick={() => insertMarkdown('**', '**')} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors font-sans font-bold" title="加粗">B</button>
@@ -366,7 +273,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                     </div>
                                     <button 
                                         onClick={handleItemSend} 
-                                        disabled={!itemText.trim() || itemModules.length === 0}
+                                        disabled={!itemText.trim()}
                                         className="w-full bg-apple-blue text-white rounded-full font-sans font-medium py-3 transition-all hover:bg-apple-blue/90 disabled:opacity-50 disabled:hover:scale-100 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f]"
                                     >
                                         确认发放

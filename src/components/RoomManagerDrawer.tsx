@@ -1,14 +1,10 @@
-import { useState } from 'react';
 import { useMqttContext } from '../contexts/MqttContext';
-import { CharacterInspector } from './CharacterInspector';
 
 export function RoomManagerDrawer() {
     const {
         isManagerOpen, setManagerOpen, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, myId,
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom
     } = useMqttContext();
-
-    const [inspectingPlayerId, setInspectingPlayerId] = useState<string | null>(null);
 
     if (!isManagerOpen) return null;
 
@@ -130,15 +126,6 @@ export function RoomManagerDrawer() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        {(p.characterData || p.id === myId) && (
-                                            <button
-                                                onClick={() => setInspectingPlayerId(p.id)}
-                                                className="w-8 h-8 text-x-muted hover:text-x-white transition-all flex items-center justify-center hover:bg-x-surface font-mono"
-                                                title={isHost ? "管理角色卡" : "查看角色卡"}
-                                            >
-                                                C
-                                            </button>
-                                        )}
                                         {isHost && p.id !== myId && (
                                             <button
                                                 onClick={() => kickPlayer(p.id)}
@@ -164,13 +151,6 @@ export function RoomManagerDrawer() {
                     </button>
                 </div>
             </div>
-
-            {inspectingPlayerId && (
-                <CharacterInspector
-                    playerId={inspectingPlayerId}
-                    onClose={() => setInspectingPlayerId(null)}
-                />
-            )}
         </div>
     );
 }
