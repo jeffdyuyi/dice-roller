@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  /* IBM Carbon Light Theme */
-  --bg-background: #ffffff;
-  --bg-layer-01: #f4f4f4;
-  --bg-layer-02: #e0e0e0;
+  /* IBM Carbon Light Theme (g10) */
+  --bg-background: #f4f4f4;
+  --bg-layer-01: #ffffff;
+  --bg-layer-02: #e5e5e5;
   --text-primary: #161616;
   --text-secondary: #525252;
-  --text-placeholder: #6f6f6f;
+  --text-placeholder: #a8a8a8;
   --text-on-color: #ffffff;
   --border-subtle: #e0e0e0;
-  --border-strong: #c6c6c6;
+  --border-strong: #8d8d8d;
   --interactive-primary: #0f62fe;
   --interactive-hover: #0353e9;
   --interactive-secondary: #393939;
@@ -20,7 +20,7 @@
 }
 
 .dark {
-  /* IBM Carbon Dark Theme */
+  /* IBM Carbon Dark Theme (g100) */
   --bg-background: #161616;
   --bg-layer-01: #262626;
   --bg-layer-02: #393939;
@@ -29,7 +29,7 @@
   --text-placeholder: #6f6f6f;
   --text-on-color: #ffffff;
   --border-subtle: #393939;
-  --border-strong: #525252;
+  --border-strong: #6f6f6f;
   --interactive-primary: #0f62fe;
   --interactive-hover: #4589ff;
   --interactive-secondary: #6f6f6f;

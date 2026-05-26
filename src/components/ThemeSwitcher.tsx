@@ -1,29 +1,33 @@
 import { useState, useEffect } from 'react';
 
 export function ThemeSwitcher() {
-    const [theme, setTheme] = useState<'brutalist' | 'apple'>(() => {
-        return (localStorage.getItem('app-theme') as 'brutalist' | 'apple') || 'brutalist';
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        return (localStorage.getItem('app-theme') as 'light' | 'dark') || 'light';
     });
 
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
         localStorage.setItem('app-theme', theme);
     }, [theme]);
 
     const toggleTheme = () => {
-        setTheme(prev => prev === 'brutalist' ? 'apple' : 'brutalist');
+        setTheme(prev => prev === 'light' ? 'dark' : 'light');
     };
 
     return (
         <button 
             onClick={toggleTheme}
-            className="w-10 h-10 border border-x-border flex items-center justify-center hover:bg-x-surface transition-all text-x-white"
-            title={`当前主题: ${theme === 'brutalist' ? '黑客粗犷' : 'Apple 简约'}`}
+            className="w-10 h-10 border border-ibm-border flex items-center justify-center hover:bg-ibm-layerHover transition-all text-ibm-text bg-ibm-layer"
+            title={`当前主题: ${theme === 'light' ? '明亮模式' : '暗色模式'}`}
         >
-            {theme === 'brutalist' ? (
-                <span className="font-mono text-[14px]">X</span>
+            {theme === 'light' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
             ) : (
-                <span className="font-sans text-[16px] font-bold">A</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             )}
         </button>
     );
