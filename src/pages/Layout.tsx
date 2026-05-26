@@ -40,42 +40,39 @@ export function Layout() {
                         </div>
                     </button>
 
-                    <nav className="flex gap-4">
-                        <Link to="/" className="flex items-center gap-2 px-3 py-2 text-ibm-text hover:text-ibm-primary transition-colors font-sans text-[14px]">
-                            <span>主控制台</span>
+                    <nav className="flex items-center gap-3 border-l border-ibm-border pl-6 ml-2">
+                        <Link to="/" className="flex items-center justify-center h-8 px-4 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover hover:border-ibm-borderStrong transition-all font-sans text-[13px]">
+                            主控制台
                         </Link>
-
+                        <Link to="/characters" className="flex items-center justify-center h-8 px-4 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover hover:border-ibm-borderStrong transition-all font-sans text-[13px]">
+                            备忘库存
+                        </Link>
                         {commState !== 'CONNECTED' && (
                             <button
                                 onClick={() => setIsRoomModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[14px]"
+                                className="flex items-center justify-center h-8 px-4 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[13px] border border-ibm-primary"
                             >
-                                联机大厅
+                                联机: 新联机房间
                             </button>
                         )}
-                        <Link to="/characters" className="flex items-center gap-2 px-3 py-2 text-ibm-text hover:text-ibm-primary transition-colors font-sans text-[14px]">
-                            <span>备忘库存</span>
-                        </Link>
                     </nav>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     {commState === 'CONNECTED' && (
                         <>
                             <button
                                 onClick={() => setManagerOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover transition-all font-sans text-[14px]"
+                                className="flex items-center justify-center h-8 px-4 border border-ibm-border bg-ibm-layerHover text-ibm-text hover:border-ibm-borderStrong transition-all font-sans text-[13px]"
                             >
                                 联机中: {roomName || roomId}
                             </button>
-                            <div className="flex items-center gap-4 border-l border-ibm-border pl-4">
-                                <div className="w-8 h-8 border border-ibm-border bg-ibm-layerHover flex items-center justify-center text-ibm-text text-sm font-mono">
-                                    {myName?.[0] || '?'}
-                                </div>
+                            <div className="w-8 h-8 border border-ibm-border bg-ibm-background flex items-center justify-center text-ibm-text text-[13px] font-mono shrink-0">
+                                {myName?.[0] || '?'}
                             </div>
                         </>
                     )}
-                    <div className="border-l border-ibm-border pl-6 ml-2">
+                    <div className="border-l border-ibm-border pl-4">
                         <ThemeSwitcher />
                     </div>
                 </div>
