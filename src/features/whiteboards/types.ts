@@ -28,4 +28,5 @@ export interface WhiteboardProject {
     userId: string;
     updatedAt: number;
     tabs: WhiteboardTab[];
+    hostName?: string;
 }

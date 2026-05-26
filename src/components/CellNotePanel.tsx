@@ -4,7 +4,7 @@ import type { CellData, CellNoteEntry } from '../features/whiteboards/types';
 
 const ICON_PRESETS = ['🔥','🏰','🌲','🌳','🌊','⛰️','🕳️','🚪','🗝️','📦','💎','🪙','🏹','🕯️','👾','🐉','🛡️','🧙','🧟','💀','🐺','⚔️','🧪','📜','🏕️','🌀'];
 
-const TERRAIN_COLORS = [
+export const TERRAIN_COLORS = [
     { hex: '#7d9e70', label: '草原' },
     { hex: '#5588a3', label: '水体' },
     { hex: '#8e8d8a', label: '岩山' },

@@ -42,10 +42,25 @@ class MqttService {
     
     private activeLobbyRooms: Map<string, LobbyRoom> = new Map();
 
-    public connectGlobal() {
+    public connectGlobal(roomId: string | null = null, isHost: boolean = false) {
         if (this.client) return;
-        this.myId = 'guest-' + Math.random().toString(36).substring(2, 9);
-        this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
+        
+        const connectOptions: any = {
+            keepalive: 10 // Set short keepalive (10 seconds) for super fast crash detection
+        };
+
+        if (isHost && roomId) {
+            const safeRoomId = btoa(encodeURIComponent(roomId)).replace(/=/g, '');
+            connectOptions.will = {
+                topic: `dnd5r/lobby/rooms/${safeRoomId}`,
+                payload: '',
+                qos: 0,
+                retain: true
+            };
+        }
+
+        this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', connectOptions);
         
         this.client.on('connect', () => {
             this.client?.subscribe('dnd5r/lobby/rooms/+');
@@ -114,29 +129,34 @@ class MqttService {
     public init(playerName: string, roomId: string | null = null, isHost: boolean = false) {
         this.myName = playerName;
         this.isHost = isHost;
-        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
         const rawRoomId = roomId || Math.floor(10000 + Math.random() * 90000).toString();
         this.currentRoomId = rawRoomId;
 
         const safeRoomId = btoa(encodeURIComponent(rawRoomId)).replace(/=/g, '');
         const topicPrefix = `dnd5r/room/${safeRoomId}`;
 
-        if (!this.client) {
-            this.connectGlobal();
-        } else {
-            // If already connected, just subscribe to the new topics
-            const topics = isHost ? [
-                `${topicPrefix}/host`,
-                `${topicPrefix}/broadcast`
-            ] : [
-                `${topicPrefix}/broadcast`,
-                `${topicPrefix}/p/${this.myId}`
-            ];
-            this.client.subscribe(topics);
-            setTimeout(() => {
-                this.onConnectHandlers.forEach(cb => cb());
-            }, 100);
+        // Host always disconnects and reconnects to register Last Will on the broker
+        if (isHost && this.client) {
+            this.client.end(true);
+            this.client = null;
         }
+
+        if (!this.client) {
+            this.connectGlobal(rawRoomId, isHost);
+        }
+
+        const topics = isHost ? [
+            `${topicPrefix}/host`,
+            `${topicPrefix}/broadcast`
+        ] : [
+            `${topicPrefix}/broadcast`,
+            `${topicPrefix}/p/${this.myId}`
+        ];
+        this.client!.subscribe(topics);
+        
+        setTimeout(() => {
+            this.onConnectHandlers.forEach(cb => cb());
+        }, 100);
     }
 
     public onMessage(handler: (msg: RoomMessage) => void) {

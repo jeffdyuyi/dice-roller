@@ -63,6 +63,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [connectionError, setConnectionError] = useState<string | null>(null);
     const [latestNotification, setLatestNotification] = useState<{ message: string, type: 'info' | 'success' | 'error' } | null>(null);
     const [roomWhiteboard, setRoomWhiteboard] = useState<WhiteboardProject | null>(null);
+    const [hostName, setHostName] = useState<string | null>(null);
 
     const showNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
         setLatestNotification({ message, type });
@@ -122,6 +123,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 setRoomId(mqttInstance.currentRoomId);
                 setRoomName(msg.payload?.roomName || null);
                 setRoomTemplate(msg.payload?.roomTemplate || null);
+                setHostName(msg.senderName); // Store host name
                 setConnectionError(null);
                 showNotification(`成功加入 [${msg.payload?.roomName || '联机房间'}]`, 'success');
             } else if (msg.type === 'JOIN_REJECTED') {
@@ -192,12 +194,18 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const { project } = msg.payload || {};
                 if (project) {
                     setRoomWhiteboard(project);
-                    // Sync and save locally for players/host using matching name
+                    // Sync and save locally for players/host using matching name + host name
                     (async () => {
                         try {
                             const localUser = mqttInstance.myId || 'local-user';
                             const localBoards = await getMyWhiteboards(localUser);
-                            const existing = localBoards.find(w => w.name === project.name);
+                            const senderHostName = msg.senderName;
+                            
+                            // Check both board name AND host name match
+                            const existing = localBoards.find(
+                                w => w.name === project.name && w.hostName === senderHostName
+                            );
+                            
                             if (existing) {
                                 const updatedLocal: WhiteboardProject = {
                                     ...existing,
@@ -209,6 +217,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                                 const newLocal: WhiteboardProject = {
                                     id: 'board-' + Date.now().toString(36),
                                     name: project.name,
+                                    hostName: senderHostName, // Save hostName
                                     userId: localUser,
                                     updatedAt: Date.now(), // Timestamp set
                                     tabs: project.tabs
@@ -258,6 +267,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setRoomName(null);
         setRoomTemplate(null);
         setIsHost(false);
+        setHostName(null);
         setConnectedPlayers([]);
         setPendingPlayers([]);
     }, []);
@@ -266,6 +276,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setMyName(name);
         setRoomName(rName);
         setRoomTemplate(template);
+        setHostName(name); // Set hostName as room creator name
         setCommState('WAITING');
         setConnectionError(null);
         mqttInstance.init(name, rid || null, true);
@@ -405,12 +416,18 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         const boardWithTime = { ...updated, updatedAt: Date.now() };
         setRoomWhiteboard(boardWithTime);
 
-        // Sync and save locally using matching name
+        // Sync and save locally using matching name + host name
         (async () => {
             try {
                 const localUser = mqttInstance.myId || 'local-user';
                 const localBoards = await getMyWhiteboards(localUser);
-                const existing = localBoards.find(w => w.name === boardWithTime.name);
+                const currentHostName = hostName || (isHost ? myName : null);
+
+                // Note: Only sync and overwrite if BOTH whiteboard name AND host name match!
+                const existing = localBoards.find(
+                    w => w.name === boardWithTime.name && (currentHostName ? w.hostName === currentHostName : true)
+                );
+
                 if (existing) {
                     const updatedLocal: WhiteboardProject = {
                         ...existing,
@@ -422,6 +439,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                     const newLocal: WhiteboardProject = {
                         id: boardWithTime.id.startsWith('board-') ? boardWithTime.id : ('board-' + Date.now().toString(36)),
                         name: boardWithTime.name,
+                        hostName: currentHostName || undefined, // Save hostName
                         userId: localUser,
                         updatedAt: Date.now(), // Timestamp set
                         tabs: boardWithTime.tabs
@@ -436,7 +454,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         if (commState === 'CONNECTED') {
             mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
         }
-    }, [commState]);
+    }, [commState, hostName, isHost, myName]);
 
     const value = {
         commState, activeLobbyRooms, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,

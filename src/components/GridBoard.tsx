@@ -46,14 +46,22 @@ const pixelToHex = (x: number, y: number) => {
     return hexRound(q, r);
 };
 
+export interface CellInteractionEvent {
+    type: 'click' | 'dblclick' | 'contextmenu' | 'longpress' | 'dragstart';
+    q: number;
+    r: number;
+    screenX: number;
+    screenY: number;
+}
+
 interface GridBoardProps {
     tab: WhiteboardTab;
     selectedCell: { q: number; r: number } | null;
-    onSelectCell: (q: number, r: number) => void;
     recenterTrigger: number; // Trigger recenter when this changes
+    onCellInteraction: (event: CellInteractionEvent) => void;
 }
 
-export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: GridBoardProps) {
+export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteraction }: GridBoardProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
     
@@ -148,29 +156,90 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
         }
     };
 
-    const handleStageClick = () => {
-        const stage = stageRef.current;
-        if (!stage) return;
+        const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+        const touchStartRef = useRef<number | null>(null);
+        const longPressTimerRef = useRef<any>(null);
 
-        // Don't select cell if user was dragging
-        if (stage.isDragging()) return;
+        const getEventCoords = () => {
+            const stage = stageRef.current;
+            if (!stage) return null;
 
-        const pointer = stage.getPointerPosition();
-        if (!pointer) return;
+            const pointer = stage.getPointerPosition();
+            if (!pointer) return null;
 
-        // Calculate logical grid coordinates based on panning (pos) and zoom (scale)
-        const clickX = (pointer.x - pos.x) / scale;
-        const clickY = (pointer.y - pos.y) / scale;
+            const clickX = (pointer.x - pos.x) / scale;
+            const clickY = (pointer.y - pos.y) / scale;
 
-        if (isHex) {
-            const { q, r } = pixelToHex(clickX, clickY);
-            onSelectCell(q, r);
-        } else {
-            const q = Math.floor(clickX / gridSize);
-            const r = Math.floor(clickY / gridSize);
-            onSelectCell(q, r);
-        }
-    };
+            let q = 0, r = 0;
+            if (isHex) {
+                const coords = pixelToHex(clickX, clickY);
+                q = coords.q;
+                r = coords.r;
+            } else {
+                q = Math.floor(clickX / gridSize);
+                r = Math.floor(clickY / gridSize);
+            }
+
+            const { cx, cy } = isHex 
+                ? getHexCenter(q, r) 
+                : { cx: (q + 0.5) * gridSize, cy: (r + 0.5) * gridSize };
+
+            const screenX = cx * scale + pos.x;
+            const screenY = cy * scale + pos.y;
+
+            return { q, r, screenX, screenY };
+        };
+
+        const handleStageClick = (e: any) => {
+            const stage = stageRef.current;
+            if (!stage) return;
+            if (stage.isDragging()) return;
+            if (e.evt.button === 2) return; // Ignore right click
+
+            const coords = getEventCoords();
+            if (!coords) return;
+
+            if (clickTimeout.current) {
+                clearTimeout(clickTimeout.current);
+                clickTimeout.current = null;
+                onCellInteraction({ type: 'dblclick', ...coords });
+            } else {
+                clickTimeout.current = setTimeout(() => {
+                    clickTimeout.current = null;
+                    onCellInteraction({ type: 'click', ...coords });
+                }, 250);
+            }
+        };
+
+        const handleContextMenu = (e: any) => {
+            e.evt.preventDefault();
+            const coords = getEventCoords();
+            if (coords) {
+                onCellInteraction({ type: 'contextmenu', ...coords });
+            }
+        };
+
+        const handleTouchStart = () => {
+            const stage = stageRef.current;
+            if (!stage) return;
+            touchStartRef.current = Date.now();
+
+            if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = setTimeout(() => {
+                const coords = getEventCoords();
+                if (coords && touchStartRef.current) {
+                    onCellInteraction({ type: 'longpress', ...coords });
+                    touchStartRef.current = null;
+                }
+            }, 600);
+        };
+
+        const handleTouchEnd = () => {
+            if (longPressTimerRef.current) {
+                clearTimeout(longPressTimerRef.current);
+                longPressTimerRef.current = null;
+            }
+        };
 
     // Viewport logical bounds for dynamic clipping
     const minX = (-pos.x) / scale;
@@ -250,8 +319,14 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
                 height={dimensions.height}
                 draggable
                 onWheel={handleWheel}
+                onDragStart={() => {
+                    onCellInteraction({ type: 'dragstart', q: 0, r: 0, screenX: 0, screenY: 0 });
+                }}
                 onDragEnd={handleDragEnd}
                 onClick={handleStageClick}
+                onContextMenu={handleContextMenu}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
                 x={pos.x}
                 y={pos.y}
                 scaleX={scale}
