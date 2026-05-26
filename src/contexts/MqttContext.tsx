@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { mqttInstance, type PlayerNode, type RoomMessage, type LobbyRoom } from '../lib/mqttService';
 import { saveCharacter } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
+import type { WhiteboardProject } from '../features/whiteboards/types';
 
 
 export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
@@ -38,6 +39,8 @@ interface MqttContextType {
     clearHistory: () => void;
     setConnectionError: (err: string | null) => void;
     showNotification: (msg: string, type: 'info' | 'success' | 'error') => void;
+    roomWhiteboard: WhiteboardProject | null;
+    updateRoomWhiteboard: (project: WhiteboardProject) => void;
 }
 
 const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -58,6 +61,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [isManagerOpen, setManagerOpen] = useState(false);
     const [connectionError, setConnectionError] = useState<string | null>(null);
     const [latestNotification, setLatestNotification] = useState<{ message: string, type: 'info' | 'success' | 'error' } | null>(null);
+    const [roomWhiteboard, setRoomWhiteboard] = useState<WhiteboardProject | null>(null);
 
     const showNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
         setLatestNotification({ message, type });
@@ -150,27 +154,18 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                     });
                     showNotification('您的角色卡已更新', 'success');
                 }
-            } else if (msg.type === 'DISTRIBUTE_MEMO' || msg.type === 'CHARACTER_PATCH') {
-                if (!mqttInstance.isHost) {
-                    const { textPayload } = msg.payload || {};
-                    if (!textPayload) return;
-                    
-                    const newItem = {
-                        id: 'memo-' + Date.now().toString(36) + Math.random().toString(36).substring(2,5),
-                        content: textPayload,
-                        createdAt: Date.now(),
-                        source: 'host' as const
-                    };
-
-                    setActiveCharacter(prev => {
-                        if (!prev) return null;
-                        const nextItems = [...(prev.memoItems || []), newItem];
-                        const next = { ...prev, memoItems: nextItems };
-                        saveCharacter(next);
-                        return next;
-                    });
-                    showNotification('收到来自主持人的新备忘卡片', 'success');
-                }
+            } else if (msg.type === 'DISTRIBUTE_MEMO') {
+                const { textPayload } = msg.payload || {};
+                if (!textPayload) return;
+                
+                const chatData = { 
+                    type: 'memo', 
+                    text: textPayload, 
+                    userName: msg.senderName, 
+                    timestamp: msg.timestamp 
+                };
+                setDiceHistory(prev => [...prev, chatData]);
+                showNotification(`收到来自 ${msg.senderName} 的新笔记`, 'info');
             } else if (msg.type === 'CHARACTER_SYNC') {
                 // Update specific player in the list
                 setConnectedPlayers(prev => prev.map(p =>
@@ -178,6 +173,11 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                         ? { ...p, characterData: msg.payload?.characterData }
                         : p
                 ));
+            } else if (msg.type === 'WHITEBOARD_SYNC') {
+                const { project } = msg.payload || {};
+                if (project) {
+                    setRoomWhiteboard(project);
+                }
             }
         });
 
@@ -187,6 +187,27 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             unsubLobby();
         };
     }, []);
+
+    // Sync room whiteboard creation and destruction
+    useEffect(() => {
+        if (commState === 'CONNECTED' && !roomWhiteboard) {
+            const defaultTab = {
+                id: 'tab-room-default',
+                name: '公共网格',
+                gridType: 'square' as const,
+                cells: {}
+            };
+            setRoomWhiteboard({
+                id: 'room-whiteboard',
+                name: roomName || '房间白板',
+                userId: mqttInstance.myId,
+                updatedAt: Date.now(),
+                tabs: [defaultTab]
+            });
+        } else if (commState === 'DISCONNECTED') {
+            setRoomWhiteboard(null);
+        }
+    }, [commState, roomName]);
 
     const disconnectLocal = useCallback(() => {
         mqttInstance.disconnect();
@@ -250,7 +271,12 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             return prevPending.filter(p => p.id !== pId);
         });
         mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED', { roomName, roomTemplate });
-    }, [latestRoll, roomName, roomTemplate]);
+        if (roomWhiteboard) {
+            setTimeout(() => {
+                mqttInstance.sendToPlayer(pId, 'WHITEBOARD_SYNC', { project: roomWhiteboard });
+            }, 500);
+        }
+    }, [latestRoll, roomName, roomTemplate, roomWhiteboard]);
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));
@@ -301,21 +327,36 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const clearHistory = useCallback(() => setDiceHistory([]), []);
 
-    const patchCharacter = useCallback((pId: string, textPayload: string) => {
-        if (!isHost) return;
-        mqttInstance.sendToPlayer(pId, 'DISTRIBUTE_MEMO', { textPayload });
-    }, [isHost]);
+    const patchCharacter = useCallback((targetId: string, textPayload: string) => {
+        const data = { type: 'memo', text: textPayload, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
+        setDiceHistory(prev => [...prev, data]);
+
+        if (commState === 'CONNECTED') {
+            if (targetId === 'all') {
+                mqttInstance.broadcast('DISTRIBUTE_MEMO', { textPayload });
+            } else {
+                mqttInstance.sendToPlayer(targetId, 'DISTRIBUTE_MEMO', { textPayload });
+            }
+        }
+    }, [myName, commState]);
 
     const updateActiveCharacter = useCallback((char: Character) => {
         setActiveCharacter(char);
         saveCharacter(char);
     }, []);
 
+    const updateRoomWhiteboard = useCallback((updated: WhiteboardProject) => {
+        setRoomWhiteboard(updated);
+        if (commState === 'CONNECTED') {
+            mqttInstance.broadcast('WHITEBOARD_SYNC', { project: updated });
+        }
+    }, [commState]);
+
     const value = {
         commState, activeLobbyRooms, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
         isManagerOpen, setManagerOpen, updateActiveCharacter, connectionError, latestNotification,
         createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, patchCharacter, clearHistory,
-        setConnectionError, showNotification
+        setConnectionError, showNotification, roomWhiteboard, updateRoomWhiteboard
     };
 
     return <MqttContext.Provider value={value}>{children}</MqttContext.Provider>;

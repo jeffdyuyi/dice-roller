@@ -57,18 +57,11 @@ export function Sidebar({ onRoll }: SidebarProps) {
     const handleItemSend = () => {
         if (!itemText.trim()) return;
         
-        const targetIds = itemTargetPlayer === 'all' 
-            ? validPlayers.map(p => p.id)
-            : [itemTargetPlayer];
-
-        if (targetIds.length === 0) {
-            alert('没有有效的目标玩家');
-            return;
+        if (isHost) {
+            patchCharacter(itemTargetPlayer, itemText);
+        } else {
+            patchCharacter('all', itemText);
         }
-
-        targetIds.forEach(id => {
-            patchCharacter(id, itemText);
-        });
 
         setItemText('');
     };
@@ -230,28 +223,33 @@ export function Sidebar({ onRoll }: SidebarProps) {
                     )}
                 </div>
 
-                {/* Host Tools */}
-                {commState === 'CONNECTED' && isHost && (
+                {/* Note/Memo Tools */}
+                {commState === 'CONNECTED' && (
                     <>
-
-                        {/* Host Items/Memo Section */}
+                        {/* Note/Memo Distribution Section */}
                         <div className="mb-4 bg-transparent border border-ibm-borderStrong rounded-none overflow-hidden">
                             <button 
                                 onClick={() => toggleSection('hostItems')}
                                 className="w-full flex justify-between items-center px-5 py-4 hover:bg-ibm-layerHover transition-colors text-left border-b border-ibm-border"
                             >
-                                <span className="text-[15px] font-sans font-semibold text-ibm-text uppercase tracking-wider">空投物品/记录 (DM)</span>
+                                <span className="text-[15px] font-sans font-semibold text-ibm-text uppercase tracking-wider">笔记/记录下发</span>
                                 <span className="font-mono text-ibm-textSecondary text-[18px] transition-transform duration-300" style={{ transform: openSections.hostItems ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                             </button>
                             {openSections.hostItems && (
                                 <div className="p-4 space-y-3 animate-in fade-in duration-300 bg-ibm-background">
-                                    <div className="relative">
-                                        <select value={itemTargetPlayer} onChange={e => setItemTargetPlayer(e.target.value)} className="w-full bg-ibm-layerHover border border-ibm-border rounded-none px-4 py-2.5 text-[13px] font-sans text-ibm-text outline-none cursor-pointer appearance-none">
-                                            <option value="all" className="bg-ibm-background">发送给: 全体玩家</option>
-                                            {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-ibm-background">仅发送给: {p.name}</option>)}
-                                        </select>
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none text-xs font-mono">▼</span>
-                                    </div>
+                                    {isHost ? (
+                                        <div className="relative">
+                                            <select value={itemTargetPlayer} onChange={e => setItemTargetPlayer(e.target.value)} className="w-full bg-ibm-layerHover border border-ibm-border rounded-none px-4 py-2.5 text-[13px] font-sans text-ibm-text outline-none cursor-pointer appearance-none">
+                                                <option value="all" className="bg-ibm-background">发送给: 所有人 (广播)</option>
+                                                {validPlayers.map(p => <option key={p.id} value={p.id} className="bg-ibm-background">仅发送给: {p.name}</option>)}
+                                            </select>
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none text-xs font-mono">▼</span>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-ibm-layerHover border border-ibm-border px-4 py-2.5 text-[13px] font-sans text-ibm-textSecondary select-none">
+                                            发送给: 房间内所有人 (广播)
+                                        </div>
+                                    )}
 
                                     <div className="bg-transparent border border-ibm-border rounded-none overflow-hidden">
                                         <div className="flex gap-1 p-1.5 border-b border-ibm-border bg-ibm-layerHover">
@@ -268,7 +266,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                             onChange={e => setItemText(e.target.value)}
                                             rows={4}
                                             className="w-full bg-transparent text-ibm-text font-mono text-[13px] outline-none resize-none p-4 placeholder:text-ibm-textPlaceholder"
-                                            placeholder="输入说明文本..."
+                                            placeholder="输入 Markdown 格式的说明文本..."
                                         />
                                     </div>
                                     <button 

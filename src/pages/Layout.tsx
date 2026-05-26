@@ -55,6 +55,9 @@ export function Layout() {
                         <Link to="/characters" className="flex items-center justify-center h-8 px-4 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover hover:border-ibm-borderStrong transition-all font-sans text-[13px]">
                             备忘库存
                         </Link>
+                        <Link to="/whiteboards" className="flex items-center justify-center h-8 px-4 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover hover:border-ibm-borderStrong transition-all font-sans text-[13px]">
+                            白板库存
+                        </Link>
                         {commState !== 'CONNECTED' && (
                             <button
                                 onClick={() => setIsRoomModalOpen(true)}

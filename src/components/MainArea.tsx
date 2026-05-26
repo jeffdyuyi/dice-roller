@@ -44,6 +44,22 @@ export function MainArea({ diceHistory }: MainAreaProps) {
             );
         }
 
+        if (roll.type === 'memo') {
+            return (
+                <div key={idx} className="flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full max-w-[85%] border-l-4 border-ibm-primary bg-ibm-layer p-4 border border-ibm-border border-l-ibm-primary">
+                    <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-ibm-border/30">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-[12px] font-sans font-semibold text-ibm-text">📢 {roll.userName} 下发的笔记</span>
+                            <span className="text-[10px] font-mono text-ibm-textPlaceholder uppercase tracking-xai">
+                                {new Date(roll.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+                    </div>
+                    <pre className="whitespace-pre-wrap font-sans text-ibm-text text-[13px] leading-relaxed select-text mt-1">{roll.text}</pre>
+                </div>
+            );
+        }
+
         const isDaggerheart = roll.historyTitle === '匕首心';
 
         return (
