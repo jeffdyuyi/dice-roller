@@ -1,43 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  /* Default Brutalist Theme (Dark) */
-  --bg-primary: #1f2228;
-  --text-primary: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.5);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.2);
-  --surface-color: rgba(255, 255, 255, 0.03);
-  --surface-hover: rgba(255, 255, 255, 0.08);
-  --accent-color: #ffffff;
-  --accent-text: #1f2228;
+  /* IBM Carbon Light Theme */
+  --bg-background: #ffffff;
+  --bg-layer-01: #f4f4f4;
+  --bg-layer-02: #e0e0e0;
+  --text-primary: #161616;
+  --text-secondary: #525252;
+  --text-placeholder: #6f6f6f;
+  --text-on-color: #ffffff;
+  --border-subtle: #e0e0e0;
+  --border-strong: #c6c6c6;
+  --interactive-primary: #0f62fe;
+  --interactive-hover: #0353e9;
+  --interactive-secondary: #393939;
+  --interactive-secondary-hover: #4c4c4c;
+  --danger: #da1e28;
+  --danger-hover: #b81921;
 }
 
-[data-theme="apple"] {
-  /* Apple Design System Theme (Light) */
-  --bg-primary: #f5f5f7;
-  --text-primary: #1d1d1f;
-  --text-muted: rgba(0, 0, 0, 0.5);
-  --border-color: rgba(0, 0, 0, 0.1);
-  --border-strong: rgba(0, 0, 0, 0.2);
-  --surface-color: #ffffff;
-  --surface-hover: rgba(0, 0, 0, 0.05);
-  --accent-color: #0071e3;
-  --accent-text: #ffffff;
+.dark {
+  /* IBM Carbon Dark Theme */
+  --bg-background: #161616;
+  --bg-layer-01: #262626;
+  --bg-layer-02: #393939;
+  --text-primary: #f4f4f4;
+  --text-secondary: #c6c6c6;
+  --text-placeholder: #6f6f6f;
+  --text-on-color: #ffffff;
+  --border-subtle: #393939;
+  --border-strong: #525252;
+  --interactive-primary: #0f62fe;
+  --interactive-hover: #4589ff;
+  --interactive-secondary: #6f6f6f;
+  --interactive-secondary-hover: #8d8d8d;
+  --danger: #da1e28;
+  --danger-hover: #b81921;
 }
 
 body {
-  font-family: 'universalSans', Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--text-primary);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-background);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Base Form Resets */
 input, textarea, button {
-  /* Removed border-radius: 0 to allow Apple style rounded corners */
+  border-radius: 0;
 }
 
 /* Animations */
@@ -87,7 +99,7 @@ input, textarea, button {
   border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-secondary);
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
@@ -99,5 +111,5 @@ input, textarea, button {
   text-shadow: 0 0 10px var(--border-strong);
 }
 .dh-fear {
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
