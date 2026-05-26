@@ -237,9 +237,9 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
         }
     }
 
-    // Filter valid cells to render (including cells with direct tactical colors painted!)
+    // Filter valid cells to render
     const cellsToRender = Object.values(tab.cells).filter(
-        c => c.terrain || c.object || c.unit || c.color || c.entries.length > 0
+        c => c.color || c.entries.length > 0
     );
 
     return (
@@ -310,10 +310,10 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
                         }
                     })}
 
-                    {/* B. Terrain, Object, Unit Tokens */}
+                    {/* B. Entry Icon Tokens */}
                     {cellsToRender.map((cell) => {
-                        if (!cell.terrain && !cell.object && !cell.unit && cell.entries.length === 0) return null;
-                        
+                        if (cell.entries.length === 0) return null;
+
                         let tx = 0;
                         let ty = 0;
                         let w = gridSize;
@@ -332,97 +332,47 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
 
                         const currentSize = isHex ? hexSize * 2 : gridSize;
 
+                        // Collect all entry icons into one display string
+                        const entryIcons = cell.entries.map(e => e.icon).filter(Boolean) as string[];
+                        const markersString = entryIcons.join(' ');
+                        const markersLength = entryIcons.join('').length;
+
                         return (
                             <React.Fragment key={`content-${cell.q},${cell.r}`}>
-                                {/* Bottom: Terrain layer */}
-                                {cell.terrain && (
+                                {/* Entry Icons displayed in hex center */}
+                                {markersString && (
                                     <Text
                                         x={tx}
                                         y={ty}
                                         width={w}
                                         height={h}
-                                        text={cell.terrain}
-                                        fontSize={cell.terrain.length > 1 ? currentSize * 0.32 : currentSize * 0.55}
-                                        align="center"
-                                        verticalAlign="middle"
-                                        listening={false}
-                                    />
-                                )}
-                                
-                                {/* Middle: Object layer */}
-                                {cell.object && (
-                                    <Text
-                                        x={tx}
-                                        y={ty}
-                                        width={w}
-                                        height={h}
-                                        text={cell.object}
-                                        fontSize={cell.object.length > 1 ? currentSize * 0.32 : currentSize * 0.55}
+                                        text={markersString}
+                                        fontSize={markersLength > 2 ? currentSize * 0.28 : markersLength > 1 ? currentSize * 0.38 : currentSize * 0.52}
                                         align="center"
                                         verticalAlign="middle"
                                         listening={false}
                                     />
                                 )}
 
-                                {/* Top: Player/Monster Unit layer */}
-                                {cell.unit && (
-                                    <Text
-                                        x={tx}
-                                        y={ty}
-                                        width={w}
-                                        height={h}
-                                        text={cell.unit}
-                                        fontSize={cell.unit.length > 1 ? currentSize * 0.3 : currentSize * 0.55}
-                                        fill="#f4f4f4"
-                                        align="center"
-                                        verticalAlign="middle"
+                                {/* Blue dot: has entries */}
+                                {isHex ? (
+                                    <Rect
+                                        x={tx + currentSize * 0.72}
+                                        y={ty + currentSize * 0.18}
+                                        width={5}
+                                        height={5}
+                                        fill="#0f62fe"
                                         listening={false}
-                                        fontStyle="bold"
                                     />
-                                )}
-
-                                {/* Note Entry Icons Layer (Every Emoji/marker corresponds directly to one Markdown text block!) */}
-                                {(() => {
-                                    const entryIcons = cell.entries.map(e => e.icon).filter(Boolean) as string[];
-                                    const markersString = entryIcons.join(' ');
-                                    const markersLength = entryIcons.join('').length;
-                                    if (!markersString) return null;
-                                    return (
-                                        <Text
-                                            x={tx}
-                                            y={ty}
-                                            width={w}
-                                            height={h}
-                                            text={markersString}
-                                            fontSize={markersLength > 1 ? currentSize * 0.32 : currentSize * 0.55}
-                                            align="center"
-                                            verticalAlign="middle"
-                                            listening={false}
-                                        />
-                                    );
-                                })()}
-
-                                {/* Note Blue Indicator Icon */}
-                                {cell.entries.length > 0 && (
-                                    isHex ? (
-                                        <Rect
-                                            x={tx + currentSize * 0.72}
-                                            y={ty + currentSize * 0.18}
-                                            width={6}
-                                            height={6}
-                                            fill="#0f62fe"
-                                            listening={false}
-                                        />
-                                    ) : (
-                                        <Rect
-                                            x={tx + gridSize - 8}
-                                            y={ty + 2}
-                                            width={6}
-                                            height={6}
-                                            fill="#0f62fe"
-                                            listening={false}
-                                        />
-                                    )
+                                ) : (
+                                    <Rect
+                                        x={tx + gridSize - 8}
+                                        y={ty + 2}
+                                        width={5}
+                                        height={5}
+                                        fill="#0f62fe"
+                                        listening={false}
+                                    />
                                 )}
                             </React.Fragment>
                         );

@@ -9,9 +9,6 @@ export interface CellNoteEntry {
 export interface CellData {
     q: number; // For square grids, q is x, r is y
     r: number;
-    terrain?: string; // e.g. 🔥, 🧱, 🌊 (bottom layer)
-    object?: string;  // e.g. 🚪, 💎, 🗝️ (middle layer)
-    unit?: string;    // e.g. 👤, 🐉, 🏹, "战士" (top player/monster layer)
     color?: string;   // Hex background color fill
     entries: CellNoteEntry[];
 }
