@@ -86,7 +86,7 @@ export function RoomModal({
 
                     {commState === 'DISCONNECTED' && (
                         <div className="space-y-4">
-                            <div className="min-h-[320px] flex flex-col">
+                            <div className="flex flex-col">
                                 <div className="space-y-3">
                                     <div className="group">
                                         <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">您的昵称</label>
@@ -100,7 +100,7 @@ export function RoomModal({
                                     ) : (
                                         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <div className="group">
-                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (大写字母和数字)</label>
+                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (留空则随机生成)</label>
                                                 <input 
                                                     type="text" 
                                                     value={inputRoomName} 
@@ -163,11 +163,11 @@ export function RoomModal({
                                 {mode === 'create' ? (
                                     <button 
                                         onClick={() => {
-                                            if (!inputRoomName) {
-                                                setConnectionError('房间名称不能为空');
-                                                return;
+                                            let finalRoomName = inputRoomName;
+                                            if (!finalRoomName) {
+                                                finalRoomName = 'ROOM' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
                                             }
-                                            createRoom(inputName, inputRoomId, inputRoomName, null);
+                                            createRoom(inputName, inputRoomId, finalRoomName, null);
                                         }} 
                                         className="w-full bg-[#ff832b] text-white rounded-none font-sans font-medium py-2.5 text-[14px] transition-all hover:bg-[#e86c14] shadow-sm"
                                     >
