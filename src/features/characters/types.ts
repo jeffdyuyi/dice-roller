@@ -1,3 +1,10 @@
+export interface MemoItem {
+    id: string;
+    content: string;
+    createdAt: number;
+    source: 'self' | 'host';
+}
+
 export interface Character {
     id: string;
     name: string;
@@ -6,5 +13,6 @@ export interface Character {
     summary?: string;
     createdAt: number;
     updatedAt: number;
-    memoContent?: string;
+    memoContent?: string; // Legacy
+    memoItems?: MemoItem[];
 }

@@ -12,6 +12,14 @@ export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+    const [roomModalMode, setRoomModalMode] = useState<'create' | 'join'>('join');
+    const [roomModalId, setRoomModalId] = useState<string>('');
+
+    const openRoomModal = (mode: 'create' | 'join' = 'join', rId: string = '') => {
+        setRoomModalMode(mode);
+        setRoomModalId(rId);
+        setIsRoomModalOpen(true);
+    };
 
     return (
         <div className="min-h-screen bg-ibm-background flex flex-col font-sans antialiased text-ibm-text h-screen overflow-hidden relative">
@@ -146,7 +154,7 @@ export function Layout() {
                     </>
                 )}
                 <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
-                    <Outlet context={{ openRoomModal: () => setIsRoomModalOpen(true) }} />
+                    <Outlet context={{ openRoomModal }} />
                 </div>
             </main>
 
@@ -157,6 +165,8 @@ export function Layout() {
             <RoomModal
                 isOpen={isRoomModalOpen}
                 onClose={() => setIsRoomModalOpen(false)}
+                defaultMode={roomModalMode}
+                defaultRoomId={roomModalId}
             />
         </div>
     );

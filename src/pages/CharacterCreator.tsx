@@ -8,7 +8,6 @@ export function CharacterCreator() {
     const navigate = useNavigate();
 
     const [memoName, setMemoName] = useState('');
-    const [memoContent, setMemoContent] = useState('');
 
     if (!isLoggedIn || !user) {
         return (
@@ -26,7 +25,7 @@ export function CharacterCreator() {
             userId: user.id,
             name: memoName,
             summary: '备忘库存',
-            memoContent: memoContent,
+            memoItems: [],
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
@@ -55,16 +54,6 @@ export function CharacterCreator() {
                             onChange={e => setMemoName(e.target.value)} 
                             className="w-full bg-x-surface focus:bg-transparent border border-x-border rounded-none px-6 py-4 text-[16px] font-sans text-x-white outline-none focus:border-x-white transition-all placeholder:text-x-muted" 
                             placeholder="如：DND 5E 战士背包 / 赛博朋克调查笔记..." 
-                        />
-                    </div>
-
-                    <div className="group">
-                        <label className="block text-[12px] font-mono uppercase tracking-xai font-medium text-x-muted mb-3 transition-colors group-focus-within:text-x-white">初始记录 (Markdown)</label>
-                        <textarea
-                            value={memoContent}
-                            onChange={e => setMemoContent(e.target.value)}
-                            className="w-full bg-x-surface focus:bg-transparent border border-x-border rounded-none px-6 py-4 text-[15px] font-mono text-x-white outline-none focus:border-x-white transition-all placeholder:text-x-muted min-h-[300px] resize-y custom-scrollbar"
-                            placeholder="您可以提前写下一些角色的初始设定、自带物品清单..."
                         />
                     </div>
 

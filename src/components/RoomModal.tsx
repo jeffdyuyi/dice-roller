@@ -7,19 +7,21 @@ import { Storage } from '../lib/storage';
 interface RoomModalProps {
     isOpen: boolean;
     onClose: () => void;
+    defaultMode?: 'create' | 'join';
+    defaultRoomId?: string;
 }
 
 export function RoomModal({
-    isOpen, onClose
+    isOpen, onClose, defaultMode = 'join', defaultRoomId = ''
 }: RoomModalProps) {
     const {
         commState, roomId, myName: initialName,
         createRoom, joinRoom, connectionError, setConnectionError, disconnectLocal, leaveRoom
     } = useMqttContext();
-    const [mode, setMode] = useState<'join' | 'create'>('join');
+    const [mode, setMode] = useState<'join' | 'create'>(defaultMode);
     const [inputName, setInputName] = useState(initialName);
-    const [inputRoomId, setInputRoomId] = useState('');
-    const [inputRoomName, setInputRoomName] = useState('新联机房间');
+    const [inputRoomId, setInputRoomId] = useState(defaultRoomId);
+    const [inputRoomName, setInputRoomName] = useState('');
     const [templates, setTemplates] = useState<any[]>([]);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [guestMode, setGuestMode] = useState(false);
@@ -30,6 +32,8 @@ export function RoomModal({
 
     useEffect(() => {
         if (isOpen) {
+            setMode(defaultMode);
+            setInputRoomId(defaultRoomId);
             const user = JSON.parse(localStorage.getItem('mock_user') || '{}');
             if (user.id) {
                 getMyCharacters(user.id).then(chars => {
@@ -45,7 +49,7 @@ export function RoomModal({
                 }
             });
         }
-    }, [isOpen]);
+    }, [isOpen, defaultMode, defaultRoomId]);
 
     // Flat flow: auto-close modal when connected
     useEffect(() => {
@@ -93,9 +97,9 @@ export function RoomModal({
                     {commState === 'DISCONNECTED' && (
                         <div className="space-y-4">
                             {/* Mode Tabs */}
-                            <div className="flex bg-transparent border border-ibm-border p-1 rounded-none">
-                                <button onClick={() => { setMode('join'); setConnectionError(null); }} className={`flex-1 py-1.5 text-[12px] font-mono uppercase tracking-xai font-medium rounded-none transition-all ${mode === 'join' ? 'bg-ibm-primary text-ibm-textOnColor' : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'}`}>加入房间</button>
-                                <button onClick={() => { setMode('create'); setConnectionError(null); }} className={`flex-1 py-1.5 text-[12px] font-mono uppercase tracking-xai font-medium rounded-none transition-all ${mode === 'create' ? 'bg-ibm-primary text-ibm-textOnColor' : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'}`}>创建房间</button>
+                            <div className="flex gap-3">
+                                <button onClick={() => { setMode('join'); setConnectionError(null); }} className={`flex-1 py-2 text-[13px] font-sans font-medium transition-all border ${mode === 'join' ? 'bg-transparent text-ibm-text border-ibm-borderStrong shadow-sm' : 'bg-ibm-background text-ibm-textSecondary border-ibm-border hover:text-ibm-text hover:bg-ibm-layerHover'}`}>加入房间</button>
+                                <button onClick={() => { setMode('create'); setConnectionError(null); }} className={`flex-1 py-2 text-[13px] font-sans font-medium transition-all border ${mode === 'create' ? 'bg-[#ff832b] text-white border-[#ff832b] shadow-sm' : 'bg-ibm-background text-ibm-textSecondary border-ibm-border hover:text-ibm-text hover:bg-ibm-layerHover'}`}>+ 创建房间</button>
                             </div>
 
                             <div className="min-h-[320px] flex flex-col">
@@ -112,8 +116,17 @@ export function RoomModal({
                                     ) : (
                                         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <div className="group">
-                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (选填)</label>
-                                                <input type="text" value={inputRoomName} onChange={e => setInputRoomName(e.target.value)} placeholder="给房间起个名字..." className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" />
+                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (大写字母和数字)</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={inputRoomName} 
+                                                    onChange={e => {
+                                                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                                        setInputRoomName(val);
+                                                    }} 
+                                                    placeholder="例: LOBBY01" 
+                                                    className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" 
+                                                />
                                             </div>
                                             <div className="group">
                                                 <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">选用规则模板</label>
@@ -146,8 +159,10 @@ export function RoomModal({
                                             <div className="animate-in slide-in-from-top-2 duration-400 mt-3">
                                                 <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5">关联角色档案</label>
                                                 {myCharacters.length === 0 ? (
-                                                    <div className="text-[12px] text-ibm-textSecondary font-mono tracking-xai uppercase text-center bg-ibm-layer border border-ibm-border rounded-none p-3">
-                                                        您的角色库中尚无存档。
+                                                    <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-ibm-border bg-ibm-layerHover text-center">
+                                                        <svg className="w-8 h-8 text-ibm-textPlaceholder mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                        <p className="text-[12px] text-ibm-textSecondary font-sans mb-1">您的角色库中尚无存档</p>
+                                                        <p className="text-[11px] text-ibm-textPlaceholder font-sans">可前往备忘库存创建</p>
                                                     </div>
                                                 ) : (
                                                     <div className="relative group">
@@ -176,15 +191,19 @@ export function RoomModal({
                                 {mode === 'create' ? (
                                     <button 
                                         onClick={() => {
+                                            if (!inputRoomName) {
+                                                setConnectionError('房间名称不能为空');
+                                                return;
+                                            }
                                             const t = templates.find(x => x.id === selectedTemplateId);
                                             createRoom(inputName, inputRoomId, inputRoomName, t || null);
                                         }} 
-                                        className="w-full bg-ibm-primary text-ibm-textOnColor rounded-none font-mono uppercase tracking-xai font-medium py-2.5 text-[12px] transition-all hover:bg-ibm-primaryHover"
+                                        className="w-full bg-[#ff832b] text-white rounded-none font-sans font-medium py-2.5 text-[14px] transition-all hover:bg-[#e86c14] shadow-sm"
                                     >
                                         立即开启房间
                                     </button>
                                 ) : (
-                                    <button onClick={handleJoin} className="w-full bg-ibm-primary text-ibm-textOnColor rounded-none font-mono uppercase tracking-xai font-medium py-2.5 text-[12px] transition-all hover:bg-ibm-primaryHover">发送入场请求</button>
+                                    <button onClick={handleJoin} className="w-full bg-ibm-primary text-ibm-textOnColor rounded-none font-sans font-medium py-2.5 text-[14px] transition-all hover:bg-ibm-primaryHover shadow-sm">发送入场请求</button>
                                 )}
                             </div>
                         </div>

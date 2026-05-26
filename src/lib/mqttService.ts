@@ -13,11 +13,20 @@ export interface PlayerNode {
 
 export interface RoomMessage {
     type: 'JOIN_REQUEST' | 'JOIN_ACCEPTED' | 'JOIN_REJECTED' | 'PLAYER_LIST' | 'PLAYER_LEFT' | 'ROOM_CLOSED' | 'DICE_ROLL'
-    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH';
+    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH' | 'DISTRIBUTE_MEMO';
     senderId: string;
     senderName: string;
     timestamp: number;
     payload?: Record<string, any>;
+}
+
+export interface LobbyRoom {
+    id: string;
+    name: string;
+    hostName: string;
+    playerCount: number;
+    templateName?: string;
+    timestamp: number;
 }
 
 class MqttService {
@@ -29,32 +38,17 @@ class MqttService {
 
     private messageHandlers: Set<(msg: RoomMessage) => void> = new Set();
     private onConnectHandlers: Set<() => void> = new Set();
+    private lobbyHandlers: Set<(rooms: LobbyRoom[]) => void> = new Set();
+    
+    private activeLobbyRooms: Map<string, LobbyRoom> = new Map();
 
-    public init(playerName: string, roomId: string | null = null, isHost: boolean = false) {
-        this.disconnect();
-
-        this.myName = playerName;
-        this.isHost = isHost;
-        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
-        const rawRoomId = roomId || Math.floor(10000 + Math.random() * 90000).toString();
-        this.currentRoomId = rawRoomId;
-
-        // Sanitize Room ID for MQTT topics (UTF-8/Chinese support safely)
-        const safeRoomId = btoa(encodeURIComponent(rawRoomId)).replace(/=/g, '');
-        const topicPrefix = `dnd5r/room/${safeRoomId}`;
-
+    public connectGlobal() {
+        if (this.client) return;
+        this.myId = 'guest-' + Math.random().toString(36).substring(2, 9);
         this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-
+        
         this.client.on('connect', () => {
-            const topics = isHost ? [
-                `${topicPrefix}/host`,
-                `${topicPrefix}/broadcast`
-            ] : [
-                `${topicPrefix}/broadcast`,
-                `${topicPrefix}/p/${this.myId}`
-            ];
-
-            this.client?.subscribe(topics);
+            this.client?.subscribe('dnd5r/lobby/rooms/+');
             this.onConnectHandlers.forEach(cb => cb());
         });
 
@@ -62,11 +56,25 @@ class MqttService {
             console.error("MQTT Error:", err);
         });
 
-        this.client.on('offline', () => {
-            console.warn("MQTT Offline");
-        });
+        this.client.on('message', (topic, message) => {
+            if (topic.startsWith('dnd5r/lobby/rooms/')) {
+                const roomId = topic.split('/').pop();
+                if (!roomId) return;
+                
+                const content = message.toString();
+                if (!content) {
+                    this.activeLobbyRooms.delete(roomId);
+                } else {
+                    try {
+                        const data = JSON.parse(content);
+                        this.activeLobbyRooms.set(roomId, data);
+                    } catch (e) { }
+                }
+                const roomsList = Array.from(this.activeLobbyRooms.values()).sort((a, b) => b.timestamp - a.timestamp);
+                this.lobbyHandlers.forEach(cb => cb(roomsList));
+                return;
+            }
 
-        this.client.on('message', (_topic, message) => {
             try {
                 const data: RoomMessage = JSON.parse(message.toString());
                 if (data.senderId === this.myId) return;
@@ -75,6 +83,60 @@ class MqttService {
                 console.error("Failed to parse mqtt message", e);
             }
         });
+    }
+
+    public onLobbyUpdate(handler: (rooms: LobbyRoom[]) => void) {
+        this.lobbyHandlers.add(handler);
+        handler(Array.from(this.activeLobbyRooms.values()).sort((a, b) => b.timestamp - a.timestamp));
+        return () => this.lobbyHandlers.delete(handler);
+    }
+
+    public announceRoom(roomName: string, templateName?: string) {
+        if (!this.client || !this.currentRoomId || !this.isHost) return;
+        const safeRoomId = btoa(encodeURIComponent(this.currentRoomId)).replace(/=/g, '');
+        const data: LobbyRoom = {
+            id: this.currentRoomId,
+            name: roomName,
+            hostName: this.myName,
+            playerCount: 1, // Start with 1 (Host)
+            templateName,
+            timestamp: Date.now()
+        };
+        this.client.publish(`dnd5r/lobby/rooms/${safeRoomId}`, JSON.stringify(data), { retain: true });
+    }
+
+    public unannounceRoom() {
+        if (!this.client || !this.currentRoomId || !this.isHost) return;
+        const safeRoomId = btoa(encodeURIComponent(this.currentRoomId)).replace(/=/g, '');
+        this.client.publish(`dnd5r/lobby/rooms/${safeRoomId}`, '', { retain: true });
+    }
+
+    public init(playerName: string, roomId: string | null = null, isHost: boolean = false) {
+        this.myName = playerName;
+        this.isHost = isHost;
+        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
+        const rawRoomId = roomId || Math.floor(10000 + Math.random() * 90000).toString();
+        this.currentRoomId = rawRoomId;
+
+        const safeRoomId = btoa(encodeURIComponent(rawRoomId)).replace(/=/g, '');
+        const topicPrefix = `dnd5r/room/${safeRoomId}`;
+
+        if (!this.client) {
+            this.connectGlobal();
+        } else {
+            // If already connected, just subscribe to the new topics
+            const topics = isHost ? [
+                `${topicPrefix}/host`,
+                `${topicPrefix}/broadcast`
+            ] : [
+                `${topicPrefix}/broadcast`,
+                `${topicPrefix}/p/${this.myId}`
+            ];
+            this.client.subscribe(topics);
+            setTimeout(() => {
+                this.onConnectHandlers.forEach(cb => cb());
+            }, 100);
+        }
     }
 
     public onMessage(handler: (msg: RoomMessage) => void) {
@@ -109,6 +171,7 @@ class MqttService {
     }
 
     public disconnect() {
+        this.unannounceRoom();
         if (this.client) {
             this.client.end(true);
             this.client = null;
