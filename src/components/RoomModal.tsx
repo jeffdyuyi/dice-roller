@@ -22,8 +22,6 @@ export function RoomModal({
     const [inputName, setInputName] = useState(initialName);
     const [inputRoomId, setInputRoomId] = useState(defaultRoomId);
     const [inputRoomName, setInputRoomName] = useState('');
-    const [templates, setTemplates] = useState<any[]>([]);
-    const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [guestMode, setGuestMode] = useState(false);
 
     // Character selection state
@@ -41,13 +39,6 @@ export function RoomModal({
                     if (chars.length > 0) setSelectedCharId(chars[0].id);
                 });
             }
-            
-            Storage.get<any[]>('dice_roller_templates').then(storedTemplates => {
-                if (storedTemplates) {
-                    setTemplates(storedTemplates);
-                    if (storedTemplates.length > 0) setSelectedTemplateId(storedTemplates[0].id);
-                }
-            });
         }
     }, [isOpen, defaultMode, defaultRoomId]);
 
@@ -96,12 +87,6 @@ export function RoomModal({
 
                     {commState === 'DISCONNECTED' && (
                         <div className="space-y-4">
-                            {/* Mode Tabs */}
-                            <div className="flex gap-3">
-                                <button onClick={() => { setMode('join'); setConnectionError(null); }} className={`flex-1 py-2 text-[13px] font-sans font-medium transition-all border ${mode === 'join' ? 'bg-transparent text-ibm-text border-ibm-borderStrong shadow-sm' : 'bg-ibm-background text-ibm-textSecondary border-ibm-border hover:text-ibm-text hover:bg-ibm-layerHover'}`}>加入房间</button>
-                                <button onClick={() => { setMode('create'); setConnectionError(null); }} className={`flex-1 py-2 text-[13px] font-sans font-medium transition-all border ${mode === 'create' ? 'bg-[#ff832b] text-white border-[#ff832b] shadow-sm' : 'bg-ibm-background text-ibm-textSecondary border-ibm-border hover:text-ibm-text hover:bg-ibm-layerHover'}`}>+ 创建房间</button>
-                            </div>
-
                             <div className="min-h-[320px] flex flex-col">
                                 <div className="space-y-3">
                                     <div className="group">
@@ -127,18 +112,6 @@ export function RoomModal({
                                                     placeholder="例: LOBBY01" 
                                                     className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" 
                                                 />
-                                            </div>
-                                            <div className="group">
-                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">选用规则模板</label>
-                                                <div className="relative">
-                                                    <select value={selectedTemplateId} onChange={e => setSelectedTemplateId(e.target.value)} className="w-full bg-ibm-background border border-ibm-border focus:border-ibm-primary rounded-none px-4 py-2 text-[14px] font-sans text-ibm-text outline-none appearance-none cursor-pointer transition-all">
-                                                        {templates.map(t => (
-                                                            <option key={t.id} value={t.id} className="bg-ibm-background text-ibm-text">{t.name}</option>
-                                                        ))}
-                                                        {templates.length === 0 && <option value="" disabled className="bg-ibm-background text-ibm-textSecondary">暂无本地模板</option>}
-                                                    </select>
-                                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none font-mono">▼</span>
-                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -195,8 +168,7 @@ export function RoomModal({
                                                 setConnectionError('房间名称不能为空');
                                                 return;
                                             }
-                                            const t = templates.find(x => x.id === selectedTemplateId);
-                                            createRoom(inputName, inputRoomId, inputRoomName, t || null);
+                                            createRoom(inputName, inputRoomId, inputRoomName, null);
                                         }} 
                                         className="w-full bg-[#ff832b] text-white rounded-none font-sans font-medium py-2.5 text-[14px] transition-all hover:bg-[#e86c14] shadow-sm"
                                     >
