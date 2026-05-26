@@ -75,7 +75,7 @@ export function RoomModal({
     };
 
     return (
-        <div className="fixed inset-0 bg-ibm-background/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-ibm-layer border border-ibm-borderStrong p-6 md:p-8 max-w-md w-full relative overflow-hidden rounded-none shadow-none">
                 <button onClick={onClose} className="absolute top-4 right-4 text-ibm-textSecondary hover:text-ibm-text transition-colors z-10 p-2 rounded-none bg-transparent hover:bg-ibm-layerHover border border-transparent hover:border-ibm-border">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 1L1 13M1 1L13 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -98,70 +98,72 @@ export function RoomModal({
                                 <button onClick={() => { setMode('create'); setConnectionError(null); }} className={`flex-1 py-1.5 text-[12px] font-mono uppercase tracking-xai font-medium rounded-none transition-all ${mode === 'create' ? 'bg-ibm-primary text-ibm-textOnColor' : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'}`}>创建房间</button>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="group">
-                                    <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">您的昵称</label>
-                                    <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入您的昵称..." className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" />
-                                </div>
-                                {mode === 'join' ? (
+                            <div className="min-h-[320px] flex flex-col">
+                                <div className="space-y-3">
                                     <div className="group">
-                                        <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间 ID</label>
-                                        <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位代码" className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-mono outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px] uppercase" />
+                                        <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">您的昵称</label>
+                                        <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="输入您的昵称..." className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" />
                                     </div>
-                                ) : (
-                                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="group">
-                                            <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (选填)</label>
-                                            <input type="text" value={inputRoomName} onChange={e => setInputRoomName(e.target.value)} placeholder="给房间起个名字..." className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" />
+                                    {mode === 'join' ? (
+                                        <div className="group animate-in fade-in duration-300">
+                                            <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间 ID</label>
+                                            <input type="text" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} placeholder="输入5位代码" className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-mono outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px] uppercase" />
                                         </div>
-                                        <div className="group">
-                                            <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">选用规则模板</label>
-                                            <div className="relative">
-                                                <select value={selectedTemplateId} onChange={e => setSelectedTemplateId(e.target.value)} className="w-full bg-ibm-background border border-ibm-border focus:border-ibm-primary rounded-none px-4 py-2 text-[14px] font-sans text-ibm-text outline-none appearance-none cursor-pointer transition-all">
-                                                    {templates.map(t => (
-                                                        <option key={t.id} value={t.id} className="bg-ibm-background text-ibm-text">{t.name}</option>
-                                                    ))}
-                                                    {templates.length === 0 && <option value="" disabled className="bg-ibm-background text-ibm-textSecondary">暂无本地模板</option>}
-                                                </select>
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none font-mono">▼</span>
+                                    ) : (
+                                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <div className="group">
+                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">房间名称 (选填)</label>
+                                                <input type="text" value={inputRoomName} onChange={e => setInputRoomName(e.target.value)} placeholder="给房间起个名字..." className="w-full bg-ibm-background border-b-2 border-transparent focus:border-ibm-primary rounded-none px-4 py-2 text-ibm-text font-sans outline-none transition-all placeholder:text-ibm-textPlaceholder text-[14px]" />
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {mode === 'join' && (
-                                <div className="bg-ibm-background border border-ibm-border rounded-none p-4 space-y-3 mt-4">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative flex items-center">
-                                            <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="peer sr-only" />
-                                            <div className="w-10 h-5 bg-ibm-layer border border-ibm-border rounded-none peer-checked:bg-ibm-primary transition-colors"></div>
-                                            <div className="absolute left-[2px] top-[2px] w-4 h-4 bg-ibm-textSecondary rounded-none transition-transform peer-checked:translate-x-5 peer-checked:bg-ibm-textOnColor"></div>
-                                        </div>
-                                        <span className="text-[12px] font-mono tracking-xai uppercase text-ibm-textSecondary group-hover:text-ibm-text transition-colors">以访客身份加入 (不使用角色卡)</span>
-                                    </label>
-
-                                    {!guestMode && (
-                                        <div className="animate-in slide-in-from-top-2 duration-400 mt-3">
-                                            <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5">关联角色档案</label>
-                                            {myCharacters.length === 0 ? (
-                                                <div className="text-[12px] text-ibm-textSecondary font-mono tracking-xai uppercase text-center bg-ibm-layer border border-ibm-border rounded-none p-3">
-                                                    您的角色库中尚无存档。
-                                                </div>
-                                            ) : (
-                                                <div className="relative group">
-                                                    <select value={selectedCharId} onChange={e => setSelectedCharId(e.target.value)} className="w-full bg-ibm-layer border border-ibm-border rounded-none px-4 py-2 text-[14px] font-sans text-ibm-text outline-none appearance-none cursor-pointer hover:bg-ibm-layerHover transition-all">
-                                                        {myCharacters.map(c => (
-                                                            <option key={c.id} value={c.id} className="bg-ibm-background text-ibm-text">{c.name} ({c.summary || '无模板'})</option>
+                                            <div className="group">
+                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5 transition-colors">选用规则模板</label>
+                                                <div className="relative">
+                                                    <select value={selectedTemplateId} onChange={e => setSelectedTemplateId(e.target.value)} className="w-full bg-ibm-background border border-ibm-border focus:border-ibm-primary rounded-none px-4 py-2 text-[14px] font-sans text-ibm-text outline-none appearance-none cursor-pointer transition-all">
+                                                        {templates.map(t => (
+                                                            <option key={t.id} value={t.id} className="bg-ibm-background text-ibm-text">{t.name}</option>
                                                         ))}
+                                                        {templates.length === 0 && <option value="" disabled className="bg-ibm-background text-ibm-textSecondary">暂无本地模板</option>}
                                                     </select>
                                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none font-mono">▼</span>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-                            )}
+
+                                {mode === 'join' && (
+                                    <div className="bg-ibm-background border border-ibm-border rounded-none p-4 space-y-3 mt-4 animate-in fade-in duration-300">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div className="relative flex items-center">
+                                                <input type="checkbox" checked={guestMode} onChange={e => setGuestMode(e.target.checked)} className="peer sr-only" />
+                                                <div className="w-10 h-5 bg-ibm-layer border border-ibm-border rounded-none peer-checked:bg-ibm-primary transition-colors"></div>
+                                                <div className="absolute left-[2px] top-[2px] w-4 h-4 bg-ibm-textSecondary rounded-none transition-transform peer-checked:translate-x-5 peer-checked:bg-ibm-textOnColor"></div>
+                                            </div>
+                                            <span className="text-[12px] font-mono tracking-xai uppercase text-ibm-textSecondary group-hover:text-ibm-text transition-colors">以访客身份加入 (不使用角色卡)</span>
+                                        </label>
+
+                                        {!guestMode && (
+                                            <div className="animate-in slide-in-from-top-2 duration-400 mt-3">
+                                                <label className="block text-[12px] font-mono tracking-xai uppercase font-medium text-ibm-textSecondary mb-1.5">关联角色档案</label>
+                                                {myCharacters.length === 0 ? (
+                                                    <div className="text-[12px] text-ibm-textSecondary font-mono tracking-xai uppercase text-center bg-ibm-layer border border-ibm-border rounded-none p-3">
+                                                        您的角色库中尚无存档。
+                                                    </div>
+                                                ) : (
+                                                    <div className="relative group">
+                                                        <select value={selectedCharId} onChange={e => setSelectedCharId(e.target.value)} className="w-full bg-ibm-layer border border-ibm-border rounded-none px-4 py-2 text-[14px] font-sans text-ibm-text outline-none appearance-none cursor-pointer hover:bg-ibm-layerHover transition-all">
+                                                            {myCharacters.map(c => (
+                                                                <option key={c.id} value={c.id} className="bg-ibm-background text-ibm-text">{c.name} ({c.summary || '无模板'})</option>
+                                                            ))}
+                                                        </select>
+                                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none font-mono">▼</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             {connectionError && (
                                 <div className="bg-ibm-danger/10 text-ibm-danger rounded-none p-3 mt-3 flex items-start gap-3 animate-in fade-in duration-300">
