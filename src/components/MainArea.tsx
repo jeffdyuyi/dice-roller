@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMqttContext } from '../contexts/MqttContext';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface MainAreaProps {
     diceHistory: any[];
@@ -55,7 +56,9 @@ export function MainArea({ diceHistory }: MainAreaProps) {
                             </span>
                         </div>
                     </div>
-                    <pre className="whitespace-pre-wrap font-sans text-ibm-text text-[13px] leading-relaxed select-text mt-1">{roll.text}</pre>
+                    <div className="text-[13px] leading-relaxed select-text mt-1 text-ibm-text">
+                        <MarkdownRenderer content={roll.text} />
+                    </div>
                 </div>
             );
         }

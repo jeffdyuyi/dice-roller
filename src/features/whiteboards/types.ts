@@ -1,5 +1,6 @@
 export interface CellNoteEntry {
     id: string;
+    icon?: string; // Optional emoji or single Chinese character marker
     mdContent: string;
     author: string;
     timestamp: number;

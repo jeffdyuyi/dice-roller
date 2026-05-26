@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { CellData, CellNoteEntry } from '../features/whiteboards/types';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface CellNotePanelProps {
     isOpen: boolean;
@@ -13,6 +14,8 @@ interface CellNotePanelProps {
 
 export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdateCell }: CellNotePanelProps) {
     const [newNote, setNewNote] = useState('');
+    const [newNoteIcon, setNewNoteIcon] = useState('');
+    
     const [terrain, setTerrain] = useState(cellData?.terrain || '');
     const [object, setObject] = useState(cellData?.object || '');
     const [unit, setUnit] = useState(cellData?.unit || '');
@@ -33,12 +36,12 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
     const currentTerrain = cellData?.terrain || '';
     const currentObject = cellData?.object || '';
     const currentUnit = cellData?.unit || '';
-    const currentColor = cellData?.color || '';
 
     const handleAddNote = () => {
         if (!newNote.trim()) return;
         const newEntry: CellNoteEntry = {
             id: 'note-' + Date.now().toString(36),
+            icon: newNoteIcon.trim() || undefined,
             mdContent: newNote,
             author: myName || '未命名',
             timestamp: Date.now()
@@ -50,6 +53,7 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
             entries: updatedEntries
         });
         setNewNote('');
+        setNewNoteIcon('');
     };
 
     const handleDeleteNote = (noteId: string) => {
@@ -119,26 +123,26 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar text-[13px]">
                 {/* Layer Settings */}
                 <div className="space-y-5 border-b border-ibm-border pb-6">
-                    <h4 className="text-[11px] font-mono text-ibm-textSecondary uppercase tracking-widest">图层元素编辑</h4>
+                    <h4 className="text-[11px] font-mono text-ibm-textSecondary uppercase tracking-widest">地貌背景设置</h4>
                     
                     {/* Tactical Background Paint Picker */}
                     <div className="space-y-2 bg-ibm-background/30 p-2.5 border border-ibm-border">
-                        <label className="font-mono text-ibm-textSecondary text-[11px] uppercase block">🎨 战术网格填色:</label>
+                        <label className="font-mono text-ibm-textSecondary text-[11px] uppercase block">🎨 地貌背景涂色:</label>
                         <div className="flex flex-wrap gap-2 items-center mt-1">
                             {[
-                                { hex: '#da1e28', label: '危险/熔岩' },
-                                { hex: '#198038', label: '剧毒/酸液' },
-                                { hex: '#002d9c', label: '深水/传送' },
-                                { hex: '#b28600', label: '警戒/陷阱' },
-                                { hex: '#525252', label: '迷雾/视线' },
-                                { hex: '#8a6a4d', label: '泥泞/困难' }
+                                { hex: '#7d9e70', label: '草原/平原' },
+                                { hex: '#5588a3', label: '水体/江河' },
+                                { hex: '#8e8d8a', label: '岩山/丘陵' },
+                                { hex: '#d8c3a5', label: '沙地/荒漠' },
+                                { hex: '#d9825e', label: '熔岩/废土' },
+                                { hex: '#4b604f', label: '深野/森林' }
                             ].map(item => (
                                 <button
                                     key={item.hex}
                                     type="button"
                                     onClick={() => setColor(item.hex)}
                                     className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
-                                        color === item.hex ? 'border-ibm-text scale-115 shadow-md' : 'border-transparent hover:scale-105'
+                                        color === item.hex ? 'border-ibm-text scale-115 shadow-md ring-2 ring-ibm-primary/20' : 'border-transparent hover:scale-105'
                                     }`}
                                     style={{ backgroundColor: item.hex }}
                                     title={item.label}
@@ -156,104 +160,108 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                         </div>
                     </div>
 
+                    {/* Legacy / Direct Element inputs for standalone icons */}
                     <div className="space-y-4">
-                        {/* Terrain Layer */}
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🔥 地形层:</label>
-                                <input 
-                                    type="text"
-                                    placeholder="输入 Emoji 或文本"
-                                    value={terrain}
-                                    onChange={e => setTerrain(e.target.value)}
-                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                                />
-                            </div>
-                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
-                                {['🧱', '🏰', '🌲', '🌳', '🔥', '🌊', '⛰️', '🕳️'].map(emoji => (
-                                    <button 
-                                        key={emoji}
-                                        type="button"
-                                        onClick={() => setTerrain(emoji)}
-                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        <details className="group border border-ibm-border/60 bg-ibm-background/10">
+                            <summary className="p-2 font-mono text-[10px] uppercase text-ibm-textSecondary cursor-pointer select-none hover:bg-ibm-layerHover/50 flex justify-between items-center">
+                                <span>🏷️ 直观快捷图层 (地形/物件/单位)</span>
+                                <span className="font-mono text-[8px] transition-transform group-open:rotate-90">▶</span>
+                            </summary>
+                            <div className="p-3 space-y-4 border-t border-ibm-border/60">
+                                {/* Terrain Layer */}
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🔥 地形:</label>
+                                        <input 
+                                            type="text"
+                                            value={terrain}
+                                            onChange={e => setTerrain(e.target.value)}
+                                            className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-xs"
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 pl-18">
+                                        {['🧱', '🏰', '🌲', '🌳', '🔥', '🌊', '⛰️', '🕳️'].map(emoji => (
+                                            <button 
+                                                key={emoji}
+                                                type="button"
+                                                onClick={() => setTerrain(emoji)}
+                                                className="w-5 h-5 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-[10px]"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
 
-                        {/* Object Layer */}
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🚪 物件层:</label>
-                                <input 
-                                    type="text"
-                                    placeholder="输入 Emoji 或文本"
-                                    value={object}
-                                    onChange={e => setObject(e.target.value)}
-                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                                />
-                            </div>
-                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
-                                {['🚪', '🗝️', '📦', '💎', '🪙', '🏹', '🕯️', '🍷'].map(emoji => (
-                                    <button 
-                                        key={emoji}
-                                        type="button"
-                                        onClick={() => setObject(emoji)}
-                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
-                                    >
-                                        {emoji}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                                {/* Object Layer */}
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🚪 物件:</label>
+                                        <input 
+                                            type="text"
+                                            value={object}
+                                            onChange={e => setObject(e.target.value)}
+                                            className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-xs"
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 pl-18">
+                                        {['🚪', '🗝️', '📦', '💎', '🪙', '🏹', '🕯️', '🍷'].map(emoji => (
+                                            <button 
+                                                key={emoji}
+                                                type="button"
+                                                onClick={() => setObject(emoji)}
+                                                className="w-5 h-5 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-[10px]"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
 
-                        {/* Unit Layer */}
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">👤 单位层:</label>
-                                <input 
-                                    type="text"
-                                    placeholder="输入中文或 Emoji"
-                                    value={unit}
-                                    onChange={e => setUnit(e.target.value)}
-                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                                />
-                            </div>
-                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
-                                {['👾', '🐉', '🛡️', '🧙', '🏹', '🧟', '💀', '🐺'].map(emoji => (
+                                {/* Unit Layer */}
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">👤 单位:</label>
+                                        <input 
+                                            type="text"
+                                            value={unit}
+                                            onChange={e => setUnit(e.target.value)}
+                                            className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-xs"
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 pl-18">
+                                        {['👾', '🐉', '🛡️', '🧙', '🏹', '🧟', '💀', '🐺'].map(emoji => (
+                                            <button 
+                                                key={emoji}
+                                                type="button"
+                                                onClick={() => setUnit(emoji)}
+                                                className="w-5 h-5 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-[10px]"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2 border-t border-ibm-border/40">
                                     <button 
-                                        key={emoji}
-                                        type="button"
-                                        onClick={() => setUnit(emoji)}
-                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
+                                        onClick={() => {
+                                            setTerrain(currentTerrain);
+                                            setObject(currentObject);
+                                            setUnit(currentUnit);
+                                        }}
+                                        className="px-2 py-1 border border-ibm-border hover:bg-ibm-layerHover text-ibm-text text-[10px] font-mono"
                                     >
-                                        {emoji}
+                                        重置
                                     </button>
-                                ))}
+                                    <button 
+                                        onClick={handleSaveElements}
+                                        className="px-3 py-1 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover text-[10px] font-medium"
+                                    >
+                                        保存快捷图层
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div className="flex justify-end gap-2 pt-2">
-                        <button 
-                            onClick={() => {
-                                setTerrain(currentTerrain);
-                                setObject(currentObject);
-                                setUnit(currentUnit);
-                                setColor(currentColor);
-                            }}
-                            className="px-3 py-1.5 border border-ibm-border hover:bg-ibm-layerHover text-ibm-text text-[11px] font-mono transition-all"
-                        >
-                            重置
-                        </button>
-                        <button 
-                            onClick={handleSaveElements}
-                            className="px-4 py-1.5 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover text-[11px] font-medium transition-all"
-                        >
-                            保存图层
-                        </button>
+                        </details>
                     </div>
                 </div>
 
@@ -261,12 +269,19 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                 <div className="space-y-4 flex-1 flex flex-col">
                     <h4 className="text-[11px] font-mono text-ibm-textSecondary uppercase tracking-widest">MD 备注条目 ({cellData?.entries.length || 0})</h4>
                     
-                    <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                    <div className="space-y-3 max-h-56 overflow-y-auto custom-scrollbar pr-1">
                         {cellData?.entries && cellData.entries.length > 0 ? (
                             cellData.entries.map(entry => (
                                 <div key={entry.id} className="p-3 border border-ibm-border bg-ibm-background/40 relative group">
-                                    <div className="flex justify-between items-center mb-1.5 border-b border-ibm-border/30 pb-1">
-                                        <span className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-xai">{entry.author}</span>
+                                    <div className="flex justify-between items-center mb-1.5 border-b border-ibm-border/30 pb-1 shrink-0">
+                                        <div className="flex items-center gap-1.5">
+                                            {entry.icon && (
+                                                <span className="w-5 h-5 flex items-center justify-center bg-ibm-primary text-ibm-textOnColor font-bold font-mono text-[10px] rounded-none">
+                                                    {entry.icon}
+                                                </span>
+                                            )}
+                                            <span className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-xai">{entry.author}</span>
+                                        </div>
                                         <button 
                                             onClick={() => handleDeleteNote(entry.id)}
                                             className="text-[10px] text-ibm-textSecondary hover:text-[#fa4d56] opacity-0 group-hover:opacity-100 transition-opacity"
@@ -274,7 +289,9 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                                             删除
                                         </button>
                                     </div>
-                                    <pre className="whitespace-pre-wrap font-sans text-ibm-text text-[12px] leading-relaxed select-text">{entry.mdContent}</pre>
+                                    <div className="text-[12px] leading-relaxed select-text mt-1 text-ibm-text">
+                                        <MarkdownRenderer content={entry.mdContent} />
+                                    </div>
                                     <div className="text-[9px] font-mono text-ibm-textSecondary text-right mt-1.5">
                                         {new Date(entry.timestamp).toLocaleTimeString()}
                                     </div>
@@ -288,7 +305,38 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                     </div>
 
                     {/* New Note Area */}
-                    <div className="pt-2 space-y-2">
+                    <div className="pt-2 space-y-3 bg-ibm-background/25 p-2.5 border border-ibm-border/60">
+                        <label className="font-mono text-ibm-textSecondary text-[10px] uppercase block">✍️ 添加地块标记备注:</label>
+                        
+                        {/* Marker Icon Input */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-mono text-ibm-textSecondary">标记符号:</span>
+                                <input 
+                                    type="text"
+                                    placeholder="Emoji或单字"
+                                    value={newNoteIcon}
+                                    onChange={e => setNewNoteIcon(e.target.value.substring(0, 4))}
+                                    className="w-24 bg-ibm-background border border-ibm-border px-2 py-0.5 text-ibm-text outline-none text-xs"
+                                />
+                                <span className="text-[9px] text-ibm-textPlaceholder">(可选，显示在地图格)</span>
+                            </div>
+                            
+                            {/* Preset Buttons for Note Icon */}
+                            <div className="flex flex-wrap gap-1">
+                                {['🔥', '🏰', '🌲', '🌳', '🌊', '⛰️', '🕳️', '🚪', '🗝️', '📦', '💎', '👾', '🐉', '🛡️', '🧙', '💀', '🐺'].map(emoji => (
+                                    <button 
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => setNewNoteIcon(emoji)}
+                                        className="w-5 h-5 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-[10px]"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Markdown Formatting Toolbar */}
                         <div className="flex gap-1 p-1 border border-ibm-border bg-ibm-layerHover/50 shrink-0">
                             <button 
@@ -347,14 +395,14 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                             placeholder="添加 Markdown 格式的备注..."
                             value={newNote}
                             onChange={e => setNewNote(e.target.value)}
-                            className="w-full bg-ibm-background border border-ibm-border p-2 text-xs text-ibm-text outline-none focus:border-ibm-primary transition-colors min-h-[60px] resize-none"
+                            className="w-full bg-ibm-background border border-ibm-border p-2 text-xs text-ibm-text outline-none focus:border-ibm-primary transition-colors min-h-[60px] resize-none font-sans"
                         />
                         <div className="flex justify-end">
                             <button 
                                 onClick={handleAddNote}
                                 className="px-4 py-1.5 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover text-[11px] font-medium transition-all"
                             >
-                                + 添加备注
+                                + 添加标记与备注
                             </button>
                         </div>
                     </div>

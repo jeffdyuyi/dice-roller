@@ -342,7 +342,7 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
                                         width={w}
                                         height={h}
                                         text={cell.terrain}
-                                        fontSize={currentSize * 0.55}
+                                        fontSize={cell.terrain.length > 1 ? currentSize * 0.32 : currentSize * 0.55}
                                         align="center"
                                         verticalAlign="middle"
                                         listening={false}
@@ -357,7 +357,7 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
                                         width={w}
                                         height={h}
                                         text={cell.object}
-                                        fontSize={currentSize * 0.55}
+                                        fontSize={cell.object.length > 1 ? currentSize * 0.32 : currentSize * 0.55}
                                         align="center"
                                         verticalAlign="middle"
                                         listening={false}
@@ -380,6 +380,27 @@ export function GridBoard({ tab, selectedCell, onSelectCell, recenterTrigger }: 
                                         fontStyle="bold"
                                     />
                                 )}
+
+                                {/* Note Entry Icons Layer (Every Emoji/marker corresponds directly to one Markdown text block!) */}
+                                {(() => {
+                                    const entryIcons = cell.entries.map(e => e.icon).filter(Boolean) as string[];
+                                    const markersString = entryIcons.join(' ');
+                                    const markersLength = entryIcons.join('').length;
+                                    if (!markersString) return null;
+                                    return (
+                                        <Text
+                                            x={tx}
+                                            y={ty}
+                                            width={w}
+                                            height={h}
+                                            text={markersString}
+                                            fontSize={markersLength > 1 ? currentSize * 0.32 : currentSize * 0.55}
+                                            align="center"
+                                            verticalAlign="middle"
+                                            listening={false}
+                                        />
+                                    );
+                                })()}
 
                                 {/* Note Blue Indicator Icon */}
                                 {cell.entries.length > 0 && (
