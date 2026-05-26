@@ -3,6 +3,7 @@ import { mqttInstance, type PlayerNode, type RoomMessage, type LobbyRoom } from 
 import { saveCharacter } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
 import type { WhiteboardProject } from '../features/whiteboards/types';
+import { saveWhiteboard, getMyWhiteboards } from '../features/whiteboards/api';
 
 
 export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
@@ -89,6 +90,20 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         const unsubMsg = mqttInstance.onMessage((msg: RoomMessage) => {
             if (msg.type === 'JOIN_REQUEST') {
                 if (mqttInstance.isHost) {
+                    // Push the join request to host's chat history
+                    setDiceHistory(h => {
+                        if (h.some(item => (item as any).type === 'join_request' && (item as any).senderId === msg.senderId && (item as any).status === 'pending')) {
+                            return h;
+                        }
+                        return [...h, {
+                            type: 'join_request',
+                            senderId: msg.senderId,
+                            userName: msg.senderName,
+                            timestamp: msg.timestamp,
+                            guestMode: msg.payload?.guestMode,
+                            status: 'pending'
+                        }];
+                    });
                     setPendingPlayers(prev => {
                         if (prev.find(p => p.id === msg.senderId)) return prev;
                         showNotification(`收到来自 ${msg.senderName} 的加入请求`, 'info');
@@ -177,6 +192,33 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const { project } = msg.payload || {};
                 if (project) {
                     setRoomWhiteboard(project);
+                    // Sync and save locally for players/host using matching name
+                    (async () => {
+                        try {
+                            const localUser = mqttInstance.myId || 'local-user';
+                            const localBoards = await getMyWhiteboards(localUser);
+                            const existing = localBoards.find(w => w.name === project.name);
+                            if (existing) {
+                                const updatedLocal: WhiteboardProject = {
+                                    ...existing,
+                                    tabs: project.tabs,
+                                    updatedAt: Date.now() // Timestamp updated
+                                };
+                                await saveWhiteboard(updatedLocal);
+                            } else {
+                                const newLocal: WhiteboardProject = {
+                                    id: 'board-' + Date.now().toString(36),
+                                    name: project.name,
+                                    userId: localUser,
+                                    updatedAt: Date.now(), // Timestamp set
+                                    tabs: project.tabs
+                                };
+                                await saveWhiteboard(newLocal);
+                            }
+                        } catch (err) {
+                            console.error('Error syncing received room whiteboard locally:', err);
+                        }
+                    })();
                 }
             }
         });
@@ -248,7 +290,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         }, 1000);
     }, []);
 
-    const acceptPlayer = useCallback((pId: string) => {
+    const acceptPlayer = useCallback((pId: string, _pName?: string) => {
         setPendingPlayers(prevPending => {
             const accepted = prevPending.find(p => p.id === pId);
             if (accepted) {
@@ -270,6 +312,14 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             }
             return prevPending.filter(p => p.id !== pId);
         });
+
+        // Also update the join request status in history
+        setDiceHistory(prev => prev.map(item => 
+            (item as any).type === 'join_request' && (item as any).senderId === pId 
+                ? { ...(item as any), status: 'accepted' }
+                : item
+        ));
+
         mqttInstance.sendToPlayer(pId, 'JOIN_ACCEPTED', { roomName, roomTemplate });
         if (roomWhiteboard) {
             setTimeout(() => {
@@ -280,6 +330,12 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));
+        // Also update the join request status in history
+        setDiceHistory(prev => prev.map(item => 
+            (item as any).type === 'join_request' && (item as any).senderId === pId 
+                ? { ...(item as any), status: 'rejected' }
+                : item
+        ));
         mqttInstance.sendToPlayer(pId, 'JOIN_REJECTED');
     }, []);
 
@@ -346,9 +402,39 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const updateRoomWhiteboard = useCallback((updated: WhiteboardProject) => {
-        setRoomWhiteboard(updated);
+        const boardWithTime = { ...updated, updatedAt: Date.now() };
+        setRoomWhiteboard(boardWithTime);
+
+        // Sync and save locally using matching name
+        (async () => {
+            try {
+                const localUser = mqttInstance.myId || 'local-user';
+                const localBoards = await getMyWhiteboards(localUser);
+                const existing = localBoards.find(w => w.name === boardWithTime.name);
+                if (existing) {
+                    const updatedLocal: WhiteboardProject = {
+                        ...existing,
+                        tabs: boardWithTime.tabs,
+                        updatedAt: Date.now() // Timestamp updated
+                    };
+                    await saveWhiteboard(updatedLocal);
+                } else {
+                    const newLocal: WhiteboardProject = {
+                        id: boardWithTime.id.startsWith('board-') ? boardWithTime.id : ('board-' + Date.now().toString(36)),
+                        name: boardWithTime.name,
+                        userId: localUser,
+                        updatedAt: Date.now(), // Timestamp set
+                        tabs: boardWithTime.tabs
+                    };
+                    await saveWhiteboard(newLocal);
+                }
+            } catch (err) {
+                console.error('Error auto-saving room whiteboard edit locally:', err);
+            }
+        })();
+
         if (commState === 'CONNECTED') {
-            mqttInstance.broadcast('WHITEBOARD_SYNC', { project: updated });
+            mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
         }
     }, [commState]);
 

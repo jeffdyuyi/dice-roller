@@ -17,6 +17,23 @@
   --interactive-secondary-hover: #4c4c4c;
   --danger: #da1e28;
   --danger-hover: #b81921;
+
+  /* Tailwind CSS v4 native theme color variables */
+  --color-ibm-background: var(--bg-background);
+  --color-ibm-layer: var(--bg-layer-01);
+  --color-ibm-layer-hover: var(--bg-layer-02);
+  --color-ibm-text: var(--text-primary);
+  --color-ibm-text-secondary: var(--text-secondary);
+  --color-ibm-text-placeholder: var(--text-placeholder);
+  --color-ibm-text-on-color: var(--text-on-color);
+  --color-ibm-border: var(--border-subtle);
+  --color-ibm-border-strong: var(--border-strong);
+  --color-ibm-primary: var(--interactive-primary);
+  --color-ibm-primary-hover: var(--interactive-hover);
+  --color-ibm-secondary: var(--interactive-secondary);
+  --color-ibm-secondary-hover: var(--interactive-secondary-hover);
+  --color-ibm-danger: var(--danger);
+  --color-ibm-danger-hover: var(--danger-hover);
 }
 
 .dark {

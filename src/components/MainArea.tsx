@@ -8,7 +8,7 @@ interface MainAreaProps {
 
 export function MainArea({ diceHistory }: MainAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const { activeCharacter, myName, sendChatMessage, commState } = useMqttContext();
+    const { activeCharacter, myName, sendChatMessage, commState, acceptPlayer, rejectPlayer, isHost } = useMqttContext();
     const [chatInput, setChatInput] = useState('');
 
     useEffect(() => {
@@ -24,6 +24,68 @@ export function MainArea({ diceHistory }: MainAreaProps) {
     };
 
     const renderRollCard = (roll: any, idx: number, isLatest: boolean = false) => {
+        if (roll.type === 'join_request') {
+            return (
+                <div key={idx} className="flex flex-col mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full max-w-[85%] border border-ibm-border bg-ibm-layer p-4 relative overflow-hidden" style={{ backgroundColor: 'var(--bg-layer-01)' }}>
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-ibm-border/30">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-[12px] font-sans font-semibold text-ibm-text">📥 申请入场通知</span>
+                            <span className="text-[10px] font-mono text-ibm-textPlaceholder uppercase tracking-xai">
+                                {new Date(roll.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+                        <span className={`text-[10px] font-mono px-2 py-0.5 border ${
+                            roll.status === 'accepted' ? 'border-[#24a148] text-[#24a148] bg-[#24a148]/10' :
+                            roll.status === 'rejected' ? 'border-[#da1e28] text-[#da1e28] bg-[#da1e28]/10' :
+                            'border-ibm-border text-ibm-textSecondary'
+                        }`}>
+                            {roll.status === 'accepted' ? '已接受' :
+                             roll.status === 'rejected' ? '已拒绝' :
+                             '审核中'}
+                        </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-1.5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border border-ibm-border bg-ibm-layerHover flex items-center justify-center text-ibm-text font-mono text-lg shrink-0">
+                                {roll.userName?.[0] || '?'}
+                            </div>
+                            <div>
+                                <p className="text-[14px] font-sans font-medium text-ibm-text">{roll.userName}</p>
+                                <p className="text-[11px] font-sans text-ibm-textSecondary mt-0.5">
+                                    {roll.guestMode ? '以 旁观者/Guest 身份申请' : '关联角色卡申请入场'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Approvals (Only visible to the Host, and only if status is pending) */}
+                        {isHost ? (
+                            roll.status === 'pending' ? (
+                                <div className="flex gap-2 shrink-0">
+                                    <button
+                                        onClick={() => acceptPlayer(roll.senderId, roll.userName)}
+                                        className="h-8 px-4 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all text-xs font-mono border border-ibm-primary"
+                                    >
+                                        接受
+                                    </button>
+                                    <button
+                                        onClick={() => rejectPlayer(roll.senderId)}
+                                        className="h-8 px-4 border border-ibm-border hover:bg-ibm-layerHover text-ibm-text transition-all text-xs font-mono"
+                                    >
+                                        拒绝
+                                    </button>
+                                </div>
+                            ) : (
+                                <span className="text-[12px] text-ibm-textPlaceholder font-sans">此请求已处理</span>
+                            )
+                        ) : (
+                            <span className="text-[11px] text-ibm-textPlaceholder font-sans">仅房主可见审核操作</span>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
         if (roll.type === 'chat') {
             const isLocal = roll.userName === myName || roll.isLocal;
             return (

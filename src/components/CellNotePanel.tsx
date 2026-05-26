@@ -174,7 +174,7 @@ function EntryCard({ entry, onUpdate, onDelete }: EntryCardProps) {
     useEffect(() => { if (taRef.current) autoResize(taRef.current); }, []);
 
     return (
-        <div className="border border-ibm-border bg-ibm-background/20 group/card">
+        <div className="border border-ibm-border bg-ibm-background group/card" style={{ backgroundColor: 'var(--bg-background)' }}>
             {/* Card Header */}
             <div className="flex items-center gap-2 px-3 py-1.5 border-b border-ibm-border/40 bg-ibm-layer/40">
                 <button
@@ -357,6 +357,7 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
                 onClick={() => setCollapsed(false)}
                 title="展开编辑面板"
                 onWheel={e => e.stopPropagation()}
+                style={{ backgroundColor: 'var(--bg-layer-01)' }}
             >
                 {/* Expand Arrow */}
                 <div className="w-8 h-8 flex items-center justify-center text-ibm-primary text-sm mt-2">
@@ -386,6 +387,7 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
         <div
             className="absolute right-0 top-0 h-full w-[480px] bg-ibm-layer border-l border-ibm-border z-30 flex flex-col shadow-xl transition-all duration-200"
             onWheel={e => e.stopPropagation()}
+            style={{ backgroundColor: 'var(--bg-layer-01)' }}
         >
             {/* Header */}
             <div className="px-4 py-3 border-b border-ibm-border flex items-center justify-between bg-ibm-background/60 shrink-0">
