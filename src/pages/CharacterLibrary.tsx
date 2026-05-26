@@ -5,24 +5,15 @@ import type { Character } from '../features/characters/types';
 import { useAuth } from '../features/auth/useAuth';
 
 export function CharacterLibrary() {
-    const { user, isLoggedIn } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [characters, setCharacters] = useState<Character[]>([]);
 
     useEffect(() => {
-        if (isLoggedIn && user) {
+        if (user) {
             getMyCharacters(user.id).then(setCharacters);
         }
-    }, [isLoggedIn, user]);
-
-    if (!isLoggedIn) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-x-muted bg-x-dark">
-                <span className="font-mono text-[48px] opacity-20">_</span>
-                <p className="text-[12px] font-mono tracking-xai uppercase mt-8 opacity-50">待机中 / 请先登录</p>
-            </div>
-        );
-    }
+    }, [user]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('确认删除角色卡吗？')) return;

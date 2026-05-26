@@ -4,18 +4,10 @@ import { useAuth } from '../features/auth/useAuth';
 import { saveCharacter } from '../features/characters/api';
 
 export function CharacterCreator() {
-    const { user, isLoggedIn } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [memoName, setMemoName] = useState('');
-
-    if (!isLoggedIn || !user) {
-        return (
-            <div className="flex justify-center items-center h-full text-x-muted bg-x-dark">
-                <h2 className="text-[14px] font-mono uppercase tracking-xai">请先登录</h2>
-            </div>
-        );
-    }
 
     const handleSave = async () => {
         if (!memoName.trim()) return alert('备忘录名称不能为空！');

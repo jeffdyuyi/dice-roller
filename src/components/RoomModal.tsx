@@ -15,7 +15,7 @@ export function RoomModal({
 }: RoomModalProps) {
     const {
         commState, roomId, myName: initialName,
-        createRoom, joinRoom, connectionError, setConnectionError, disconnectLocal, leaveRoom
+        createRoom, joinRoom, connectionError, disconnectLocal, leaveRoom
     } = useMqttContext();
     const [mode, setMode] = useState<'join' | 'create'>(defaultMode);
     const [inputName, setInputName] = useState(initialName);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface User {
     id: string;
@@ -6,18 +6,24 @@ export interface User {
     displayName: string;
 }
 
+const DEFAULT_USER: User = {
+    id: 'local-user',
+    username: 'Player',
+    displayName: 'Player'
+};
+
 // 模拟 Auth Hook (使用 localStorage)
 export function useAuth() {
-    const [user, setUser] = useState<User | null>(null);
-
-    useEffect(() => {
+    const [user, setUser] = useState<User>(() => {
         const stored = localStorage.getItem('mock_user');
         if (stored) {
             try {
-                setUser(JSON.parse(stored));
-            } catch (e) { }
+                return JSON.parse(stored);
+            } catch (e) {}
         }
-    }, []);
+        localStorage.setItem('mock_user', JSON.stringify(DEFAULT_USER));
+        return DEFAULT_USER;
+    });
 
     const login = (username: string) => {
         const mockUser: User = {
@@ -30,13 +36,14 @@ export function useAuth() {
     };
 
     const logout = () => {
-        localStorage.removeItem('mock_user');
-        setUser(null);
+        // For a pure frontend app, we just reset to default local user instead of logging out
+        localStorage.setItem('mock_user', JSON.stringify(DEFAULT_USER));
+        setUser(DEFAULT_USER);
     };
 
     return {
         user,
-        isLoggedIn: !!user,
+        isLoggedIn: true,
         login,
         logout
     };
