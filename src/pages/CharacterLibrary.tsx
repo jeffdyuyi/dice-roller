@@ -40,32 +40,32 @@ export function CharacterLibrary() {
                 </div>
                 <button 
                     onClick={() => navigate('/characters/new')} 
-                    className="bg-apple-blue text-white px-8 py-3.5 rounded-full font-sans font-medium text-[15px] hover:bg-apple-blue/90 hover:scale-[0.98] active:bg-[#ededf2] active:text-[#1d1d1f] transition-all shadow-sm"
+                    className="bg-x-white text-x-dark px-8 py-3.5 rounded-none font-mono uppercase tracking-xai font-medium text-[12px] hover:bg-white/90 transition-all"
                 >
                     + 塑造新角色
                 </button>
             </div>
 
             {characters.length === 0 ? (
-                <div className="border border-dashed border-white/10 rounded-3xl p-32 text-center relative z-10 flex flex-col items-center justify-center bg-[#1c1c1e]/30">
-                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-white/20" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <div className="border border-dashed border-x-border rounded-none p-32 text-center relative z-10 flex flex-col items-center justify-center bg-x-surface">
+                    <div className="w-16 h-16 rounded-none border border-x-border bg-transparent flex items-center justify-center mb-4">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-x-muted" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     </div>
-                    <p className="text-white/80 font-sans text-[15px]">备忘库存为空，暂无记录</p>
+                    <p className="text-x-muted font-mono tracking-xai uppercase text-[12px]">备忘库存为空，暂无记录</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 relative z-10">
                     {characters.map(c => (
-                        <div key={c.id} className="bg-[#1d1d1f] rounded-2xl p-6 shadow-apple border border-white/5 hover:-translate-y-1 hover:shadow-apple-hover transition-all duration-300 group flex flex-col h-[240px]">
+                        <div key={c.id} className="bg-transparent rounded-none p-6 border border-x-border hover:-translate-y-1 hover:bg-x-surface transition-all duration-300 group flex flex-col h-[240px]">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full bg-[#2c2c2e] flex items-center justify-center text-white font-sans font-medium text-xl shadow-sm border border-white/5">
+                                    <div className="w-14 h-14 rounded-none bg-x-surface flex items-center justify-center text-x-white font-mono font-medium text-xl border border-x-border">
                                         {c.name[0]}
                                     </div>
                                     <div>
-                                        <h3 className="text-[18px] font-sans font-semibold text-white tracking-tight">{c.name}</h3>
+                                        <h3 className="text-[18px] font-sans font-semibold text-x-white tracking-tight">{c.name}</h3>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[12px] font-sans px-2.5 py-1 bg-white/5 rounded-md text-white/70">{c.summary || '未分类'}</span>
+                                            <span className="text-[10px] font-mono tracking-xai uppercase px-2.5 py-1 border border-x-border rounded-none text-x-muted">{c.summary || '未分类'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -73,11 +73,11 @@ export function CharacterLibrary() {
 
                             <div className="flex-1"></div>
 
-                            <div className="pt-5 border-t border-white/5 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <button className="flex-1 bg-[#2c2c2e] hover:bg-[#3a3a3c] rounded-full py-2.5 text-[13px] text-white font-sans font-medium transition-colors shadow-sm" onClick={() => alert('备忘详情编辑功能即将开放')}>
+                            <div className="pt-5 border-t border-x-border flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <button className="flex-1 bg-x-white text-x-dark rounded-none py-2 text-[12px] font-mono uppercase tracking-xai font-medium transition-colors" onClick={() => alert('备忘详情编辑功能即将开放')}>
                                     查看详情
                                 </button>
-                                <button className="w-10 h-10 rounded-full hover:bg-red-500/10 text-white/80 hover:text-red-400 flex items-center justify-center transition-colors" onClick={() => handleDelete(c.id)}>
+                                <button className="w-10 h-10 rounded-none bg-transparent border border-x-border text-x-muted hover:text-red-400 hover:border-red-400 flex items-center justify-center transition-colors" onClick={() => handleDelete(c.id)}>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                             </div>

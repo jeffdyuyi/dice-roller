@@ -3,7 +3,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
 import { RoomModal } from '../components/RoomModal';
-import { LockScreen } from '../components/LockScreen';
+
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Sidebar } from '../components/Sidebar';
 import { MainArea } from '../components/MainArea';
@@ -12,16 +12,6 @@ export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
-    const [isLocked, setIsLocked] = useState(() => !sessionStorage.getItem('app_unlocked'));
-
-    const handleUnlock = () => {
-        sessionStorage.setItem('app_unlocked', 'true');
-        setIsLocked(false);
-    };
-
-    if (isLocked) {
-        return <LockScreen onUnlock={handleUnlock} />;
-    }
 
     return (
         <div className="min-h-screen bg-x-dark flex flex-col font-sans antialiased text-x-white h-screen overflow-hidden relative">
@@ -147,14 +137,18 @@ export function Layout() {
             )}
 
             {/* Main Content Viewport */}
-            <main className="flex-1 w-full overflow-hidden relative z-10 flex border-t border-x-border">
+            <main className="flex-1 w-full overflow-hidden relative z-10 flex flex-col md:flex-row border-t border-x-border">
                 {commState === 'CONNECTED' && (
-                    <div className="flex flex-col md:flex-row h-full w-[350px] md:w-[700px] shrink-0 border-r border-white/5 bg-black z-20">
-                        <Sidebar onRoll={addLocalRoll} />
-                        <MainArea diceHistory={diceHistory} />
-                    </div>
+                    <>
+                        <div className="w-full md:w-[320px] lg:w-[350px] shrink-0 border-b md:border-b-0 md:border-r border-x-border bg-x-dark z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
+                            <Sidebar onRoll={addLocalRoll} />
+                        </div>
+                        <div className="w-full md:w-[350px] lg:w-[450px] shrink-0 border-b md:border-b-0 md:border-r border-x-border bg-x-surface z-20 h-[50vh] md:h-full flex flex-col">
+                            <MainArea diceHistory={diceHistory} />
+                        </div>
+                    </>
                 )}
-                <div className="flex-1 h-full overflow-hidden relative">
+                <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-x-dark flex flex-col">
                     <Outlet context={{ openRoomModal: () => setIsRoomModalOpen(true) }} />
                 </div>
             </main>
