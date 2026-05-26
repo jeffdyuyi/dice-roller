@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { getMyCharacters } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
 import { useMqttContext } from '../contexts/MqttContext';
-import { Storage } from '../lib/storage';
 
 interface RoomModalProps {
     isOpen: boolean;

@@ -176,7 +176,7 @@ export function Home() {
                     <div className="flex items-center justify-between border-b border-ibm-border pb-4 mb-6">
                         <h2 className="text-[24px] font-sans font-semibold text-ibm-text">备忘库存</h2>
                         <button 
-                            onClick={() => navigate('/create')}
+                            onClick={() => navigate('/characters/new')}
                             className="bg-ibm-primary text-ibm-textOnColor px-4 py-2 text-[14px] font-medium transition-colors hover:bg-ibm-primaryHover shadow-sm"
                         >
                             + 新建备忘
