@@ -15,7 +15,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     const [recenterTrigger, setRecenterTrigger] = useState(0);
     const [isCreatingTab, setIsCreatingTab] = useState(false);
     const [newTabName, setNewTabName] = useState('');
-    const [newTabType, setNewTabType] = useState<'square' | 'hex'>('square');
+    const [newTabType, setNewTabType] = useState<'square' | 'hex'>('hex');
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -204,8 +204,8 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 onChange={e => setNewTabType(e.target.value as 'square' | 'hex')}
                                 className="bg-transparent text-xs text-ibm-textSecondary outline-none mr-1"
                             >
+                                <option value="hex">六边形</option>
                                 <option value="square">正方形</option>
-                                <option value="hex" disabled>六边形(后加)</option>
                             </select>
                             <button onClick={handleCreateTab} className="text-[11px] text-ibm-primary font-mono mr-1">加</button>
                             <button onClick={() => setIsCreatingTab(false)} className="text-[11px] text-ibm-textSecondary font-mono">关</button>

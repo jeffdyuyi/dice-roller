@@ -194,7 +194,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             const defaultTab = {
                 id: 'tab-room-default',
                 name: '公共网格',
-                gridType: 'square' as const,
+                gridType: 'hex' as const,
                 cells: {}
             };
             setRoomWhiteboard({

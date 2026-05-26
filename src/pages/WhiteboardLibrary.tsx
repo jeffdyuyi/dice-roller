@@ -39,7 +39,7 @@ export function WhiteboardLibrary() {
         const defaultTab: WhiteboardTab = {
             id: 'tab-' + Date.now().toString(36),
             name: '默认白板',
-            gridType: 'square',
+            gridType: 'hex',
             cells: {}
         };
         const newProj: WhiteboardProject = {

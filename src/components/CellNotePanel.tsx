@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { CellData, CellNoteEntry } from '../features/whiteboards/types';
 
 interface CellNotePanelProps {
@@ -16,13 +16,24 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
     const [terrain, setTerrain] = useState(cellData?.terrain || '');
     const [object, setObject] = useState(cellData?.object || '');
     const [unit, setUnit] = useState(cellData?.unit || '');
+    const [color, setColor] = useState(cellData?.color || '');
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Sync input states when q, r coordinates or cellData change
+    useEffect(() => {
+        setTerrain(cellData?.terrain || '');
+        setObject(cellData?.object || '');
+        setUnit(cellData?.unit || '');
+        setColor(cellData?.color || '');
+    }, [q, r, cellData]);
 
     if (!isOpen) return null;
 
-    // Sync input states when cellData changes
     const currentTerrain = cellData?.terrain || '';
     const currentObject = cellData?.object || '';
     const currentUnit = cellData?.unit || '';
+    const currentColor = cellData?.color || '';
 
     const handleAddNote = () => {
         if (!newNote.trim()) return;
@@ -57,12 +68,43 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
             r,
             terrain: terrain.trim() || undefined,
             object: object.trim() || undefined,
-            unit: unit.trim() || undefined
+            unit: unit.trim() || undefined,
+            color: color || undefined
         });
     };
 
+    const insertMarkdown = (before: string, after: string = '') => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+
+        const selectedText = text.substring(start, end);
+        const replacement = before + selectedText + after;
+
+        setNewNote(
+            text.substring(0, start) +
+            replacement +
+            text.substring(end)
+        );
+
+        // Focus back and select inserted pattern
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(
+                start + before.length,
+                start + before.length + selectedText.length
+            );
+        }, 0);
+    };
+
     return (
-        <div className="absolute right-0 top-0 h-full w-80 bg-ibm-layer border-l border-ibm-border z-30 flex flex-col shadow-lg animate-in slide-in-from-right duration-200">
+        <div 
+            className="absolute right-0 top-0 h-full w-80 bg-ibm-layer border-l border-ibm-border z-30 flex flex-col shadow-lg animate-in slide-in-from-right duration-200"
+            onWheel={(e) => e.stopPropagation()} // Stop wheel event propagation to prevent canvas zoom
+        >
             {/* Header */}
             <div className="p-4 border-b border-ibm-border flex justify-between items-center bg-ibm-background/50">
                 <div>
@@ -76,49 +118,131 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar text-[13px]">
                 {/* Layer Settings */}
-                <div className="space-y-4 border-b border-ibm-border pb-6">
+                <div className="space-y-5 border-b border-ibm-border pb-6">
                     <h4 className="text-[11px] font-mono text-ibm-textSecondary uppercase tracking-widest">图层元素编辑</h4>
                     
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🌿 地形层:</label>
-                            <input 
-                                type="text"
-                                placeholder="输入 Emoji (如 🌿, 🧱) 或文本"
-                                value={terrain}
-                                onChange={e => setTerrain(e.target.value)}
-                                className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                            />
+                    {/* Tactical Background Paint Picker */}
+                    <div className="space-y-2 bg-ibm-background/30 p-2.5 border border-ibm-border">
+                        <label className="font-mono text-ibm-textSecondary text-[11px] uppercase block">🎨 战术网格填色:</label>
+                        <div className="flex flex-wrap gap-2 items-center mt-1">
+                            {[
+                                { hex: '#da1e28', label: '危险/熔岩' },
+                                { hex: '#198038', label: '剧毒/酸液' },
+                                { hex: '#002d9c', label: '深水/传送' },
+                                { hex: '#b28600', label: '警戒/陷阱' },
+                                { hex: '#525252', label: '迷雾/视线' },
+                                { hex: '#8a6a4d', label: '泥泞/困难' }
+                            ].map(item => (
+                                <button
+                                    key={item.hex}
+                                    type="button"
+                                    onClick={() => setColor(item.hex)}
+                                    className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+                                        color === item.hex ? 'border-ibm-text scale-115 shadow-md' : 'border-transparent hover:scale-105'
+                                    }`}
+                                    style={{ backgroundColor: item.hex }}
+                                    title={item.label}
+                                />
+                            ))}
+                            {color && (
+                                <button
+                                    type="button"
+                                    onClick={() => setColor('')}
+                                    className="px-2 py-0.5 border border-ibm-border hover:bg-ibm-layerHover text-ibm-textSecondary text-[10px] font-mono transition-all ml-1"
+                                >
+                                    清除颜色
+                                </button>
+                            )}
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🚪 物件层:</label>
-                            <input 
-                                type="text"
-                                placeholder="输入 Emoji (如 🚪, 🗝️) 或文本"
-                                value={object}
-                                onChange={e => setObject(e.target.value)}
-                                className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                            />
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* Terrain Layer */}
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🔥 地形层:</label>
+                                <input 
+                                    type="text"
+                                    placeholder="输入 Emoji 或文本"
+                                    value={terrain}
+                                    onChange={e => setTerrain(e.target.value)}
+                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
+                                {['🧱', '🏰', '🌲', '🌳', '🔥', '🌊', '⛰️', '🕳️'].map(emoji => (
+                                    <button 
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => setTerrain(emoji)}
+                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">👤 单位层:</label>
-                            <input 
-                                type="text"
-                                placeholder="输入中文或 Emoji (如 👾, 战士)"
-                                value={unit}
-                                onChange={e => setUnit(e.target.value)}
-                                className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
-                            />
+
+                        {/* Object Layer */}
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">🚪 物件层:</label>
+                                <input 
+                                    type="text"
+                                    placeholder="输入 Emoji 或文本"
+                                    value={object}
+                                    onChange={e => setObject(e.target.value)}
+                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
+                                {['🚪', '🗝️', '📦', '💎', '🪙', '🏹', '🕯️', '🍷'].map(emoji => (
+                                    <button 
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => setObject(emoji)}
+                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Unit Layer */}
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <label className="w-16 font-mono text-ibm-textSecondary text-[11px] uppercase">👤 单位层:</label>
+                                <input 
+                                    type="text"
+                                    placeholder="输入中文或 Emoji"
+                                    value={unit}
+                                    onChange={e => setUnit(e.target.value)}
+                                    className="flex-1 bg-ibm-background border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-1 pl-18 mt-1">
+                                {['👾', '🐉', '🛡️', '🧙', '🏹', '🧟', '💀', '🐺'].map(emoji => (
+                                    <button 
+                                        key={emoji}
+                                        type="button"
+                                        onClick={() => setUnit(emoji)}
+                                        className="w-6 h-6 flex items-center justify-center border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-xs transition-all"
+                                    >
+                                        {emoji}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                     
-                    <div className="flex justify-end gap-2">
-                        {/* Reset values buttons */}
+                    <div className="flex justify-end gap-2 pt-2">
                         <button 
                             onClick={() => {
                                 setTerrain(currentTerrain);
                                 setObject(currentObject);
                                 setUnit(currentUnit);
+                                setColor(currentColor);
                             }}
                             className="px-3 py-1.5 border border-ibm-border hover:bg-ibm-layerHover text-ibm-text text-[11px] font-mono transition-all"
                         >
@@ -165,7 +289,61 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
 
                     {/* New Note Area */}
                     <div className="pt-2 space-y-2">
+                        {/* Markdown Formatting Toolbar */}
+                        <div className="flex gap-1 p-1 border border-ibm-border bg-ibm-layerHover/50 shrink-0">
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('**', '**')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-sans font-bold text-xs" 
+                                title="加粗 (Bold)"
+                            >
+                                B
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('*', '*')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-sans italic text-xs" 
+                                title="斜体 (Italic)"
+                            >
+                                I
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('~~', '~~')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-sans line-through text-xs" 
+                                title="删除线 (Strike)"
+                            >
+                                S
+                            </button>
+                            <div className="w-px bg-ibm-border mx-1 my-1"></div>
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('> ')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-mono text-xs" 
+                                title="引用 (Blockquote)"
+                            >
+                                &gt;
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('- ')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-mono text-xs" 
+                                title="无序列表 (List)"
+                            >
+                                •
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => insertMarkdown('`', '`')} 
+                                className="w-6 h-6 flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-background border border-transparent hover:border-ibm-border transition-all font-mono text-xs" 
+                                title="行内代码 (Code)"
+                            >
+                                `
+                            </button>
+                        </div>
+
                         <textarea 
+                            ref={textareaRef}
                             placeholder="添加 Markdown 格式的备注..."
                             value={newNote}
                             onChange={e => setNewNote(e.target.value)}
