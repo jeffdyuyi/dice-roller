@@ -12,9 +12,10 @@ export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard'>('chat');
+    const [showMobileDice, setShowMobileDice] = useState<boolean>(false);
 
     return (
-        <div className="min-h-screen bg-ibm-background flex flex-col font-sans antialiased text-ibm-text h-screen overflow-hidden relative">
+        <div className="min-h-screen-dvh bg-ibm-background flex flex-col font-sans antialiased text-ibm-text h-screen-dvh overflow-hidden relative">
             {/* Global Notification Toast */}
             {latestNotification && (
                 <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999]">
@@ -195,18 +196,36 @@ export function Layout() {
                 {commState === 'CONNECTED' ? (
                     activeTab === 'chat' ? (
                         <>
-                            {/* 1. Tools Sidebar (narrower for best compact display) */}
-                            <div className="w-full md:w-[280px] lg:w-[300px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-layer z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
+                            {/* 1. Mobile Collapsible Dice Tools Sidebar */}
+                            <div className="md:hidden w-full bg-ibm-layer border-b border-ibm-border z-20 shrink-0">
+                                <button
+                                    onClick={() => setShowMobileDice(!showMobileDice)}
+                                    className="w-full h-11 px-4 flex items-center justify-between text-xs font-mono uppercase tracking-wider text-ibm-text hover:bg-ibm-layerHover transition-colors"
+                                >
+                                    <span className="flex items-center gap-1.5">🎲 投骰工具栏 / Dice Tools</span>
+                                    <span className="font-mono text-[9px] text-ibm-textSecondary">
+                                        {showMobileDice ? '▲ 收起面板' : '▼ 展开面板'}
+                                    </span>
+                                </button>
+                                {showMobileDice && (
+                                    <div className="border-t border-ibm-border w-full overflow-y-auto max-h-[35vh] custom-scrollbar bg-ibm-background">
+                                        <Sidebar onRoll={addLocalRoll} />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Desktop-only Tools Sidebar */}
+                            <div className="hidden md:flex w-[280px] lg:w-[300px] shrink-0 border-r border-ibm-border bg-ibm-layer z-20 h-full overflow-y-auto custom-scrollbar flex-col">
                                 <Sidebar onRoll={addLocalRoll} />
                             </div>
                             
-                            {/* 2. Room Management Panel (Integrated to the left of the chat box) */}
-                            <div className="w-full md:w-[290px] lg:w-[320px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-background z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
+                            {/* 2. Room Management Panel (Integrated left panel, hidden on mobile in favor of RoomManagerDrawer) */}
+                            <div className="hidden md:flex w-[290px] lg:w-[320px] shrink-0 border-r border-ibm-border bg-ibm-background z-20 h-full overflow-y-auto custom-scrollbar flex-col">
                                 <RoomManagerPanel />
                             </div>
-
-                            {/* 3. Chat Area / Dice History (Visual ratio maximized) */}
-                            <div className="flex-grow flex-1 shrink-0 bg-ibm-background z-20 h-[50vh] md:h-full flex flex-col">
+ 
+                            {/* 3. Chat Area / Dice History (Responsive auto-growing flexbox) */}
+                            <div className="flex-grow flex-1 shrink bg-ibm-background z-20 h-full flex flex-col overflow-hidden">
                                 <MainArea diceHistory={diceHistory} />
                             </div>
                         </>

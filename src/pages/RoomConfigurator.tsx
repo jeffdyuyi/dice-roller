@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMqttContext } from '../contexts/MqttContext';
-import { getMyCharacters } from '../features/characters/api';
+import { getMyCharacters, saveCharacter } from '../features/characters/api';
 import { getMyWhiteboards } from '../features/whiteboards/api';
 import type { Character } from '../features/characters/types';
 import type { WhiteboardProject } from '../features/whiteboards/types';
@@ -107,6 +107,46 @@ export function RoomConfigurator() {
             };
         }
         joinRoom(inputName.trim(), inputRoomId.trim().toUpperCase(), charInfo);
+    };
+
+    const handleCreateQuickCharAndJoin = async () => {
+        const charName = inputName.trim();
+        if (!charName) {
+            alert('代号/角色名不能为空！');
+            return;
+        }
+        if (!inputRoomId.trim()) {
+            alert('请输入 5 位房间 ID！');
+            return;
+        }
+
+        const newCharId = 'char-' + Math.floor(100000 + Math.random() * 900000);
+        const userId = localStorage.getItem('dice_roller_my_id') || 'local-user';
+
+        const newChar: Character = {
+            id: newCharId,
+            name: charName,
+            userId: userId,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            memoItems: []
+        };
+
+        try {
+            await saveCharacter(newChar);
+            const chars = await getMyCharacters(userId);
+            setMyCharacters(chars);
+            setSelectedCharId(newCharId);
+            
+            const charInfo = {
+                guestMode: false,
+                characterId: newCharId
+            };
+            joinRoom(charName, inputRoomId.trim().toUpperCase(), charInfo);
+        } catch (err) {
+            console.error('一键建卡失败:', err);
+            alert('一键建卡失败，请重试！');
+        }
     };
 
     return (
@@ -345,28 +385,39 @@ export function RoomConfigurator() {
                                                     关联已存在的角色卡/备忘库
                                                 </label>
                                                 {myCharacters.length === 0 ? (
-                                                    <div className="p-6 border border-dashed border-ibm-border bg-ibm-background/30 text-center space-y-2">
+                                                    <div className="p-6 border border-dashed border-ibm-border bg-ibm-background/30 text-center space-y-3">
                                                         <p className="text-xs text-ibm-textSecondary">您的备忘库存内没有任何档案</p>
                                                         <button 
                                                             type="button"
-                                                            onClick={() => navigate('/characters/new')}
-                                                            className="text-xs text-ibm-primary hover:underline font-mono"
+                                                            onClick={handleCreateQuickCharAndJoin}
+                                                            className="w-full h-11 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all text-xs font-mono font-medium uppercase tracking-wider shadow-sm flex items-center justify-center gap-1.5"
                                                         >
-                                                            去新建备忘档案 &gt;
+                                                            <span>+</span> 快速新建空白备忘卡并加入
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div className="relative">
-                                                        <select 
-                                                            value={selectedCharId} 
-                                                            onChange={e => setSelectedCharId(e.target.value)} 
-                                                            className="w-full bg-ibm-background border border-ibm-border px-4 py-3 text-sm text-ibm-text outline-none appearance-none cursor-pointer hover:bg-ibm-layerHover transition-all font-sans"
-                                                        >
-                                                            {myCharacters.map(c => (
-                                                                <option key={c.id} value={c.id}>{c.name} ({c.summary || '无模板'})</option>
-                                                            ))}
-                                                        </select>
-                                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none">▼</span>
+                                                    <div className="space-y-3">
+                                                        <div className="relative">
+                                                            <select 
+                                                                value={selectedCharId} 
+                                                                onChange={e => setSelectedCharId(e.target.value)} 
+                                                                className="w-full bg-ibm-background border border-ibm-border px-4 py-3 text-sm text-ibm-text outline-none appearance-none cursor-pointer hover:bg-ibm-layerHover transition-all font-sans"
+                                                            >
+                                                                {myCharacters.map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.name} ({c.summary || '无模板'})</option>
+                                                                ))}
+                                                            </select>
+                                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ibm-textSecondary pointer-events-none">▼</span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleCreateQuickCharAndJoin}
+                                                                className="text-xs text-ibm-primary hover:underline font-mono"
+                                                            >
+                                                                + 快速新建另一个空白备忘卡并加入
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>

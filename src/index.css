@@ -60,8 +60,42 @@ body {
   color: var(--text-primary);
   background-color: var(--bg-background);
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.h-screen-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.min-h-screen-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* 移动端触屏交互防误触与响应式优化 */
+button, a, select, input, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 按钮点击触屏活跃状态反馈 */
+button:active, a:active {
+  opacity: 0.85;
+}
+
+/* 移动端紧凑滚动条 */
+@media (max-width: 768px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 2px;
+    height: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
 }
 
 /* Base Form Resets */

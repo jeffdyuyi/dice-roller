@@ -7,6 +7,7 @@ export function RoomManagerDrawer() {
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, updateQuickEditValue
     } = useMqttContext();
     const [sortBy, setSortBy] = useState<string>('default');
+    const [showQr, setShowQr] = useState<boolean>(false);
 
     const quickEditFields = roomTemplate?.quickEditFields || [];
 
@@ -79,12 +80,31 @@ export function RoomManagerDrawer() {
                                 >
                                     复制 ID
                                 </button>
-                                {isHost && (
-                                    <button className="w-12 h-10 bg-transparent text-x-white border border-x-border hover:bg-x-surface flex items-center justify-center transition-all">
-                                        <span className="font-mono text-[12px]">S</span>
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => setShowQr(!showQr)}
+                                    className={`flex-1 border px-3 py-2.5 text-[12px] font-mono uppercase tracking-xai transition-all text-center font-bold ${
+                                        showQr
+                                            ? 'bg-x-white text-x-dark border-x-white'
+                                            : 'bg-transparent text-x-white border-x-border hover:bg-x-surface'
+                                    }`}
+                                >
+                                    {showQr ? '隐藏二维码' : '扫码直连'}
+                                </button>
                             </div>
+                            {showQr && roomId && (
+                                <div className="mt-4 p-4 bg-white flex flex-col items-center justify-center border border-x-border rounded-none animate-in fade-in duration-200">
+                                    <img
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                                            `${window.location.origin}${window.location.pathname}#/rooms?mode=join&roomId=${roomId}`
+                                        )}`}
+                                        alt="Room QR Code"
+                                        className="w-[160px] h-[160px] select-none"
+                                    />
+                                    <span className="text-[10px] text-x-dark font-mono mt-2 font-bold tracking-wider text-center uppercase">
+                                        物理面团扫码加入
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -7,6 +7,7 @@ export function RoomManagerPanel() {
         acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, updateQuickEditValue
     } = useMqttContext();
     const [sortBy, setSortBy] = useState<string>('default');
+    const [showQr, setShowQr] = useState<boolean>(false);
 
     const quickEditFields = roomTemplate?.quickEditFields || [];
 
@@ -73,7 +74,31 @@ export function RoomManagerPanel() {
                             >
                                 复制 ID
                             </button>
+                            <button
+                                onClick={() => setShowQr(!showQr)}
+                                className={`flex-1 border py-1 text-[9px] font-mono uppercase tracking-wider transition-all text-center font-bold ${
+                                    showQr
+                                        ? 'bg-x-white text-x-dark border-x-white'
+                                        : 'bg-transparent text-x-white border-x-border hover:bg-x-surface'
+                                }`}
+                            >
+                                {showQr ? '收起二维码' : '扫码直连'}
+                            </button>
                         </div>
+                        {showQr && roomId && (
+                            <div className="mt-2 p-2 bg-white flex flex-col items-center justify-center border border-x-border rounded-none animate-in fade-in duration-200">
+                                <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                                        `${window.location.origin}${window.location.pathname}#/rooms?mode=join&roomId=${roomId}`
+                                    )}`}
+                                    alt="Room QR Code"
+                                    className="w-[130px] h-[130px] select-none"
+                                />
+                                <span className="text-[8px] text-x-dark font-mono mt-1 font-bold tracking-wider text-center uppercase">
+                                    扫码直连此战役
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
