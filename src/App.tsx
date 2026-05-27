@@ -4,6 +4,7 @@ import { Home } from './pages/Home';
 import { CharacterLibrary } from './pages/CharacterLibrary';
 import { CharacterCreator } from './pages/CharacterCreator';
 import { WhiteboardLibrary } from './pages/WhiteboardLibrary';
+import { RoomConfigurator } from './pages/RoomConfigurator';
 import { MqttProvider } from './contexts/MqttContext';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
             <Route path="characters" element={<CharacterLibrary />} />
             <Route path="characters/new" element={<CharacterCreator />} />
             <Route path="whiteboards" element={<WhiteboardLibrary />} />
+            <Route path="rooms" element={<RoomConfigurator />} />
           </Route>
         </Routes>
       </BrowserRouter>

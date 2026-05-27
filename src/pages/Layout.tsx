@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
-import { RoomModal } from '../components/RoomModal';
 
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Sidebar } from '../components/Sidebar';
@@ -11,15 +10,6 @@ import { MainArea } from '../components/MainArea';
 export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
-    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
-    const [roomModalMode, setRoomModalMode] = useState<'create' | 'join'>('join');
-    const [roomModalId, setRoomModalId] = useState<string>('');
-
-    const openRoomModal = (mode: 'create' | 'join' = 'join', rId: string = '') => {
-        setRoomModalMode(mode);
-        setRoomModalId(rId);
-        setIsRoomModalOpen(true);
-    };
 
     return (
         <div className="min-h-screen bg-ibm-background flex flex-col font-sans antialiased text-ibm-text h-screen overflow-hidden relative">
@@ -59,12 +49,12 @@ export function Layout() {
                             白板库存
                         </Link>
                         {commState !== 'CONNECTED' && (
-                            <button
-                                onClick={() => setIsRoomModalOpen(true)}
+                            <Link
+                                to="/rooms?mode=create"
                                 className="flex items-center justify-center h-8 px-4 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[13px] border border-ibm-primary"
                             >
                                 联机: 新联机房间
-                            </button>
+                            </Link>
                         )}
                     </nav>
                 </div>
@@ -185,20 +175,12 @@ export function Layout() {
                     </>
                 )}
                 <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
-                    <Outlet context={{ openRoomModal }} />
+                    <Outlet />
                 </div>
             </main>
 
             {/* Room Management Drawer */}
             <RoomManagerDrawer />
-
-            {/* Global Room Modal */}
-            <RoomModal
-                isOpen={isRoomModalOpen}
-                onClose={() => setIsRoomModalOpen(false)}
-                defaultMode={roomModalMode}
-                defaultRoomId={roomModalId}
-            />
         </div>
     );
 }

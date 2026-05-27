@@ -1,5 +1,5 @@
 import { useMqttContext } from '../contexts/MqttContext';
-import { useOutletContext, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getMyCharacters } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
@@ -9,7 +9,6 @@ import { WhiteboardArea } from '../components/WhiteboardArea';
 
 export function Home() {
     const { commState, activeLobbyRooms, myId } = useMqttContext();
-    const { openRoomModal } = useOutletContext<{ openRoomModal: (mode?: 'create' | 'join', roomId?: string) => void }>();
     const navigate = useNavigate();
 
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
@@ -50,7 +49,7 @@ export function Home() {
                     <div className="flex items-center justify-between border-b border-ibm-border pb-4 mb-6">
                         <h2 className="text-[24px] font-sans font-semibold text-ibm-text">联机大厅</h2>
                         <button 
-                            onClick={() => openRoomModal('create')} 
+                            onClick={() => navigate('/rooms?mode=create')} 
                             className="bg-[#ff832b] text-white px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#e86c14] shadow-sm"
                         >
                             + 创建房间
@@ -67,7 +66,7 @@ export function Home() {
                                 <div 
                                     key={room.id} 
                                     className="p-4 border border-ibm-border bg-ibm-layer flex flex-col justify-between hover:border-ibm-primary transition-colors cursor-pointer group"
-                                    onClick={() => openRoomModal('join', room.id)}
+                                    onClick={() => navigate(`/rooms?mode=join&roomId=${room.id}`)}
                                 >
                                     <div className="mb-4">
                                         <div className="text-[16px] font-sans font-medium text-ibm-text truncate">{room.name}</div>

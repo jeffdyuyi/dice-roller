@@ -27,7 +27,7 @@ interface MqttContextType {
     isManagerOpen: boolean;
     setManagerOpen: (open: boolean) => void;
     updateActiveCharacter: (char: Character) => void;
-    createRoom: (name: string, rid: string, roomName: string, template: any | null) => void;
+    createRoom: (name: string, rid: string, roomName: string, template: any | null, starterBoard?: WhiteboardProject | null) => void;
     joinRoom: (name: string, rid: string, charInfo?: unknown) => void;
     acceptPlayer: (id: string, name: string) => void;
     rejectPlayer: (id: string) => void;
@@ -317,18 +317,34 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setActiveCharacter(null);
     }, []);
 
-    const createRoom = useCallback((name: string, rid: string, rName: string, template: any | null) => {
+    const createRoom = useCallback((name: string, rid: string, rName: string, template: any | null, starterBoard?: WhiteboardProject | null) => {
         setMyName(name);
         setRoomName(rName);
         setRoomTemplate(template);
         setHostName(name); // Set hostName as room creator name
         setCommState('WAITING');
         setConnectionError(null);
+        if (starterBoard) {
+            setRoomWhiteboard({
+                ...starterBoard,
+                id: 'board-room-' + (rid || 'default'),
+                name: rName || starterBoard.name
+            });
+        }
         mqttInstance.init(name, rid || null, true);
         showNotification(`正在创建房间: ${rName}...`, 'info');
 
         setTimeout(() => {
             mqttInstance.announceRoom(rName, template?.name);
+            if (starterBoard) {
+                const boardWithTime = {
+                    ...starterBoard,
+                    id: 'board-room-' + (rid || 'default'),
+                    name: rName || starterBoard.name,
+                    updatedAt: Date.now()
+                };
+                mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
+            }
         }, 1000);
     }, [showNotification]);
 
