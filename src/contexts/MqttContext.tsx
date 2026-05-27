@@ -42,6 +42,7 @@ interface MqttContextType {
     showNotification: (msg: string, type: 'info' | 'success' | 'error') => void;
     roomWhiteboard: WhiteboardProject | null;
     updateRoomWhiteboard: (project: WhiteboardProject) => void;
+    updateQuickEditValue: (playerId: string, fieldName: string, value: number) => void;
 }
 
 const MqttContext = createContext<MqttContextType | undefined>(undefined);
@@ -226,6 +227,26 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                         ? { ...p, characterData: msg.payload?.characterData }
                         : p
                 ));
+            } else if (msg.type === 'QUICK_EDIT_SYNC') {
+                const { playerId, fieldName, value } = msg.payload || {};
+                if (playerId && fieldName !== undefined && value !== undefined) {
+                    setConnectedPlayers(prev => {
+                        const next = prev.map(p => {
+                            if (p.id === playerId) {
+                                const currentValues = p.quickEditValues || {};
+                                return {
+                                    ...p,
+                                    quickEditValues: { ...currentValues, [fieldName]: value }
+                                };
+                            }
+                            return p;
+                        });
+                        if (mqttInstance.isHost) {
+                            mqttInstance.broadcast('PLAYER_LIST', { list: next });
+                        }
+                        return next;
+                    });
+                }
             } else if (msg.type === 'WHITEBOARD_SYNC') {
                 const { project } = msg.payload || {};
                 if (project) {
@@ -531,11 +552,27 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         }
     }, [commState, hostName, isHost, myName]);
 
+    const updateQuickEditValue = useCallback((playerId: string, fieldName: string, value: number) => {
+        if (commState === 'CONNECTED') {
+            mqttInstance.broadcast('QUICK_EDIT_SYNC', { playerId, fieldName, value });
+        }
+        setConnectedPlayers(prev => prev.map(p => {
+            if (p.id === playerId) {
+                const currentValues = p.quickEditValues || {};
+                return {
+                    ...p,
+                    quickEditValues: { ...currentValues, [fieldName]: value }
+                };
+            }
+            return p;
+        }));
+    }, [commState]);
+
     const value = {
         commState, activeLobbyRooms, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
         isManagerOpen, setManagerOpen, updateActiveCharacter, connectionError, latestNotification,
         createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, patchCharacter, clearHistory,
-        setConnectionError, showNotification, roomWhiteboard, updateRoomWhiteboard
+        setConnectionError, showNotification, roomWhiteboard, updateRoomWhiteboard, updateQuickEditValue
     };
 
     return <MqttContext.Provider value={value}>{children}</MqttContext.Provider>;

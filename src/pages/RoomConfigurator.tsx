@@ -32,6 +32,10 @@ export function RoomConfigurator() {
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
     const [selectedCharId, setSelectedCharId] = useState<string>('');
 
+    // Custom player quick edit elements
+    const [quickEditFields, setQuickEditFields] = useState<string[]>(['生命', '先攻']);
+    const [newFieldName, setNewFieldName] = useState('');
+
     useEffect(() => {
         // Sync query params when they change
         setMode(queryMode);
@@ -39,8 +43,7 @@ export function RoomConfigurator() {
     }, [queryMode, queryRoomId]);
 
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('mock_user') || '{}');
-        const userId = user.id || 'local-user';
+        const userId = localStorage.getItem('dice_roller_my_id') || 'local-user';
         
         getMyCharacters(userId).then(chars => {
             setMyCharacters(chars);
@@ -49,6 +52,7 @@ export function RoomConfigurator() {
 
         getMyWhiteboards(userId).then(boards => {
             setMyWhiteboards(boards);
+            if (boards.length > 0) setSelectedBoardId(boards[0].id);
         });
     }, []);
 
@@ -74,7 +78,8 @@ export function RoomConfigurator() {
         // Host gets a random 5-digit ID if they didn't specify one
         const finalRoomId = Math.floor(10000 + Math.random() * 90000).toString();
         
-        createRoom(inputName.trim(), finalRoomId, finalRoomName, null, starterBoard);
+        const template = { name: '自定义战役', quickEditFields };
+        createRoom(inputName.trim(), finalRoomId, finalRoomName, template, starterBoard);
     };
 
     const handleJoin = () => {
@@ -231,6 +236,76 @@ export function RoomConfigurator() {
                                             </div>
                                         )}
                                         <p className="text-[11px] text-ibm-textPlaceholder">提示：联动后，房间开启时将自动加载该白板的所有地图和标记物，并同步给全员玩家。</p>
+                                    </div>
+
+                                    {/* Create: Custom Quick Edit Fields */}
+                                    <div className="space-y-4 border border-ibm-border p-5 bg-ibm-background/25">
+                                        <div>
+                                            <label className="text-[11px] font-mono uppercase tracking-widest text-[#ff832b] block font-bold">
+                                                ⚔️ 战役玩家数据快速编辑配置 (可多选/增删)
+                                            </label>
+                                            <p className="text-[11px] text-ibm-textSecondary mt-1 leading-relaxed">
+                                                房主可以预设此战役需要的快速修改字段(如生命、先攻等)。进入房间后，这些元素会以输入框形式显示在每位玩家昵称下，数值更改实时同步。
+                                            </p>
+                                        </div>
+
+                                        {/* List of active fields */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {quickEditFields.map(field => (
+                                                <div 
+                                                    key={field} 
+                                                    className="flex items-center gap-1.5 bg-ibm-background border border-[#ff832b]/40 text-ibm-text px-2.5 py-1 text-xs rounded animate-in fade-in zoom-in duration-200"
+                                                >
+                                                    <span>{field}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setQuickEditFields(prev => prev.filter(f => f !== field))}
+                                                        className="text-[#ff832b] hover:text-ibm-danger transition-colors font-bold text-sm ml-1"
+                                                        title="删除此字段"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {quickEditFields.length === 0 && (
+                                                <span className="text-xs text-ibm-textPlaceholder italic">暂无预设快速编辑字段 (进入房间后将只有昵称)</span>
+                                            )}
+                                        </div>
+
+                                        {/* Add new field */}
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text"
+                                                value={newFieldName}
+                                                onChange={e => setNewFieldName(e.target.value)}
+                                                placeholder="输入快速编辑元素名称，如先攻、HP、金币等"
+                                                className="flex-1 bg-ibm-background border border-ibm-border text-ibm-text px-3 py-2 text-xs focus:border-[#ff832b] outline-none transition-all placeholder:text-ibm-textSecondary/50 font-sans"
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const name = newFieldName.trim();
+                                                        if (name && !quickEditFields.includes(name)) {
+                                                            setQuickEditFields(prev => [...prev, name]);
+                                                            setNewFieldName('');
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const name = newFieldName.trim();
+                                                    if (name && !quickEditFields.includes(name)) {
+                                                        setQuickEditFields(prev => [...prev, name]);
+                                                        setNewFieldName('');
+                                                    }
+                                                }}
+                                                className="bg-ibm-background border border-ibm-border hover:bg-[#ff832b]/10 hover:border-[#ff832b] text-[#ff832b] px-4 text-xs font-mono transition-all"
+                                            >
+                                                添加预设
+                                            </button>
+                                        </div>
+                                        <p className="text-[10px] text-ibm-textPlaceholder">提示：玩家加入后只在此房间中对该字段填写正负数字，退出即逝，不写入玩家数据库。</p>
                                     </div>
                                 </>
                             ) : (

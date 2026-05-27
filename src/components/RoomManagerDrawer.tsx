@@ -1,10 +1,30 @@
+import { useState } from 'react';
 import { useMqttContext } from '../contexts/MqttContext';
 
 export function RoomManagerDrawer() {
     const {
         isManagerOpen, setManagerOpen, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, myId,
-        acceptPlayer, rejectPlayer, kickPlayer, leaveRoom
+        acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, updateQuickEditValue
     } = useMqttContext();
+    const [sortBy, setSortBy] = useState<string>('default');
+
+    const quickEditFields = roomTemplate?.quickEditFields || [];
+
+    let sortedPlayers = [...connectedPlayers];
+    if (sortBy === 'name-asc') {
+        sortedPlayers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else if (sortBy === 'name-desc') {
+        sortedPlayers.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+    } else if (sortBy.startsWith('field-')) {
+        const parts = sortBy.split('-');
+        const fieldName = parts[1];
+        const direction = parts[2]; // 'asc' or 'desc'
+        sortedPlayers.sort((a, b) => {
+            const valA = a.quickEditValues?.[fieldName] ?? 0;
+            const valB = b.quickEditValues?.[fieldName] ?? 0;
+            return direction === 'asc' ? valA - valB : valB - valA;
+        });
+    }
 
     if (!isManagerOpen) return null;
 
@@ -109,32 +129,122 @@ export function RoomManagerDrawer() {
 
                     {/* Connected Players */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <span className="font-mono text-x-muted text-[12px]">-</span>
-                            <h3 className="text-[12px] font-mono text-x-muted uppercase tracking-xai">当前在场人员 ({connectedPlayers.length})</h3>
+                        <div className="flex items-center justify-between gap-4 border-b border-x-border/30 pb-2">
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-x-muted text-[12px]">-</span>
+                                <h3 className="text-[12px] font-mono text-x-muted uppercase tracking-xai">当前在场人员 ({connectedPlayers.length})</h3>
+                            </div>
+                            
+                            {/* Sorting selector */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="text-[10px] font-mono text-x-muted uppercase tracking-xai">排序:</span>
+                                <select
+                                    value={sortBy}
+                                    onChange={e => setSortBy(e.target.value)}
+                                    className="bg-x-dark border border-x-border text-x-white text-[11px] font-mono py-1 px-2 pr-6 outline-none cursor-pointer hover:bg-x-surface transition-all appearance-none"
+                                    style={{
+                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238d8d8d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 6px center',
+                                        backgroundSize: '10px'
+                                    }}
+                                >
+                                    <option value="default">默认顺序</option>
+                                    <option value="name-asc">昵称 A-Z</option>
+                                    <option value="name-desc">昵称 Z-A</option>
+                                    {quickEditFields.map((field: string) => (
+                                        <optgroup key={field} label={`按 [${field}]`}>
+                                            <option value={`field-${field}-desc`}>{field} 从高到低</option>
+                                            <option value={`field-${field}-asc`}>{field} 从低到高</option>
+                                        </optgroup>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
+
                         <div className="space-y-2">
-                            {connectedPlayers.map(p => (
-                                <div key={p.id} className="group p-3 hover:bg-x-surface border border-transparent hover:border-x-border transition-all flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 flex items-center justify-center font-mono border ${p.isHost ? 'bg-x-white text-x-dark border-x-white' : 'bg-transparent text-x-white border-x-border'}`}>
-                                            {p.name?.[0]}
+                            {sortedPlayers.map(p => (
+                                <div key={p.id} className="group p-3 hover:bg-x-surface border border-x-border/30 hover:border-x-border transition-all flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 flex items-center justify-center font-mono border ${p.isHost ? 'bg-x-white text-x-dark border-x-white' : 'bg-transparent text-x-white border-x-border'}`}>
+                                                {p.name?.[0]}
+                                            </div>
+                                            <div>
+                                                <span className="text-[14px] font-sans text-x-white">{p.name} {p.id === myId && <span className="text-x-muted opacity-60 ml-1">(您)</span>}</span>
+                                                {p.isHost && <div className="text-[10px] font-mono text-x-muted uppercase tracking-xai mt-0.5">HOST</div>}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="text-[14px] font-sans text-x-white">{p.name} {p.id === myId && <span className="text-x-muted opacity-60 ml-1">(您)</span>}</span>
-                                            {p.isHost && <div className="text-[10px] font-mono text-x-muted uppercase tracking-xai mt-0.5">HOST</div>}
+                                        <div className="flex items-center gap-1">
+                                            {isHost && p.id !== myId && (
+                                                <button
+                                                    onClick={() => kickPlayer(p.id)}
+                                                    className="w-8 h-8 text-x-muted hover:text-x-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-x-surface font-mono"
+                                                    title="踢出房间"
+                                                >
+                                                    -
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        {isHost && p.id !== myId && (
-                                            <button
-                                                onClick={() => kickPlayer(p.id)}
-                                                className="w-8 h-8 text-x-muted hover:text-x-white opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-x-surface font-mono"
-                                            >
-                                                -
-                                            </button>
-                                        )}
-                                    </div>
+
+                                    {/* Quick Edit Numeric Elements */}
+                                    {quickEditFields.length > 0 && (
+                                        <div className="grid grid-cols-2 gap-2 border-t border-x-border/20 pt-2.5 pl-11">
+                                            {quickEditFields.map((field: string) => {
+                                                const val = p.quickEditValues?.[field] ?? 0;
+                                                const canEdit = isHost || p.id === myId;
+                                                
+                                                return (
+                                                    <div key={field} className="flex flex-col gap-1">
+                                                        <span className="text-[10px] font-mono text-x-muted uppercase tracking-wider">{field}</span>
+                                                        
+                                                        {canEdit ? (
+                                                            <div className="flex items-center bg-x-surface border border-x-border w-full h-[28px] overflow-hidden">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => updateQuickEditValue(p.id, field, val - 1)}
+                                                                    className="w-6 h-full text-x-muted hover:text-x-white hover:bg-x-dark/30 transition-all font-mono text-xs flex items-center justify-center select-none"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <input
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    pattern="^-?[0-9]*$"
+                                                                    value={val === 0 ? '' : val}
+                                                                    placeholder="0"
+                                                                    onChange={e => {
+                                                                        const raw = e.target.value;
+                                                                        if (raw === '-' || raw === '') {
+                                                                            updateQuickEditValue(p.id, field, 0);
+                                                                        } else {
+                                                                            const parsed = parseInt(raw);
+                                                                            if (!isNaN(parsed)) {
+                                                                                updateQuickEditValue(p.id, field, parsed);
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="flex-1 w-full h-full bg-transparent text-center text-xs font-mono text-x-white focus:outline-none"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => updateQuickEditValue(p.id, field, val + 1)}
+                                                                    className="w-6 h-full text-x-muted hover:text-x-white hover:bg-x-dark/30 transition-all font-mono text-xs flex items-center justify-center select-none"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-center bg-x-surface border border-transparent w-full h-[28px]">
+                                                                <span className="text-xs font-mono text-[#ff832b] font-bold">{val}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

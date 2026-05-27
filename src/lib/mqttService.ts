@@ -9,11 +9,12 @@ export interface PlayerNode {
     characterId?: string;
     ruleSystem?: string;
     characterData?: Record<string, any>;
+    quickEditValues?: Record<string, number>;
 }
 
 export interface RoomMessage {
     type: 'JOIN_REQUEST' | 'JOIN_ACCEPTED' | 'JOIN_REJECTED' | 'PLAYER_LIST' | 'PLAYER_LEFT' | 'ROOM_CLOSED' | 'DICE_ROLL'
-    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH' | 'DISTRIBUTE_MEMO' | 'WHITEBOARD_SYNC';
+    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH' | 'DISTRIBUTE_MEMO' | 'WHITEBOARD_SYNC' | 'QUICK_EDIT_SYNC';
     senderId: string;
     senderName: string;
     timestamp: number;

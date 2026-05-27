@@ -874,9 +874,9 @@ export function GridBoard({
                                 <Line
                                     points={getHexPoints(cx, cy, hexSize)}
                                     closed
-                                    stroke="#0f62fe"
+                                    stroke="#ff832b"
                                     strokeWidth={3 / scale}
-                                    fill="rgba(15, 98, 254, 0.15)"
+                                    fill="rgba(255, 131, 43, 0.04)"
                                     listening={false}
                                 />
                             );
@@ -886,9 +886,9 @@ export function GridBoard({
                                 y={selectedCell.r * gridSize}
                                 width={gridSize}
                                 height={gridSize}
-                                stroke="#0f62fe"
+                                stroke="#ff832b"
                                 strokeWidth={3 / scale}
-                                fill="rgba(15, 98, 254, 0.15)"
+                                fill="rgba(255, 131, 43, 0.04)"
                                 listening={false}
                             />
                         )
