@@ -190,10 +190,27 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
     return (
         <div className="flex-1 w-full h-full flex flex-col bg-ibm-background relative overflow-hidden">
-            {/* Top Whiteboard Navbar */}
+             {/* Top Whiteboard Navbar */}
             <div className="h-12 border-b border-ibm-border px-4 flex justify-between items-center bg-ibm-layer shrink-0 z-10">
-                {/* Tabs selection */}
+                {/* Title, Compass & Tabs selection */}
                 <div className="flex items-center gap-1 overflow-x-auto pr-4 custom-scrollbar-horizontal h-full py-1">
+                    <div className="flex items-center gap-2 shrink-0 border-r border-ibm-border pr-3 mr-2 h-8">
+                        <span className="font-semibold text-xs text-ibm-text flex items-center gap-1.5" title={`白板库: ${project.name}`}>
+                            🗺️ {project.name}
+                        </span>
+                        
+                        {/* Compass Indicator */}
+                        <div className="flex items-center gap-1.5 ml-1 bg-ibm-background px-1.5 py-0.5 rounded border border-ibm-border text-[9px] font-mono text-ibm-textSecondary select-none" title="地图方向指引：上北(N) 下南(S) 左西(W) 右东(E)">
+                            <div className="relative w-4 h-4 rounded-full border border-ibm-border flex items-center justify-center bg-ibm-layer">
+                                <span className="absolute top-[-2px] text-[7px] text-ibm-primary font-bold leading-none">N</span>
+                                <span className="absolute bottom-[-1px] text-[6px] text-ibm-textSecondary leading-none">S</span>
+                                <span className="absolute left-[1px] text-[6px] text-ibm-textSecondary leading-none">W</span>
+                                <span className="absolute right-[1px] text-[6px] text-ibm-textSecondary leading-none">E</span>
+                            </div>
+                            <span className="text-[9px] font-bold text-ibm-primary">N ▲</span>
+                        </div>
+                    </div>
+
                     {project.tabs.map(t => (
                         <button
                             key={t.id}
@@ -237,10 +254,14 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                             <select 
                                 value={newTabType} 
                                 onChange={e => setNewTabType(e.target.value as 'square' | 'hex')}
-                                className="bg-transparent text-xs text-ibm-textSecondary outline-none mr-1"
+                                className="text-xs outline-none mr-1 px-1.5 py-0.5 border border-ibm-border cursor-pointer transition-all hover:border-ibm-borderStrong"
+                                style={{
+                                    backgroundColor: 'var(--bg-layer-01, #161616)',
+                                    color: 'var(--text-primary, #f4f4f4)',
+                                }}
                             >
-                                <option value="hex">六边形</option>
-                                <option value="square">正方形</option>
+                                <option value="hex" style={{ backgroundColor: 'var(--bg-layer-01, #161616)', color: 'var(--text-primary, #f4f4f4)' }}>六边形</option>
+                                <option value="square" style={{ backgroundColor: 'var(--bg-layer-01, #161616)', color: 'var(--text-primary, #f4f4f4)' }}>正方形</option>
                             </select>
                             <button onClick={handleCreateTab} className="text-[11px] text-ibm-primary font-mono mr-1">加</button>
                             <button onClick={() => setIsCreatingTab(false)} className="text-[11px] text-ibm-textSecondary font-mono">关</button>
