@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './pages/Layout';
 import { Home } from './pages/Home';
 import { CharacterLibrary } from './pages/CharacterLibrary';
@@ -10,7 +10,7 @@ import { MqttProvider } from './contexts/MqttContext';
 function App() {
   return (
     <MqttProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -20,7 +20,7 @@ function App() {
             <Route path="rooms" element={<RoomConfigurator />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </MqttProvider>
   );
 }

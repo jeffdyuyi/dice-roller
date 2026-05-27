@@ -77,6 +77,18 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
     const gridSize = 50; // Grid square size
     const isHex = tab.gridType === 'hex';
 
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        return document.documentElement.classList.contains('dark');
+    });
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDarkMode(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
+
     // Handle container resize
     useEffect(() => {
         if (!containerRef.current) return;
@@ -269,7 +281,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                         key={`hex-line-${q}-${r}`}
                         points={getHexPoints(cx, cy, hexSize)}
                         closed
-                        stroke="#2c2c2c"
+                        stroke={isDarkMode ? '#2c2c2c' : '#e0e0e0'}
                         strokeWidth={1 / scale}
                         listening={false}
                     />
@@ -289,7 +301,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                 <Line
                     key={`v-${col}`}
                     points={[col * gridSize, minRow * gridSize, col * gridSize, maxRow * gridSize]}
-                    stroke="#2c2c2c"
+                    stroke={isDarkMode ? '#2c2c2c' : '#e0e0e0'}
                     strokeWidth={1 / scale}
                     listening={false}
                 />
@@ -302,7 +314,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                 <Line
                     key={`h-${row}`}
                     points={[minCol * gridSize, row * gridSize, maxCol * gridSize, row * gridSize]}
-                    stroke="#2c2c2c"
+                    stroke={isDarkMode ? '#2c2c2c' : '#e0e0e0'}
                     strokeWidth={1 / scale}
                     listening={false}
                 />
@@ -316,7 +328,11 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
     );
 
     return (
-        <div ref={containerRef} className="w-full h-full bg-[#121212] relative overflow-hidden select-none outline-none">
+        <div 
+            ref={containerRef} 
+            style={{ backgroundColor: isDarkMode ? '#161616' : '#ffffff' }}
+            className="w-full h-full relative overflow-hidden select-none outline-none transition-colors duration-150"
+        >
             <Stage
                 ref={stageRef}
                 width={dimensions.width}
@@ -368,6 +384,9 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                                     closed
                                     fill={cell.color}
                                     opacity={0.45}
+                                    stroke={cell.color}
+                                    strokeWidth={1.5 / scale}
+                                    dash={[4, 4]}
                                     listening={false}
                                 />
                             );
@@ -383,6 +402,9 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                                     height={gridSize - 1}
                                     fill={cell.color}
                                     opacity={0.45}
+                                    stroke={cell.color}
+                                    strokeWidth={1.5 / scale}
+                                    dash={[4, 4]}
                                     listening={false}
                                 />
                             );

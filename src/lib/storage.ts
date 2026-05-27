@@ -34,9 +34,14 @@ export const Storage = {
         try {
             await localforage.setItem(key, value);
             // Sync to localStorage for fallback/migration during development
-            localStorage.setItem(key, JSON.stringify(value));
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (lsErr) {
+                console.warn(`LocalStorage backup skipped for ${key} (likely quota exceeded):`, lsErr);
+            }
         } catch (e) {
             console.error(`Error saving ${key} to storage:`, e);
+            throw e;
         }
     },
 
