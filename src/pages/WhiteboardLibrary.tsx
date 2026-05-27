@@ -184,7 +184,7 @@ export function WhiteboardLibrary() {
                     {!isCreatingBoard ? (
                         <button 
                             onClick={() => setIsCreatingBoard(true)}
-                            className="h-10 px-6 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[14px]"
+                            className="h-10 px-6 bg-[#ff832b] text-white hover:bg-[#e86c14] transition-colors shadow-sm font-sans text-[14px]"
                         >
                             创建新白板
                         </button>
@@ -200,7 +200,7 @@ export function WhiteboardLibrary() {
                             />
                             <button 
                                 onClick={handleCreateBoard}
-                                className="h-8 px-3 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover text-xs"
+                                className="h-8 px-3 bg-[#ff832b] text-white hover:bg-[#e86c14] transition-colors shadow-sm text-xs"
                             >
                                 确定
                             </button>

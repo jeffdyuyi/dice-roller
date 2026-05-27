@@ -3,6 +3,8 @@ import { useOutletContext, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getMyCharacters } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
+import { getMyWhiteboards } from '../features/whiteboards/api';
+import type { WhiteboardProject } from '../features/whiteboards/types';
 import { WhiteboardArea } from '../components/WhiteboardArea';
 
 export function Home() {
@@ -11,9 +13,11 @@ export function Home() {
     const navigate = useNavigate();
 
     const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [myWhiteboards, setMyWhiteboards] = useState<WhiteboardProject[]>([]);
 
     useEffect(() => {
         getMyCharacters(myId).then(setMyCharacters);
+        getMyWhiteboards(myId).then(setMyWhiteboards);
     }, [myId]);
 
     // CONNECTED STATE - COLLABORATIVE WHITEBOARD
@@ -84,7 +88,7 @@ export function Home() {
                         <h2 className="text-[24px] font-sans font-semibold text-ibm-text">备忘库存</h2>
                         <button 
                             onClick={() => navigate('/characters/new')}
-                            className="bg-ibm-primary text-ibm-textOnColor px-4 py-2 text-[14px] font-medium transition-colors hover:bg-ibm-primaryHover shadow-sm"
+                            className="bg-[#ff832b] text-white px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#e86c14] shadow-sm"
                         >
                             + 新建备忘
                         </button>
@@ -115,21 +119,29 @@ export function Home() {
                         <h2 className="text-[24px] font-sans font-semibold text-ibm-text">白板库存</h2>
                         <Link 
                             to="/whiteboards"
-                            className="bg-ibm-primary text-ibm-textOnColor px-4 py-2 text-[14px] font-medium transition-colors hover:bg-ibm-primaryHover shadow-sm flex items-center justify-center"
+                            className="bg-[#ff832b] text-white px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#e86c14] shadow-sm flex items-center justify-center"
                         >
                             + 管理白板
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="p-4 border border-ibm-border bg-ibm-layer flex flex-col hover:border-ibm-borderStrong transition-colors group">
-                            <h3 className="text-[16px] font-sans font-medium text-ibm-text truncate mb-1">示例白板</h3>
-                            <p className="text-[12px] text-ibm-textSecondary mb-4">标签页: 1</p>
-                            <div className="mt-auto self-end">
-                                <Link to={`/whiteboards`} className="text-[13px] text-ibm-primary hover:text-ibm-primaryHover transition-colors">打开</Link>
-                            </div>
+                    {myWhiteboards.length === 0 ? (
+                        <div className="p-8 border border-dashed border-ibm-border bg-ibm-layerHover text-center">
+                            <p className="text-[14px] text-ibm-textSecondary">尚未创建任何个人白板</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {myWhiteboards.map(board => (
+                                <div key={board.id} className="p-4 border border-ibm-border bg-ibm-layer flex flex-col hover:border-ibm-borderStrong transition-colors group">
+                                    <h3 className="text-[16px] font-sans font-medium text-ibm-text truncate mb-1">{board.name}</h3>
+                                    <p className="text-[12px] text-ibm-textSecondary mb-4">标签页: {board.tabs?.length || 0}</p>
+                                    <div className="mt-auto self-end">
+                                        <Link to={`/whiteboards`} className="text-[13px] text-ibm-primary hover:text-ibm-primaryHover transition-colors">打开</Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </section>
             </div>
         </div>

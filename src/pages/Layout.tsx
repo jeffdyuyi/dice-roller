@@ -91,53 +91,81 @@ export function Layout() {
 
             {/* Author Info Modal */}
             {infoOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-ibm-background/90 backdrop-blur-sm">
-                    <div className="bg-ibm-layer w-full max-w-md relative z-10 border border-ibm-borderStrong shadow-md">
-                        <div className="p-8 border-b border-ibm-border">
-                            <div className="flex justify-between items-start">
-                                <div className="flex flex-col gap-2">
-                                    <h2 className="text-ibm-text text-[28px] font-sans font-light leading-tight">关于工具</h2>
-                                </div>
-                                <button onClick={() => setInfoOpen(false)} className="text-ibm-textSecondary hover:text-ibm-text transition-colors">
-                                    <span className="font-mono text-xl">X</span>
-                                </button>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-ibm-background/95 backdrop-blur-md transition-all animate-in fade-in duration-200">
+                    <div className="bg-ibm-layer w-full max-w-lg relative z-10 border border-ibm-borderStrong shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header bar */}
+                        <div className="p-6 border-b border-ibm-border flex justify-between items-center bg-ibm-background/40">
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-mono text-ibm-primary uppercase tracking-widest">成都秘密基地 · TRPG 工具套件</span>
+                                <h2 className="text-ibm-text text-2xl font-sans font-light tracking-tight mt-1">关于工具与创作者</h2>
                             </div>
+                            <button 
+                                onClick={() => setInfoOpen(false)} 
+                                className="w-8 h-8 border border-ibm-border flex items-center justify-center text-ibm-textSecondary hover:text-ibm-text hover:border-ibm-borderStrong hover:bg-ibm-layerHover transition-all font-mono"
+                            >
+                                X
+                            </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 border border-ibm-border flex items-center justify-center text-ibm-text font-mono text-xl bg-ibm-layerHover">
-                                        P
-                                    </div>
-                                    <div>
-                                        <p className="text-[12px] font-mono text-ibm-textSecondary uppercase tracking-xai mb-1">制作者</p>
-                                        <p className="font-sans text-ibm-text text-[16px]">不咕鸟（哈基米德）</p>
-                                    </div>
+                        {/* Content Area */}
+                        <div className="p-8 space-y-6">
+                            {/* Creators Info */}
+                            <div className="flex flex-col gap-4 border border-ibm-border p-5 bg-ibm-background/20">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[12px] font-mono text-ibm-textSecondary uppercase tracking-widest">作者 / Creator</span>
+                                    <span className="font-sans text-ibm-text text-[15px] font-medium">不咕鸟（基德）</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 border border-ibm-border flex items-center justify-center text-ibm-text font-mono text-xl bg-ibm-layerHover">
-                                        AI
-                                    </div>
-                                    <div>
-                                        <p className="text-[12px] font-mono text-ibm-textSecondary uppercase tracking-xai mb-1">技术辅助</p>
-                                        <p className="font-sans text-ibm-text text-[16px]">Antigravity</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="h-px bg-ibm-border"></div>
-
-                            <div className="space-y-4">
-                                <div className="p-4 bg-transparent border border-ibm-border hover:border-ibm-borderStrong transition-all flex items-start gap-3">
-                                    <div className="flex-1">
-                                        <p className="text-[12px] font-mono text-ibm-textSecondary uppercase tracking-xai mb-2">日常排团</p>
-                                        <a href="https://nogubird.top/schedule" target="_blank" rel="noopener" className="text-[16px] font-sans text-ibm-primary hover:text-ibm-primaryHover transition-colors">nogubird.top/schedule</a>
-                                    </div>
+                                <div className="h-px bg-ibm-border/45"></div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[12px] font-mono text-ibm-textSecondary uppercase tracking-widest">技术辅助 / Co-pilot</span>
+                                    <span className="font-sans text-ibm-text text-[15px] font-medium">Antigravity Gemini</span>
                                 </div>
                             </div>
 
-                            <a href="https://ifdian.net/a/nogubird" target="_blank" rel="noopener" className="block w-full bg-ibm-primary text-ibm-textOnColor py-3 text-center font-sans text-[14px] hover:bg-ibm-primaryHover transition-all">
-                                为作者加油
+                            {/* Base Information */}
+                            <div className="space-y-3">
+                                {/* Website */}
+                                <a 
+                                    href="https://nogubird.top/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="p-4 border border-ibm-border bg-ibm-background/20 hover:border-ibm-borderStrong transition-all flex items-start gap-4 group"
+                                >
+                                    <span className="text-lg mt-0.5 group-hover:scale-110 transition-transform">🌐</span>
+                                    <div>
+                                        <p className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-widest">成都秘密基地 / Official Website</p>
+                                        <p className="font-sans text-ibm-primary group-hover:underline text-[14px] mt-1 font-medium">https://nogubird.top/</p>
+                                    </div>
+                                </a>
+
+                                {/* QQ Group */}
+                                <div className="p-4 border border-ibm-border bg-ibm-background/20 flex items-start gap-4">
+                                    <span className="text-lg mt-0.5">💬</span>
+                                    <div>
+                                        <p className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-widest">不咕鸟TRPG创想俱乐部 / QQ Group</p>
+                                        <p className="font-sans text-ibm-text text-[14px] mt-1 font-mono font-medium select-all">261751459</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Wishlist and Pressure Banner */}
+                            <div className="p-4 border-l-2 border-ibm-primary bg-ibm-layer/60 space-y-2">
+                                <p className="text-[13px] font-sans text-ibm-text flex items-center gap-1.5 font-medium">
+                                    <span>💡</span> 欢迎反馈 BUG 和提交需求
+                                </p>
+                                <p className="text-[12px] font-sans text-ibm-textSecondary flex items-center gap-1.5">
+                                    <span>🔥</span> 想要接入其他规则也请直接压力作者
+                                </p>
+                            </div>
+
+                            {/* Sponsor Button */}
+                            <a 
+                                href="https://ifdian.net/a/nogubird" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="block w-full bg-ibm-primary text-ibm-textOnColor py-3.5 text-center font-sans text-[14px] font-medium hover:bg-ibm-primaryHover transition-all tracking-wider flex items-center justify-center gap-2"
+                            >
+                                <span className="text-[14px]">❤️</span> 为作者加油 / Support the Creator
                             </a>
                         </div>
                     </div>

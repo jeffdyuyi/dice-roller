@@ -34,7 +34,7 @@ export function CharacterLibrary() {
                 <div className="flex gap-4 items-center">
                     <button 
                         onClick={() => navigate('/characters/new')} 
-                        className="h-10 px-6 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[14px]"
+                        className="h-10 px-6 bg-[#ff832b] text-white hover:bg-[#e86c14] transition-colors shadow-sm font-sans text-[14px]"
                     >
                         + 塑造新角色
                     </button>
