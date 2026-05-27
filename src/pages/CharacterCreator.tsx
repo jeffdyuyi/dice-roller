@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../features/auth/useAuth';
 import { saveCharacter } from '../features/characters/api';
 
 export function CharacterCreator() {
-    const { user } = useAuth();
     const navigate = useNavigate();
-
     const [memoName, setMemoName] = useState('');
 
     const handleSave = async () => {
@@ -14,8 +11,8 @@ export function CharacterCreator() {
 
         const newMemo = {
             id: 'memo-' + Date.now().toString(36),
-            userId: user.id,
-            name: memoName,
+            userId: 'local-user', // Default user
+            name: memoName.trim(),
             summary: '备忘库存',
             memoItems: [],
             createdAt: Date.now(),
@@ -23,37 +20,53 @@ export function CharacterCreator() {
         };
 
         await saveCharacter(newMemo as any);
-        alert('备忘录已成功保存！');
+        alert('备忘库已成功保存！');
         navigate('/characters');
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-x-dark text-x-white relative font-sans overflow-hidden">
-            <div className="w-full max-w-4xl mx-auto p-6 md:p-12 z-10 overflow-y-auto custom-scrollbar relative">
-                <div className="flex justify-between items-center mb-12 border-b border-x-border pb-6">
-                    <div>
-                        <h1 className="text-[34px] font-sans font-semibold tracking-tight text-x-white leading-tight">新建备忘库存</h1>
-                        <p className="text-[14px] font-sans text-x-muted mt-1">创建一个空白的备忘录，用于存放规则速查、物品或者角色设定</p>
-                    </div>
+        <div className="p-8 pb-32 max-w-3xl mx-auto w-full h-full flex flex-col bg-ibm-background">
+            <header className="mb-12 border-b border-ibm-border pb-6 shrink-0 flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => navigate('/characters')}
+                        className="h-8 px-4 border border-ibm-border hover:bg-ibm-layerHover text-ibm-text text-xs font-mono transition-all"
+                    >
+                        ← 返回备忘库存
+                    </button>
+                </div>
+                <div>
+                    <h1 className="text-ibm-text text-4xl font-sans font-light tracking-tight mb-2">新建备忘库</h1>
+                    <p className="text-ibm-textSecondary font-sans text-sm">创建一个空白的备忘库，用于存放角色卡档案或记录冒险日记条目</p>
+                </div>
+            </header>
+
+            <div className="bg-ibm-layer border border-ibm-border p-8 space-y-6">
+                <div className="space-y-2">
+                    <label className="text-[12px] font-mono uppercase tracking-widest text-ibm-textSecondary block">备忘库存名称</label>
+                    <input 
+                        type="text" 
+                        value={memoName} 
+                        onChange={e => setMemoName(e.target.value)} 
+                        className="w-full bg-ibm-background border border-ibm-border text-ibm-text px-4 py-3 text-sm focus:border-ibm-primary outline-none transition-all placeholder:text-ibm-textSecondary/50 font-sans" 
+                        placeholder="例如：DND 5E 战士雷恩 / 赛博朋克深网调查..." 
+                        onKeyDown={e => e.key === 'Enter' && handleSave()}
+                    />
                 </div>
 
-                <div className="space-y-8">
-                    <div className="group">
-                        <label className="block text-[12px] font-mono uppercase tracking-xai font-medium text-x-muted mb-3 transition-colors group-focus-within:text-x-white">备忘录名称</label>
-                        <input 
-                            type="text" 
-                            value={memoName} 
-                            onChange={e => setMemoName(e.target.value)} 
-                            className="w-full bg-x-surface focus:bg-transparent border border-x-border rounded-none px-6 py-4 text-[16px] font-sans text-x-white outline-none focus:border-x-white transition-all placeholder:text-x-muted" 
-                            placeholder="如：DND 5E 战士背包 / 赛博朋克调查笔记..." 
-                        />
-                    </div>
-
-                    <div className="pt-8 flex justify-end">
-                        <button onClick={handleSave} className="bg-x-white text-x-dark rounded-none font-mono uppercase tracking-xai font-medium py-3.5 px-12 text-[12px] transition-all hover:bg-white/90">
-                            保存并创建
-                        </button>
-                    </div>
+                <div className="pt-4 flex justify-end gap-3">
+                    <button 
+                        onClick={() => navigate('/characters')}
+                        className="h-10 px-6 border border-ibm-border text-ibm-text hover:bg-ibm-layerHover transition-all text-xs font-mono"
+                    >
+                        取消
+                    </button>
+                    <button 
+                        onClick={handleSave}
+                        className="h-10 px-8 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all text-xs font-mono"
+                    >
+                        确定并创建
+                    </button>
                 </div>
             </div>
         </div>

@@ -191,11 +191,20 @@ class MqttService {
     }
 
     public disconnect() {
-        this.unannounceRoom();
-        if (this.client) {
-            this.client.end(true);
-            this.client = null;
+        const clientToClose = this.client;
+        const wasHost = this.isHost;
+        const roomIdToClear = this.currentRoomId;
+
+        if (clientToClose && roomIdToClear && wasHost) {
+            const safeRoomId = btoa(encodeURIComponent(roomIdToClear)).replace(/=/g, '');
+            clientToClose.publish(`dnd5r/lobby/rooms/${safeRoomId}`, '', { retain: true }, () => {
+                clientToClose.end(false);
+            });
+        } else if (clientToClose) {
+            clientToClose.end(false);
         }
+
+        this.client = null;
         this.currentRoomId = null;
     }
 }

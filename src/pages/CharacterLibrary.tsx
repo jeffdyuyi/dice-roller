@@ -2,80 +2,95 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyCharacters, deleteCharacter } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
-import { useAuth } from '../features/auth/useAuth';
 
 export function CharacterLibrary() {
-    const { user } = useAuth();
     const navigate = useNavigate();
     const [characters, setCharacters] = useState<Character[]>([]);
 
-    useEffect(() => {
-        if (user) {
-            getMyCharacters(user.id).then(setCharacters);
-        }
-    }, [user]);
-
-    const handleDelete = async (id: string) => {
-        if (!confirm('确认删除角色卡吗？')) return;
-        await deleteCharacter(id);
-        const chars = await getMyCharacters(user?.id || '');
+    const refreshCharacters = async () => {
+        // user id is 'local-user' since we bypassed auth
+        const chars = await getMyCharacters('local-user');
         setCharacters(chars);
     };
 
-    return (
-        <div className="p-6 md:p-12 w-full max-w-6xl mx-auto min-h-screen overflow-y-auto custom-scrollbar bg-black text-white relative font-sans">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 relative z-10 pb-6 border-b border-white/5">
-                <div>
-                    <h1 className="text-[34px] font-sans font-semibold tracking-tight leading-none text-white">本地角色库</h1>
-                    <p className="text-[14px] font-sans text-white/70 mt-2">管理与查看您的所有冒险者档案</p>
-                </div>
-                <button 
-                    onClick={() => navigate('/characters/new')} 
-                    className="bg-x-white text-x-dark px-8 py-3.5 rounded-none font-mono uppercase tracking-xai font-medium text-[12px] hover:bg-white/90 transition-all"
-                >
-                    + 塑造新角色
-                </button>
-            </div>
+    useEffect(() => {
+        refreshCharacters();
+    }, []);
 
-            {characters.length === 0 ? (
-                <div className="border border-dashed border-x-border rounded-none p-32 text-center relative z-10 flex flex-col items-center justify-center bg-x-surface">
-                    <div className="w-16 h-16 rounded-none border border-x-border bg-transparent flex items-center justify-center mb-4">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-x-muted" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </div>
-                    <p className="text-x-muted font-mono tracking-xai uppercase text-[12px]">备忘库存为空，暂无记录</p>
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm('确认删除该角色备忘库吗？这会抹除其中的所有已存笔记条目！')) return;
+        await deleteCharacter(id);
+        await refreshCharacters();
+    };
+
+    return (
+        <div className="p-8 pb-32 max-w-5xl mx-auto w-full h-full flex flex-col">
+            <header className="mb-12 flex justify-between items-end border-b border-ibm-border pb-6 shrink-0">
+                <div>
+                    <h1 className="text-ibm-text text-4xl font-sans font-light tracking-tight mb-2">备忘库存</h1>
+                    <p className="text-ibm-textSecondary font-sans text-sm">管理您的角色设定档及接收到的冒险备忘录</p>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 relative z-10">
-                    {characters.map(c => (
-                        <div key={c.id} className="bg-transparent rounded-none p-6 border border-x-border hover:-translate-y-1 hover:bg-x-surface transition-all duration-300 group flex flex-col h-[240px]">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-none bg-x-surface flex items-center justify-center text-x-white font-mono font-medium text-xl border border-x-border">
-                                        {c.name[0]}
+                <div className="flex gap-4 items-center">
+                    <button 
+                        onClick={() => navigate('/characters/new')} 
+                        className="h-10 px-6 bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all font-sans text-[14px]"
+                    >
+                        + 塑造新角色
+                    </button>
+                </div>
+            </header>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {characters.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 border border-ibm-border border-dashed">
+                        <div className="w-16 h-16 border border-ibm-border flex items-center justify-center text-ibm-textSecondary mb-4">
+                            <span className="font-mono text-2xl">M</span>
+                        </div>
+                        <h3 className="text-ibm-text font-sans text-lg mb-2">暂无角色备忘库</h3>
+                        <p className="text-ibm-textSecondary font-sans text-[13px] text-center max-w-sm mb-6">
+                            点击右上角塑造新角色，创建角色后，在联机房间中接收主持人分发的冒险备忘，或者在个人看板上管理角色设定。
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {characters.map(c => (
+                            <div 
+                                key={c.id} 
+                                onClick={() => navigate(`/characters`)} // Currently navigates to list, can expand detail view in future
+                                className="p-6 border border-ibm-border bg-ibm-layer hover:border-ibm-borderStrong transition-all duration-200 cursor-pointer flex flex-col group relative"
+                            >
+                                <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button 
+                                        onClick={(e) => handleDelete(c.id, e)}
+                                        className="text-ibm-textSecondary hover:text-[#fa4d56] font-mono text-xs"
+                                        title="删除角色卡"
+                                    >
+                                        删除
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-12 h-12 bg-ibm-background flex items-center justify-center text-ibm-text font-mono font-medium text-lg border border-ibm-border">
+                                        {c.name ? c.name[0] : '角'}
                                     </div>
-                                    <div>
-                                        <h3 className="text-[18px] font-sans font-semibold text-x-white tracking-tight">{c.name}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[10px] font-mono tracking-xai uppercase px-2.5 py-1 border border-x-border rounded-none text-x-muted">{c.summary || '未分类'}</span>
-                                        </div>
+                                    <div className="truncate flex-1">
+                                        <h3 className="text-[18px] font-sans font-medium text-ibm-text truncate pr-8">{c.name}</h3>
+                                        <p className="text-[12px] text-ibm-textSecondary mt-0.5">
+                                            记录条目: {c.memoItems?.length || 0}
+                                        </p>
                                     </div>
                                 </div>
+                                <div className="mt-auto pt-4 border-t border-ibm-border/40 flex justify-between items-center">
+                                    <span className="text-[12px] text-ibm-textSecondary font-mono uppercase px-2 py-0.5 border border-ibm-border">
+                                        {c.summary || '备忘库存'}
+                                    </span>
+                                    <span className="text-[12px] text-ibm-primary group-hover:underline">查看管理 →</span>
+                                </div>
                             </div>
-
-                            <div className="flex-1"></div>
-
-                            <div className="pt-5 border-t border-x-border flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <button className="flex-1 bg-x-white text-x-dark rounded-none py-2 text-[12px] font-mono uppercase tracking-xai font-medium transition-colors" onClick={() => alert('备忘详情编辑功能即将开放')}>
-                                    查看详情
-                                </button>
-                                <button className="w-10 h-10 rounded-none bg-transparent border border-x-border text-x-muted hover:text-red-400 hover:border-red-400 flex items-center justify-center transition-colors" onClick={() => handleDelete(c.id)}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

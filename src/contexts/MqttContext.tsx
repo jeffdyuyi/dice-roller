@@ -182,6 +182,24 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                     timestamp: msg.timestamp 
                 };
                 setDiceHistory(prev => [...prev, chatData]);
+                
+                // Save memo item to player's active character memo items list
+                setActiveCharacter(prev => {
+                    if (prev) {
+                        const newItem = {
+                            id: 'item-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5),
+                            content: textPayload,
+                            createdAt: Date.now(),
+                            source: 'host' as const
+                        };
+                        const updatedItems = [...(prev.memoItems || []), newItem];
+                        const next = { ...prev, memoItems: updatedItems };
+                        saveCharacter(next);
+                        return next;
+                    }
+                    return null;
+                });
+
                 showNotification(`收到来自 ${msg.senderName} 的新笔记`, 'info');
             } else if (msg.type === 'CHARACTER_SYNC') {
                 // Update specific player in the list
@@ -249,7 +267,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 cells: {}
             };
             setRoomWhiteboard({
-                id: 'room-whiteboard',
+                id: 'board-room-' + (roomId || 'default'),
                 name: roomName || '房间白板',
                 userId: mqttInstance.myId,
                 updatedAt: Date.now(),
@@ -258,7 +276,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         } else if (commState === 'DISCONNECTED') {
             setRoomWhiteboard(null);
         }
-    }, [commState, roomName]);
+    }, [commState, roomName, roomId, roomWhiteboard]);
 
     const disconnectLocal = useCallback(() => {
         mqttInstance.disconnect();
@@ -270,6 +288,10 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setHostName(null);
         setConnectedPlayers([]);
         setPendingPlayers([]);
+        setDiceHistory([]);
+        setLatestRoll(null);
+        setRoomWhiteboard(null);
+        setActiveCharacter(null);
     }, []);
 
     const createRoom = useCallback((name: string, rid: string, rName: string, template: any | null) => {
@@ -291,6 +313,11 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         if (!rid) return;
         setMyName(name);
         setCommState('WAITING');
+        if (charInfo) {
+            setActiveCharacter(charInfo as Character);
+        } else {
+            setActiveCharacter(null);
+        }
         mqttInstance.init(name, rid, false);
         // Request will be sent after connection is established
         setTimeout(() => {
