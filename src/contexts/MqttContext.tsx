@@ -74,9 +74,20 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         // Automatically connect to global lobby on app start
         mqttInstance.connectGlobal();
 
-        const unsubLobby = mqttInstance.onLobbyUpdate((rooms) => {
-            setActiveLobbyRooms(rooms);
-        });
+        let lastRooms: LobbyRoom[] = [];
+        const updateLobby = (rooms: LobbyRoom[]) => {
+            lastRooms = rooms;
+            const now = Date.now();
+            // Filter rooms: Only rooms updated within the last 3 minutes (180000ms)
+            setActiveLobbyRooms(rooms.filter(r => now - r.timestamp < 180000));
+        };
+
+        const unsubLobby = mqttInstance.onLobbyUpdate(updateLobby);
+
+        // Check and prune expired rooms every 15 seconds
+        const pruneInterval = setInterval(() => {
+            updateLobby(lastRooms);
+        }, 15000);
 
         const unsubConnect = mqttInstance.onConnect(() => {
             if (mqttInstance.isHost) {
@@ -230,7 +241,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                                     tabs: project.tabs,
                                     updatedAt: Date.now() // Timestamp updated
                                 };
-                                await saveWhiteboard(updatedLocal);
+                                    await saveWhiteboard(updatedLocal);
                             } else {
                                 const newLocal: WhiteboardProject = {
                                     id: 'board-' + Date.now().toString(36),
@@ -254,8 +265,20 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             unsubConnect();
             unsubMsg();
             unsubLobby();
+            clearInterval(pruneInterval);
         };
     }, []);
+
+    // Host Room Heartbeat Announcement
+    useEffect(() => {
+        if (!isHost || commState !== 'CONNECTED' || !roomName) return;
+
+        const interval = setInterval(() => {
+            mqttInstance.announceRoom(roomName, roomTemplate?.name);
+        }, 60000); // Send heartbeat room list announcement every 60 seconds
+
+        return () => clearInterval(interval);
+    }, [isHost, commState, roomName, roomTemplate]);
 
     // Sync room whiteboard creation and destruction
     useEffect(() => {
