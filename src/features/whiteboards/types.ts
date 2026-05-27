@@ -31,6 +31,7 @@ export interface WallSegment {
     startY: number;
     endX: number;
     endY: number;
+    isOpen?: boolean; // Toggles door swing state
 }
 
 export interface WhiteboardTab {

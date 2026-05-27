@@ -135,6 +135,18 @@ export function GridBoard({
         return Math.sqrt((px - projX)**2 + (py - projY)**2);
     };
 
+    const toggleDoorState = (wallId: string) => {
+        if (!onUpdateWalls) return;
+        const currentWalls = tab.walls || [];
+        const updated = currentWalls.map(w => {
+            if (w.id === wallId && w.type === 'door') {
+                return { ...w, isOpen: !w.isOpen };
+            }
+            return w;
+        });
+        onUpdateWalls(updated);
+    };
+
     const handleDeleteWallAt = (lx: number, ly: number) => {
         if (isHex || !onUpdateWalls) return;
         const currentWalls = tab.walls || [];
@@ -537,44 +549,75 @@ export function GridBoard({
                             </Group>
                         );
                     } else if (wall.type === 'door') {
-                        // Professional blueprint door swing
-                        const angle = 45 * Math.PI / 180;
-                        const rx = (dx * Math.cos(angle) - dy * Math.sin(angle)) * 0.8;
-                        const ry = (dx * Math.sin(angle) + dy * Math.cos(angle)) * 0.8;
-                        const doorOpenX = x1 + rx;
-                        const doorOpenY = y1 + ry;
+                        // Professional blueprint interactive door swing
+                        const isOpen = !!wall.isOpen;
+                        const angle = 90 * Math.PI / 180;
+                        const rx = (dx * Math.cos(angle) - dy * Math.sin(angle)) * 0.95;
+                        const ry = (dx * Math.sin(angle) + dy * Math.cos(angle)) * 0.95;
                         
-                        // Perpendicular vectors for door jambs
+                        // Door jamb vectors
                         const ux = -dy / len;
                         const uy = dx / len;
                         const jambLength = thicknessWidth + 4;
                         
+                        const doorColor = isHovered ? '#fa4d56' : '#ff832b';
+                        const jambColor = isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#393939');
+
                         return (
-                            <Group key={`door-${wall.id}`}>
-                                {/* Swing Arc (dotted thin line) */}
+                            <Group 
+                                key={`door-${wall.id}`}
+                                onClick={() => {
+                                    if (!wallDrawingMode) toggleDoorState(wall.id);
+                                }}
+                                onTap={() => {
+                                    if (!wallDrawingMode) toggleDoorState(wall.id);
+                                }}
+                                onMouseEnter={(e: any) => {
+                                    if (!wallDrawingMode) {
+                                        const stage = e.target.getStage();
+                                        if (stage) stage.container().style.cursor = 'pointer';
+                                    }
+                                }}
+                                onMouseLeave={(e: any) => {
+                                    const stage = e.target.getStage();
+                                    if (stage) stage.container().style.cursor = 'default';
+                                }}
+                            >
+                                {/* Invisible wide interactive touch-line */}
                                 <Line
-                                    points={[doorOpenX, doorOpenY, x2, y2]}
-                                    stroke={isHovered ? '#fa4d56' : '#ff832b'}
-                                    strokeWidth={1}
-                                    dash={[2, 2]}
+                                    points={[x1, y1, x2, y2]}
+                                    stroke="transparent"
+                                    strokeWidth={20}
                                 />
-                                {/* Door Pane (orange block/line) */}
+
+                                {/* Door Pane */}
                                 <Line
-                                    points={[x1, y1, doorOpenX, doorOpenY]}
-                                    stroke={isHovered ? '#fa4d56' : '#ff832b'}
-                                    strokeWidth={Math.max(2, thicknessWidth / 2)}
+                                    points={isOpen ? [x1, y1, x1 + rx, y1 + ry] : [x1, y1, x2, y2]}
+                                    stroke={doorColor}
+                                    strokeWidth={Math.max(3, thicknessWidth / 2)}
                                     lineCap="round"
                                 />
+
+                                {/* Swing Arc (Only drawn when open) */}
+                                {isOpen && (
+                                    <Line
+                                        points={[x1 + rx, y1 + ry, x2, y2]}
+                                        stroke={doorColor}
+                                        strokeWidth={1}
+                                        dash={[2, 2]}
+                                    />
+                                )}
+
                                 {/* Door Jamb 1 */}
                                 <Line
                                     points={[x1 - ux * jambLength / 2, y1 - uy * jambLength / 2, x1 + ux * jambLength / 2, y1 + uy * jambLength / 2]}
-                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#393939')}
+                                    stroke={jambColor}
                                     strokeWidth={2}
                                 />
                                 {/* Door Jamb 2 */}
                                 <Line
                                     points={[x2 - ux * jambLength / 2, y2 - uy * jambLength / 2, x2 + ux * jambLength / 2, y2 + uy * jambLength / 2]}
-                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#393939')}
+                                    stroke={jambColor}
                                     strokeWidth={2}
                                 />
                             </Group>
@@ -746,7 +789,15 @@ export function GridBoard({
                             );
                         }
                     })}
+                </Layer>
 
+                {/* 3.5. Vector snapped walls, doors, windows layer */}
+                <Layer>
+                    {renderWalls()}
+                </Layer>
+
+                {/* 3.7. Cell annotations, markers, notes, selected highlight layer */}
+                <Layer>
                     {/* B. Entry Icon Tokens */}
                     {cellsToRender.map((cell) => {
                         if (cell.entries.length === 0) return null;
@@ -842,11 +893,6 @@ export function GridBoard({
                             />
                         )
                     )}
-                </Layer>
-
-                {/* 3.5. Vector snapped walls, doors, windows layer */}
-                <Layer>
-                    {renderWalls()}
                 </Layer>
 
                 {/* 4. Draggable Circular Tokens Layer */}

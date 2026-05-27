@@ -501,33 +501,33 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 </p>
                                 <button
                                     onClick={() => setWallThicknessMode('thin')}
-                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
                                         wallThicknessMode === 'thin'
                                             ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
-                                    Thin
+                                    细
                                 </button>
                                 <button
                                     onClick={() => setWallThicknessMode('standard')}
-                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
                                         wallThicknessMode === 'standard'
                                             ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
-                                    Std
+                                    中
                                 </button>
                                 <button
                                     onClick={() => setWallThicknessMode('massive')}
-                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
                                         wallThicknessMode === 'massive'
                                             ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
-                                    Thick
+                                    粗
                                 </button>
                             </div>
                         )}
