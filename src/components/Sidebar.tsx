@@ -223,8 +223,8 @@ export function Sidebar({ onRoll }: SidebarProps) {
                     )}
                 </div>
 
-                {/* Note/Memo Tools */}
-                {commState === 'CONNECTED' && (
+                {/* Note/Memo Tools - Exclusive to Host when connected */}
+                {commState === 'CONNECTED' && isHost && (
                     <>
                         {/* Note/Memo Distribution Section */}
                         <div className="mb-4 bg-transparent border border-ibm-borderStrong rounded-none overflow-hidden">

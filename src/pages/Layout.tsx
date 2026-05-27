@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useMqttContext } from '../contexts/MqttContext';
 import { RoomManagerDrawer } from '../components/RoomManagerDrawer';
+import { RoomManagerPanel } from '../components/RoomManagerPanel';
 
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Sidebar } from '../components/Sidebar';
@@ -10,6 +11,7 @@ import { MainArea } from '../components/MainArea';
 export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard'>('chat');
 
     return (
         <div className="min-h-screen bg-ibm-background flex flex-col font-sans antialiased text-ibm-text h-screen overflow-hidden relative">
@@ -62,6 +64,32 @@ export function Layout() {
                 <div className="flex items-center gap-4">
                     {commState === 'CONNECTED' && (
                         <>
+                            {/* Segmented Switcher for Sub-pages */}
+                            <div className="flex bg-ibm-background border border-ibm-border p-0.5 mr-2">
+                                <button
+                                    onClick={() => setActiveTab('chat')}
+                                    className={`h-7 px-3.5 text-[12px] font-mono transition-all flex items-center gap-1.5 ${
+                                        activeTab === 'chat'
+                                            ? 'bg-[#ff832b] text-white font-bold'
+                                            : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'
+                                    }`}
+                                >
+                                    <span>💬</span>
+                                    <span>战役与聊天</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('whiteboard')}
+                                    className={`h-7 px-3.5 text-[12px] font-mono transition-all flex items-center gap-1.5 ${
+                                        activeTab === 'whiteboard'
+                                            ? 'bg-[#ff832b] text-white font-bold'
+                                            : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'
+                                    }`}
+                                >
+                                    <span>🗺️</span>
+                                    <span>战术白板</span>
+                                </button>
+                            </div>
+
                             <button
                                 onClick={() => setManagerOpen(true)}
                                 className="flex items-center justify-center h-8 px-4 border border-ibm-border bg-ibm-layerHover text-ibm-text hover:border-ibm-borderStrong transition-all font-sans text-[13px]"
@@ -164,22 +192,39 @@ export function Layout() {
 
             {/* Main Content Viewport */}
             <main className="flex-1 w-full overflow-hidden relative z-10 flex flex-col md:flex-row border-t border-ibm-border">
-                {commState === 'CONNECTED' && (
-                    <>
-                        <div className="w-full md:w-[320px] lg:w-[350px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-layer z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
-                            <Sidebar onRoll={addLocalRoll} />
+                {commState === 'CONNECTED' ? (
+                    activeTab === 'chat' ? (
+                        <>
+                            {/* 1. Tools Sidebar (narrower for best compact display) */}
+                            <div className="w-full md:w-[280px] lg:w-[300px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-layer z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
+                                <Sidebar onRoll={addLocalRoll} />
+                            </div>
+                            
+                            {/* 2. Room Management Panel (Integrated to the left of the chat box) */}
+                            <div className="w-full md:w-[290px] lg:w-[320px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-background z-20 h-auto md:h-full overflow-y-auto custom-scrollbar flex flex-col">
+                                <RoomManagerPanel />
+                            </div>
+
+                            {/* 3. Chat Area / Dice History (Visual ratio maximized) */}
+                            <div className="flex-grow flex-1 shrink-0 bg-ibm-background z-20 h-[50vh] md:h-full flex flex-col">
+                                <MainArea diceHistory={diceHistory} />
+                            </div>
+                        </>
+                    ) : (
+                        /* 4. Whiteboard Sub-page - full screen for perfect editing workspace */
+                        <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
+                            <Outlet />
                         </div>
-                        <div className="w-full md:w-[350px] lg:w-[450px] shrink-0 border-b md:border-b-0 md:border-r border-ibm-border bg-ibm-background z-20 h-[50vh] md:h-full flex flex-col">
-                            <MainArea diceHistory={diceHistory} />
-                        </div>
-                    </>
+                    )
+                ) : (
+                    /* DISCONNECTED State - Standard Outlet list on Home Page */
+                    <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
+                        <Outlet />
+                    </div>
                 )}
-                <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
-                    <Outlet />
-                </div>
             </main>
 
-            {/* Room Management Drawer */}
+            {/* Room Management Drawer (Backup drawer if needed elsewhere) */}
             <RoomManagerDrawer />
         </div>
     );
