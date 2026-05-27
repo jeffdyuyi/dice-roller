@@ -3,6 +3,16 @@ import type { WhiteboardProject, WhiteboardTab, CellData } from '../features/whi
 import { GridBoard } from './GridBoard';
 import { CellNotePanel, TERRAIN_COLORS } from './CellNotePanel';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { useMqttContext } from '../contexts/MqttContext';
+
+const TOKEN_COLORS = [
+    { hex: '#ff832b', label: '耀橙' },
+    { hex: '#fa4d56', label: '绯红' },
+    { hex: '#198038', label: '森绿' },
+    { hex: '#0f62fe', label: '海蓝' },
+    { hex: '#8a3ffc', label: '幻紫' },
+    { hex: '#f1c21b', label: '闪黄' },
+];
 
 interface WhiteboardAreaProps {
     project: WhiteboardProject;
@@ -11,6 +21,10 @@ interface WhiteboardAreaProps {
 }
 
 export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProps) {
+    const { commState, isHost, myId, connectedPlayers } = useMqttContext();
+    const actualIsHost = commState === 'DISCONNECTED' ? true : isHost;
+    const hasEditPermission = actualIsHost || (project.allowedEditors || []).includes(myId || 'local-user');
+
     const [activeTabId, setActiveTabId] = useState<string>(project.tabs[0]?.id || '');
     const [selectedCell, setSelectedCell] = useState<{ q: number; r: number } | null>(null);
     const [viewingCell, setViewingCell] = useState<{ q: number; r: number; x: number; y: number } | null>(null);
@@ -20,6 +34,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     const [isCreatingTab, setIsCreatingTab] = useState(false);
     const [newTabName, setNewTabName] = useState('');
     const [newTabType, setNewTabType] = useState<'square' | 'hex'>('hex');
+
+    const [tokenColor, setTokenColor] = useState('#ff832b');
+    const [tokenLabel, setTokenLabel] = useState('战');
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -272,7 +289,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                 {/* Operations Toolbar */}
                 <div className="flex items-center gap-2 shrink-0">
                     {/* Background image controls */}
-                    {activeTab && (
+                    {activeTab && hasEditPermission && (
                         <div className="flex items-center gap-2 border-r border-ibm-border pr-2 mr-2">
                             <input 
                                 type="file" 
@@ -312,6 +329,48 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         </div>
                     )}
 
+                    {/* Host Permission Panel Dropdown */}
+                    {actualIsHost && commState === 'CONNECTED' && (
+                        <div className="relative group border-r border-ibm-border pr-2 mr-2 h-8 flex items-center">
+                            <button className="h-8 px-2 border border-ibm-border hover:bg-ibm-layerHover text-ibm-textSecondary hover:text-ibm-text text-xs transition-all flex items-center gap-1">
+                                <span>📝 授权编辑</span>
+                                <span className="text-[9px]">▼</span>
+                            </button>
+                            <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-ibm-layer border border-ibm-border shadow-2xl p-3 w-48 z-50 text-xs" style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}>
+                                <p className="font-mono text-[9px] text-ibm-textSecondary uppercase tracking-wider mb-2 border-b border-ibm-border pb-1">分配编辑权限</p>
+                                {connectedPlayers.filter(p => p.id !== myId).length === 0 ? (
+                                    <p className="text-ibm-textPlaceholder italic py-1">房间内暂无其他玩家</p>
+                                ) : (
+                                    <div className="space-y-2 max-h-36 overflow-y-auto custom-scrollbar">
+                                        {connectedPlayers.filter(p => p.id !== myId).map(player => {
+                                            const isAllowed = (project.allowedEditors || []).includes(player.id);
+                                            return (
+                                                <label key={player.id} className="flex items-center gap-2 cursor-pointer text-ibm-text hover:text-ibm-primary py-0.5 select-none">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isAllowed}
+                                                        onChange={() => {
+                                                            const currentAllowed = project.allowedEditors || [];
+                                                            const updatedAllowed = isAllowed
+                                                                ? currentAllowed.filter(id => id !== player.id)
+                                                                : [...currentAllowed, player.id];
+                                                            onChange({
+                                                                ...project,
+                                                                allowedEditors: updatedAllowed
+                                                            });
+                                                        }}
+                                                        className="rounded border-ibm-border text-ibm-primary focus:ring-0 cursor-pointer accent-ibm-primary"
+                                                    />
+                                                    <span className="truncate flex-1">{player.name}</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <button
                         onClick={handleRecenter}
                         className="h-8 px-3 border border-ibm-border hover:bg-ibm-layerHover hover:border-ibm-borderStrong text-ibm-text text-xs font-mono transition-all flex items-center justify-center"
@@ -333,6 +392,19 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         }
                         onCellInteraction={handleCellInteraction}
                         recenterTrigger={recenterTrigger}
+                        allowedEditors={project.allowedEditors}
+                        myId={myId}
+                        isHost={actualIsHost}
+                        onUpdateTokens={(updatedTokens) => {
+                            const updatedTab = {
+                                ...activeTab,
+                                tokens: updatedTokens
+                            };
+                            onChange({
+                                ...project,
+                                tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                            });
+                        }}
                     />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-ibm-textSecondary">
@@ -356,15 +428,17 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 坐标 ({viewingCell.q}, {viewingCell.r}) · 查看备注
                             </span>
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => {
-                                        setSelectedCell({ q: viewingCell.q, r: viewingCell.r });
-                                        setViewingCell(null);
-                                    }}
-                                    className="text-[10px] font-mono text-ibm-primary hover:text-ibm-primaryHover border border-ibm-border px-1.5 py-0.5"
-                                >
-                                    编辑
-                                </button>
+                                {hasEditPermission && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectedCell({ q: viewingCell.q, r: viewingCell.r });
+                                            setViewingCell(null);
+                                        }}
+                                        className="text-[10px] font-mono text-ibm-primary hover:text-ibm-primaryHover border border-ibm-border px-1.5 py-0.5"
+                                    >
+                                        编辑
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setViewingCell(null)}
                                     className="text-[10px] font-mono text-ibm-textSecondary hover:text-ibm-text px-1"
@@ -428,10 +502,10 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                 {/* 右键/长按快捷菜单 Context Menu */}
                 {contextMenuCell && activeTab && (
                     <div
-                        className="absolute z-50 bg-ibm-layer border border-ibm-border shadow-2xl py-1 w-[200px] text-xs font-sans transition-all duration-100 animate-in fade-in zoom-in-95 duration-100"
+                        className="absolute z-50 bg-ibm-layer border border-ibm-border shadow-2xl py-1 w-[220px] text-xs font-sans transition-all duration-100 animate-in fade-in zoom-in-95 duration-100"
                         style={{
-                            left: `${Math.min(contextMenuCell.x, bounds.width - 210)}px`,
-                            top: `${Math.min(contextMenuCell.y, bounds.height - 380)}px`,
+                            left: `${Math.min(contextMenuCell.x, bounds.width - 230)}px`,
+                            top: `${Math.min(contextMenuCell.y, bounds.height - 440)}px`,
                             backgroundColor: 'var(--bg-layer-01)',
                         }}
                     >
@@ -445,48 +519,162 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         >
                             <span>👁️</span> <span>查看备注 (View)</span>
                         </button>
-                        <button
-                            onClick={() => {
-                                setSelectedCell({ q: contextMenuCell.q, r: contextMenuCell.r });
-                                setContextMenuCell(null);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-ibm-layerHover text-ibm-text flex items-center gap-2 border-b border-ibm-border/30"
-                        >
-                            <span>✏️</span> <span>编辑地块 (Edit)</span>
-                        </button>
-
-                        {/* Quick Terrain Colors */}
-                        <div className="px-4 py-1.5 text-[9px] font-mono text-ibm-textSecondary uppercase tracking-wider">
-                            快捷地貌颜色
-                        </div>
-                        <div className="px-2 py-1.5 grid grid-cols-4 gap-1.5 border-b border-ibm-border/30">
-                            {TERRAIN_COLORS.map(item => (
+                        
+                        {hasEditPermission && (
+                            <>
                                 <button
-                                    key={item.hex}
-                                    type="button"
                                     onClick={() => {
-                                        handleUpdateCell(contextMenuCell.q, contextMenuCell.r, { color: item.hex });
+                                        setSelectedCell({ q: contextMenuCell.q, r: contextMenuCell.r });
                                         setContextMenuCell(null);
                                     }}
-                                    className="w-6 h-6 rounded-full border border-ibm-border/40 hover:scale-110 hover:border-ibm-text transition-all shrink-0"
-                                    style={{ backgroundColor: item.hex }}
-                                    title={item.label}
+                                    className="w-full text-left px-4 py-2 hover:bg-ibm-layerHover text-ibm-text flex items-center gap-2 border-b border-ibm-border/30"
+                                >
+                                    <span>✏️</span> <span>编辑地块 (Edit)</span>
+                                </button>
+
+                                {/* Quick Terrain Colors */}
+                                <div className="px-4 py-1.5 text-[9px] font-mono text-ibm-textSecondary uppercase tracking-wider">
+                                    快捷地貌颜色
+                                </div>
+                                <div className="px-2 py-1.5 grid grid-cols-4 gap-1.5 border-b border-ibm-border/30">
+                                    {TERRAIN_COLORS.map(item => (
+                                        <button
+                                            key={item.hex}
+                                            type="button"
+                                            onClick={() => {
+                                                handleUpdateCell(contextMenuCell.q, contextMenuCell.r, { color: item.hex });
+                                                setContextMenuCell(null);
+                                            }}
+                                            className="w-6 h-6 rounded-full border border-ibm-border/40 hover:scale-110 hover:border-ibm-text transition-all shrink-0"
+                                            style={{ backgroundColor: item.hex }}
+                                            title={item.label}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        {/* Draggable Circle Tokens Section */}
+                        <div className="border-b border-ibm-border/30 pb-2 mb-1">
+                            <div className="px-4 py-1.5 text-[9px] font-mono text-ibm-textSecondary uppercase tracking-wider">
+                                放置圆形指示物
+                            </div>
+                            
+                            {/* Color Selector */}
+                            <div className="px-4 py-1 flex gap-1.5">
+                                {TOKEN_COLORS.map(c => (
+                                    <button
+                                        key={c.hex}
+                                        onClick={() => setTokenColor(c.hex)}
+                                        className={`w-4 h-4 rounded-full border transition-all ${
+                                            tokenColor === c.hex ? 'border-ibm-text scale-110' : 'border-transparent hover:scale-110'
+                                        }`}
+                                        style={{ backgroundColor: c.hex }}
+                                        title={c.label}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Label Input & Place Button */}
+                            <div className="px-4 py-2 flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    maxLength={1}
+                                    placeholder="字"
+                                    value={tokenLabel}
+                                    onChange={e => setTokenLabel(e.target.value)}
+                                    className="w-10 bg-ibm-background text-ibm-text border border-ibm-border px-1.5 py-0.5 text-center text-xs outline-none"
                                 />
-                            ))}
+                                <button
+                                    onClick={() => {
+                                        const currentTokens = activeTab.tokens || [];
+                                        const newToken = {
+                                            id: 'token-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5),
+                                            q: contextMenuCell.q,
+                                            r: contextMenuCell.r,
+                                            color: tokenColor,
+                                            label: tokenLabel.trim().substring(0, 1) || '?',
+                                            ownerId: myId || 'local-user',
+                                            ownerName: myName || '玩家'
+                                        };
+                                        const updatedTab = {
+                                            ...activeTab,
+                                            tokens: [...currentTokens, newToken]
+                                        };
+                                        onChange({
+                                            ...project,
+                                            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                        });
+                                        setContextMenuCell(null);
+                                    }}
+                                    className="flex-1 h-7 bg-[#ff832b] text-white hover:bg-[#e86c14] text-[10px] font-mono font-medium transition-colors flex items-center justify-center shadow-sm"
+                                >
+                                    放置
+                                </button>
+                            </div>
                         </div>
 
+                        {/* Existing cell tokens deletion */}
+                        {(() => {
+                            const cellTokens = (activeTab.tokens || []).filter(
+                                t => t.q === contextMenuCell.q && t.r === contextMenuCell.r
+                            );
+                            if (cellTokens.length === 0) return null;
+                            return (
+                                <div className="border-b border-ibm-border/30 pb-2 mb-1">
+                                    <div className="px-4 py-1.5 text-[9px] font-mono text-ibm-textSecondary uppercase tracking-wider">
+                                        地块指示物列表
+                                    </div>
+                                    <div className="px-4 space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar">
+                                        {cellTokens.map(token => {
+                                            const canDelete = actualIsHost || token.ownerId === myId;
+                                            return (
+                                                <div key={token.id} className="flex items-center justify-between gap-1 text-[11px] text-ibm-text">
+                                                    <div className="flex items-center gap-1.5 truncate">
+                                                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: token.color }} />
+                                                        <span className="font-bold shrink-0">[{token.label}]</span>
+                                                        <span className="text-[10px] text-ibm-textSecondary truncate">{token.ownerName}</span>
+                                                    </div>
+                                                    {canDelete && (
+                                                        <button
+                                                            onClick={() => {
+                                                                const updatedTab = {
+                                                                    ...activeTab,
+                                                                    tokens: (activeTab.tokens || []).filter(t => t.id !== token.id)
+                                                                };
+                                                                onChange({
+                                                                    ...project,
+                                                                    tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                                                });
+                                                                setContextMenuCell(null);
+                                                            }}
+                                                            className="text-[#fa4d56] hover:text-[#da1e28] font-mono text-[9px]"
+                                                        >
+                                                            删除
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         {/* Clear Cell */}
-                        <button
-                            onClick={() => {
-                                if (confirm('确定清空该地块的颜色和所有备注内容层吗？')) {
-                                    handleUpdateCell(contextMenuCell.q, contextMenuCell.r, { color: undefined, entries: [] });
-                                }
-                                setContextMenuCell(null);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-ibm-danger/10 hover:text-ibm-danger text-ibm-text flex items-center gap-2"
-                        >
-                            <span>❌</span> <span>清空该地块 (Clear)</span>
-                        </button>
+                        {hasEditPermission && (
+                            <button
+                                onClick={() => {
+                                    if (confirm('确定清空该地块的颜色和所有备注内容层吗？')) {
+                                        handleUpdateCell(contextMenuCell.q, contextMenuCell.r, { color: undefined, entries: [] });
+                                    }
+                                    setContextMenuCell(null);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-ibm-danger/10 hover:text-ibm-danger text-ibm-text flex items-center gap-2 border-b border-ibm-border/30"
+                            >
+                                <span>❌</span> <span>清空该地块 (Clear)</span>
+                            </button>
+                        )}
 
                         {/* Cancel */}
                         <button
@@ -500,14 +688,14 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
                 {/* Grid cell details drawer */}
                 <CellNotePanel
-                    isOpen={selectedCell !== null}
+                    isOpen={selectedCell !== null && hasEditPermission}
                     onClose={() => setSelectedCell(null)}
                     q={selectedCell?.q || 0}
                     r={selectedCell?.r || 0}
                     cellData={selectedCellData}
                     myName={myName}
                     onUpdateCell={(updatedData) => {
-                        if (selectedCell) {
+                        if (selectedCell && hasEditPermission) {
                             handleUpdateCell(selectedCell.q, selectedCell.r, updatedData);
                         }
                     }}

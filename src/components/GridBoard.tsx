@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Line, Text, Rect, Image as KonvaImage } from 'react-konva';
-import type { WhiteboardTab } from '../features/whiteboards/types';
+import { Stage, Layer, Line, Text, Rect, Image as KonvaImage, Group, Circle } from 'react-konva';
+import type { WhiteboardTab, WhiteboardToken } from '../features/whiteboards/types';
 import React from 'react';
 
 // POINTY-TOPPED HEXAGON GEOMETRY CONSTANTS & HELPERS
@@ -59,9 +59,13 @@ interface GridBoardProps {
     selectedCell: { q: number; r: number } | null;
     recenterTrigger: number; // Trigger recenter when this changes
     onCellInteraction: (event: CellInteractionEvent) => void;
+    allowedEditors?: string[];
+    myId?: string;
+    isHost?: boolean;
+    onUpdateTokens?: (tokens: WhiteboardToken[]) => void;
 }
 
-export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteraction }: GridBoardProps) {
+export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteraction, allowedEditors, myId, isHost, onUpdateTokens }: GridBoardProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
     
@@ -480,6 +484,83 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                             />
                         )
                     )}
+                </Layer>
+
+                {/* 4. Draggable Circular Tokens Layer */}
+                <Layer>
+                    {(tab.tokens || []).map((token) => {
+                        const { cx, cy } = isHex
+                            ? getHexCenter(token.q, token.r)
+                            : { cx: (token.q + 0.5) * gridSize, cy: (token.r + 0.5) * gridSize };
+
+                        const isDraggable = !!isHost || myId === token.ownerId || (allowedEditors || []).includes(myId || '');
+
+                        return (
+                            <Group
+                                key={`token-${token.id}`}
+                                x={cx}
+                                y={cy}
+                                draggable={isDraggable}
+                                onDragStart={(e) => {
+                                    e.target.scale({ x: 1.15, y: 1.15 });
+                                    e.target.getLayer()?.batchDraw();
+                                }}
+                                onDragEnd={(e) => {
+                                    e.target.scale({ x: 1, y: 1 });
+                                    const dropX = e.target.x();
+                                    const dropY = e.target.y();
+                                    
+                                    let newQ = 0;
+                                    let newR = 0;
+                                    if (isHex) {
+                                        const coords = pixelToHex(dropX, dropY);
+                                        newQ = coords.q;
+                                        newR = coords.r;
+                                    } else {
+                                        newQ = Math.floor(dropX / gridSize);
+                                        newR = Math.floor(dropY / gridSize);
+                                    }
+                                    
+                                    const snappedCx = isHex ? getHexCenter(newQ, newR).cx : (newQ + 0.5) * gridSize;
+                                    const snappedCy = isHex ? getHexCenter(newQ, newR).cy : (newR + 0.5) * gridSize;
+                                        
+                                    e.target.position({ x: snappedCx, y: snappedCy });
+                                    e.target.getLayer()?.batchDraw();
+
+                                    if (onUpdateTokens && tab.tokens) {
+                                        const updated = tab.tokens.map(t =>
+                                            t.id === token.id ? { ...t, q: newQ, r: newR } : t
+                                        );
+                                        onUpdateTokens(updated);
+                                    }
+                                }}
+                            >
+                                <Circle
+                                    radius={18}
+                                    fill={token.color}
+                                    stroke="#ffffff"
+                                    strokeWidth={2}
+                                    shadowBlur={6}
+                                    shadowColor="#000000"
+                                    shadowOpacity={0.4}
+                                    shadowOffset={{ x: 1.5, y: 1.5 }}
+                                />
+                                <Text
+                                    text={token.label}
+                                    fill="#ffffff"
+                                    fontSize={12}
+                                    fontStyle="bold"
+                                    align="center"
+                                    verticalAlign="middle"
+                                    offsetX={9}
+                                    offsetY={6}
+                                    width={18}
+                                    height={12}
+                                    listening={false}
+                                />
+                            </Group>
+                        );
+                    })}
                 </Layer>
             </Stage>
         </div>
