@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Line, Text, Rect, Image as KonvaImage, Group, Circle } from 'react-konva';
-import type { WhiteboardTab, WhiteboardToken } from '../features/whiteboards/types';
+import type { WhiteboardTab, WhiteboardToken, WallSegment } from '../features/whiteboards/types';
 import React from 'react';
 
 // POINTY-TOPPED HEXAGON GEOMETRY CONSTANTS & HELPERS
@@ -63,9 +63,24 @@ interface GridBoardProps {
     myId?: string;
     isHost?: boolean;
     onUpdateTokens?: (tokens: WhiteboardToken[]) => void;
+    wallDrawingMode?: 'wall' | 'door' | 'window' | 'delete' | null;
+    wallThicknessMode?: 'thin' | 'standard' | 'massive';
+    onUpdateWalls?: (walls: WallSegment[]) => void;
 }
 
-export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteraction, allowedEditors, myId, isHost, onUpdateTokens }: GridBoardProps) {
+export function GridBoard({ 
+    tab, 
+    selectedCell, 
+    recenterTrigger, 
+    onCellInteraction, 
+    allowedEditors, 
+    myId, 
+    isHost, 
+    onUpdateTokens,
+    wallDrawingMode = null,
+    wallThicknessMode = 'standard',
+    onUpdateWalls
+}: GridBoardProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
     
@@ -88,6 +103,144 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         return () => observer.disconnect();
     }, []);
+
+    const [drawingWall, setDrawingWall] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
+    const [hoveredWallId, setHoveredWallId] = useState<string | null>(null);
+
+    // Transform stage absolute screen position back to logical coordinate space
+    const getStageLogicalPosition = () => {
+        const stage = stageRef.current;
+        if (!stage) return null;
+        const pointer = stage.getPointerPosition();
+        if (!pointer) return null;
+        
+        const lx = (pointer.x - pos.x) / scale;
+        const ly = (pointer.y - pos.y) / scale;
+        return { x: lx, y: ly };
+    };
+
+    // Calculate distance from point (px, py) to line segment (x1, y1) -> (x2, y2) in grid units
+    const getDistanceToSegment = (px: number, py: number, x1: number, y1: number, x2: number, y2: number) => {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) return Math.sqrt((px - x1)**2 + (py - y1)**2);
+        
+        let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        
+        const projX = x1 + t * dx;
+        const projY = y1 + t * dy;
+        
+        return Math.sqrt((px - projX)**2 + (py - projY)**2);
+    };
+
+    const handleDeleteWallAt = (lx: number, ly: number) => {
+        if (isHex || !onUpdateWalls) return;
+        const currentWalls = tab.walls || [];
+        const gridX = lx / gridSize;
+        const gridY = ly / gridSize;
+        
+        const wallToDelete = currentWalls.find(w => {
+            const dist = getDistanceToSegment(gridX, gridY, w.startX, w.startY, w.endX, w.endY);
+            return dist < 0.25; // Snapping distance
+        });
+        
+        if (wallToDelete) {
+            onUpdateWalls(currentWalls.filter(w => w.id !== wallToDelete.id));
+        }
+    };
+
+    const handleMouseDown = (e: any) => {
+        if (!wallDrawingMode || isHex) return;
+        
+        // Ignore right clicks
+        if (e.evt.button === 2) return;
+        
+        const logicalPos = getStageLogicalPosition();
+        if (!logicalPos) return;
+        
+        if (wallDrawingMode === 'delete') {
+            handleDeleteWallAt(logicalPos.x, logicalPos.y);
+            return;
+        }
+        
+        // Snap to nearest 0.5 coordinate increments (vertices or midpoints)
+        const snapX = Math.round((logicalPos.x / gridSize) * 2) / 2;
+        const snapY = Math.round((logicalPos.y / gridSize) * 2) / 2;
+        
+        setDrawingWall({
+            startX: snapX,
+            startY: snapY,
+            currentX: snapX,
+            currentY: snapY
+        });
+    };
+
+    const handleMouseMove = () => {
+        if (isHex) return;
+        
+        const logicalPos = getStageLogicalPosition();
+        if (!logicalPos) return;
+        
+        if (wallDrawingMode === 'delete') {
+            const currentWalls = tab.walls || [];
+            const gridX = logicalPos.x / gridSize;
+            const gridY = logicalPos.y / gridSize;
+            
+            const wallNear = currentWalls.find(w => {
+                const dist = getDistanceToSegment(gridX, gridY, w.startX, w.startY, w.endX, w.endY);
+                return dist < 0.25;
+            });
+            
+            setHoveredWallId(wallNear ? wallNear.id : null);
+            return;
+        }
+        
+        if (!drawingWall || !wallDrawingMode) return;
+        
+        const snapX = Math.round((logicalPos.x / gridSize) * 2) / 2;
+        const snapY = Math.round((logicalPos.y / gridSize) * 2) / 2;
+        
+        setDrawingWall(prev => prev ? {
+            ...prev,
+            currentX: snapX,
+            currentY: snapY
+        } : null);
+    };
+
+    const handleMouseUp = () => {
+        if (!drawingWall || !wallDrawingMode || isHex) return;
+        
+        const startX = drawingWall.startX;
+        const startY = drawingWall.startY;
+        const endX = drawingWall.currentX;
+        const endY = drawingWall.currentY;
+        
+        setDrawingWall(null);
+        
+        if (startX === endX && startY === endY) return;
+        
+        const newWall: WallSegment = {
+            id: 'wall-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5),
+            type: wallDrawingMode as 'wall' | 'door' | 'window',
+            thickness: wallThicknessMode || 'standard',
+            startX,
+            startY,
+            endX,
+            endY
+        };
+        
+        const currentWalls = tab.walls || [];
+        const isDuplicate = currentWalls.some(
+            w => (w.startX === startX && w.startY === startY && w.endX === endX && w.endY === endY) ||
+                 (w.startX === endX && w.startY === endY && w.endX === startX && w.endY === startY)
+        );
+        
+        if (!isDuplicate && onUpdateWalls) {
+            onUpdateWalls([...currentWalls, newWall]);
+        }
+    };
 
     // Handle container resize
     useEffect(() => {
@@ -207,6 +360,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
         };
 
         const handleStageClick = (e: any) => {
+            if (wallDrawingMode) return;
             const stage = stageRef.current;
             if (!stage) return;
             if (stage.isDragging()) return;
@@ -229,6 +383,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
 
         const handleContextMenu = (e: any) => {
             e.evt.preventDefault();
+            if (wallDrawingMode) return;
             const coords = getEventCoords();
             if (coords) {
                 onCellInteraction({ type: 'contextmenu', ...coords });
@@ -236,6 +391,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
         };
 
         const handleTouchStart = () => {
+            if (wallDrawingMode) return;
             const stage = stageRef.current;
             if (!stage) return;
             touchStartRef.current = Date.now();
@@ -327,6 +483,176 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
         c => c.color || c.entries.length > 0
     );
 
+    // Render preview and existing walls
+    const renderWalls = () => {
+        if (isHex) return null;
+        
+        const wallsList = tab.walls || [];
+        
+        return (
+            <Group>
+                {/* 1. Existing walls */}
+                {wallsList.map((wall) => {
+                    const x1 = wall.startX * gridSize;
+                    const y1 = wall.startY * gridSize;
+                    const x2 = wall.endX * gridSize;
+                    const y2 = wall.endY * gridSize;
+                    
+                    const dx = x2 - x1;
+                    const dy = y2 - y1;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    if (len === 0) return null;
+                    
+                    // Width based on thickness prop
+                    const thicknessWidth = 
+                        wall.thickness === 'thin' ? 3 :
+                        wall.thickness === 'massive' ? 16 : 8; // standard = 8
+                        
+                    const isHovered = wall.id === hoveredWallId && wallDrawingMode === 'delete';
+                    
+                    if (wall.type === 'wall') {
+                        // Blueprint style rendering: double-outline CAD style
+                        return (
+                            <Group key={`wall-${wall.id}`}>
+                                {/* Outer Shadow & stroke */}
+                                <Line
+                                    points={[x1, y1, x2, y2]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#161616' : '#262626')}
+                                    strokeWidth={thicknessWidth}
+                                    shadowColor="#000000"
+                                    shadowBlur={4}
+                                    shadowOpacity={0.4}
+                                    shadowOffset={{ x: 1, y: 1 }}
+                                    lineCap="round"
+                                />
+                                {/* Inner fill */}
+                                {thicknessWidth > 3 && (
+                                    <Line
+                                        points={[x1, y1, x2, y2]}
+                                        stroke={isHovered ? '#ff832b' : (isDarkMode ? '#8d8d8d' : '#e0e0e0')}
+                                        strokeWidth={thicknessWidth - 4}
+                                        lineCap="round"
+                                    />
+                                )}
+                            </Group>
+                        );
+                    } else if (wall.type === 'door') {
+                        // Professional blueprint door swing
+                        const angle = 45 * Math.PI / 180;
+                        const rx = (dx * Math.cos(angle) - dy * Math.sin(angle)) * 0.8;
+                        const ry = (dx * Math.sin(angle) + dy * Math.cos(angle)) * 0.8;
+                        const doorOpenX = x1 + rx;
+                        const doorOpenY = y1 + ry;
+                        
+                        // Perpendicular vectors for door jambs
+                        const ux = -dy / len;
+                        const uy = dx / len;
+                        const jambLength = thicknessWidth + 4;
+                        
+                        return (
+                            <Group key={`door-${wall.id}`}>
+                                {/* Swing Arc (dotted thin line) */}
+                                <Line
+                                    points={[doorOpenX, doorOpenY, x2, y2]}
+                                    stroke={isHovered ? '#fa4d56' : '#ff832b'}
+                                    strokeWidth={1}
+                                    dash={[2, 2]}
+                                />
+                                {/* Door Pane (orange block/line) */}
+                                <Line
+                                    points={[x1, y1, doorOpenX, doorOpenY]}
+                                    stroke={isHovered ? '#fa4d56' : '#ff832b'}
+                                    strokeWidth={Math.max(2, thicknessWidth / 2)}
+                                    lineCap="round"
+                                />
+                                {/* Door Jamb 1 */}
+                                <Line
+                                    points={[x1 - ux * jambLength / 2, y1 - uy * jambLength / 2, x1 + ux * jambLength / 2, y1 + uy * jambLength / 2]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#393939')}
+                                    strokeWidth={2}
+                                />
+                                {/* Door Jamb 2 */}
+                                <Line
+                                    points={[x2 - ux * jambLength / 2, y2 - uy * jambLength / 2, x2 + ux * jambLength / 2, y2 + uy * jambLength / 2]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#393939')}
+                                    strokeWidth={2}
+                                />
+                            </Group>
+                        );
+                    } else if (wall.type === 'window') {
+                        // Window: Glass cyan center flanked by thin double lines
+                        const ux = -dy / len;
+                        const uy = dx / len;
+                        const spacing = Math.max(2, thicknessWidth / 3);
+                        
+                        return (
+                            <Group key={`window-${wall.id}`}>
+                                {/* Background fill bar */}
+                                <Line
+                                    points={[x1, y1, x2, y2]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#262626' : '#f4f4f4')}
+                                    strokeWidth={thicknessWidth}
+                                    lineCap="square"
+                                />
+                                {/* Main cyan glass core */}
+                                <Line
+                                    points={[x1, y1, x2, y2]}
+                                    stroke={isHovered ? '#fa4d56' : '#00d8ff'}
+                                    strokeWidth={2}
+                                />
+                                {/* Outer flanking lines */}
+                                <Line
+                                    points={[x1 + ux * spacing, y1 + uy * spacing, x2 + ux * spacing, y2 + uy * spacing]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#525252')}
+                                    strokeWidth={1}
+                                />
+                                <Line
+                                    points={[x1 - ux * spacing, y1 - uy * spacing, x2 - ux * spacing, y2 - uy * spacing]}
+                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#525252')}
+                                    strokeWidth={1}
+                                />
+                            </Group>
+                        );
+                    }
+                    return null;
+                })}
+                
+                {/* 2. Drawing preview line */}
+                {drawingWall && (
+                    <Group>
+                        <Line
+                            points={[
+                                drawingWall.startX * gridSize,
+                                drawingWall.startY * gridSize,
+                                drawingWall.currentX * gridSize,
+                                drawingWall.currentY * gridSize
+                            ]}
+                            stroke="#ff832b"
+                            strokeWidth={
+                                wallThicknessMode === 'thin' ? 3 :
+                                wallThicknessMode === 'massive' ? 16 : 8
+                            }
+                            opacity={0.6}
+                            dash={[4, 4]}
+                        />
+                        <Circle
+                            x={drawingWall.startX * gridSize}
+                            y={drawingWall.startY * gridSize}
+                            radius={5}
+                            fill="#ff832b"
+                        />
+                        <Circle
+                            x={drawingWall.currentX * gridSize}
+                            y={drawingWall.currentY * gridSize}
+                            radius={5}
+                            fill="#ff832b"
+                        />
+                    </Group>
+                )}
+            </Group>
+        );
+    };
+
     return (
         <div 
             ref={containerRef} 
@@ -337,7 +663,7 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                 ref={stageRef}
                 width={dimensions.width}
                 height={dimensions.height}
-                draggable
+                draggable={!wallDrawingMode}
                 onWheel={handleWheel}
                 onDragStart={() => {
                     onCellInteraction({ type: 'dragstart', q: 0, r: 0, screenX: 0, screenY: 0 });
@@ -345,8 +671,18 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                 onDragEnd={handleDragEnd}
                 onClick={handleStageClick}
                 onContextMenu={handleContextMenu}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
+                onTouchStart={(e) => {
+                    handleTouchStart();
+                    handleMouseDown(e);
+                }}
+                onTouchEnd={() => {
+                    handleTouchEnd();
+                    handleMouseUp();
+                }}
+                onTouchMove={handleMouseMove}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
                 x={pos.x}
                 y={pos.y}
                 scaleX={scale}
@@ -506,6 +842,11 @@ export function GridBoard({ tab, selectedCell, recenterTrigger, onCellInteractio
                             />
                         )
                     )}
+                </Layer>
+
+                {/* 3.5. Vector snapped walls, doors, windows layer */}
+                <Layer>
+                    {renderWalls()}
                 </Layer>
 
                 {/* 4. Draggable Circular Tokens Layer */}

@@ -7,7 +7,7 @@ const STORAGE_KEY = 'mock_whiteboards';
 export async function getMyWhiteboards(userId: string): Promise<WhiteboardProject[]> {
     const data = await Storage.get<WhiteboardProject[]>(STORAGE_KEY);
     if (!data) return [];
-    return data.filter(w => w.userId === userId);
+    return data.filter(w => w.userId === userId || w.userId === 'local-user');
 }
 
 // Get a single whiteboard by ID

@@ -44,7 +44,13 @@ class MqttService {
 
     public connectGlobal(roomId: string | null = null, isHost: boolean = false) {
         if (this.client) return;
-        this.myId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
+        
+        let savedId = localStorage.getItem('dice_roller_my_id');
+        if (!savedId) {
+            savedId = (isHost ? 'host-' : 'player-') + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('dice_roller_my_id', savedId);
+        }
+        this.myId = savedId;
         
         const connectOptions: any = {
             keepalive: 10 // Set short keepalive (10 seconds) for super fast crash detection

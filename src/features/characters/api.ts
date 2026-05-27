@@ -7,7 +7,7 @@ const STORAGE_KEY = 'mock_characters';
 export async function getMyCharacters(userId: string): Promise<Character[]> {
     const data = await Storage.get<Character[]>(STORAGE_KEY);
     if (!data) return [];
-    return data.filter(c => c.userId === userId);
+    return data.filter(c => c.userId === userId || c.userId === 'local-user');
 }
 
 // 模拟 API: 获取单张角色卡

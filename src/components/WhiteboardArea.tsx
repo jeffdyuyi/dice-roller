@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { WhiteboardProject, WhiteboardTab, CellData } from '../features/whiteboards/types';
+import type { WhiteboardProject, WhiteboardTab, CellData, WallSegment } from '../features/whiteboards/types';
 import { GridBoard } from './GridBoard';
 import { CellNotePanel, TERRAIN_COLORS } from './CellNotePanel';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -38,6 +38,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     const [tokenColor, setTokenColor] = useState('#ff832b');
     const [tokenLabel, setTokenLabel] = useState('战');
 
+    const [wallDrawingMode, setWallDrawingMode] = useState<'wall' | 'door' | 'window' | 'delete' | null>(null);
+    const [wallThicknessMode, setWallThicknessMode] = useState<'thin' | 'standard' | 'massive'>('standard');
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [bounds, setBounds] = useState({ width: 800, height: 600 });
@@ -55,6 +58,14 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
         ro.observe(containerRef.current);
         return () => ro.disconnect();
     }, []);
+
+    // Automatically trigger recenter whenever the active page tab is opened/changed
+    useEffect(() => {
+        if (activeTabId) {
+            setRecenterTrigger(prev => prev + 1);
+            setWallDrawingMode(null);
+        }
+    }, [activeTabId]);
 
     const activeTab = project.tabs.find(t => t.id === activeTabId) || project.tabs[0];
 
@@ -111,6 +122,18 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
         });
     };
 
+    const handleUpdateWalls = (updatedWalls: WallSegment[]) => {
+        if (!activeTab || !hasEditPermission) return;
+        const updatedTab = {
+            ...activeTab,
+            walls: updatedWalls
+        };
+        onChange({
+            ...project,
+            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+        });
+    };
+
     const handleCreateTab = () => {
         if (!newTabName.trim()) return;
         const newTab: WhiteboardTab = {
@@ -157,6 +180,24 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     const handleBgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !activeTab) return;
+
+        // Check file size (5MB threshold)
+        const sizeInMB = file.size / (1024 * 1024);
+        if (sizeInMB > 5.0) {
+            const confirmUpload = confirm(
+                `⚠️ 警告：当前上传的地图底图体积为 ${sizeInMB.toFixed(2)}MB，已超出系统推荐的 5MB 限制！\n\n` +
+                `虽然本地数据库支持储存，但过大的图片在实际跑团中极易引发以下问题：\n` +
+                `1. 联机大厅向其他玩家广播同步地图时，极易因数据过大导致同步超时或失败。\n` +
+                `2. 浏览器画布渲染特大图片时，可能在移动指示物时产生明显的拖拽延迟与卡顿。\n` +
+                `3. 超出浏览器 LocalStorage 的备份限制，导致无法在旧设备上兼容还原。\n\n` +
+                `【强烈建议】：使用图片压缩工具将底图处理至 5MB 以内再行上传。\n\n` +
+                `您确定要强行继续上传当前 ${sizeInMB.toFixed(2)}MB 的底图吗？`
+            );
+            if (!confirmUpload) {
+                e.target.value = ''; // Reset file input
+                return;
+            }
+        }
 
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -382,6 +423,117 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
             {/* Core Canvas Area */}
             <div ref={containerRef} className="flex-1 w-full relative">
+                {/* Snapped Vector Floorplan Drawing Floating Sidebar */}
+                {activeTab && activeTab.gridType === 'square' && hasEditPermission && (
+                    <div className="absolute left-4 top-4 z-40 bg-ibm-layer/95 border border-ibm-border shadow-2xl p-2.5 flex flex-col gap-3 rounded backdrop-blur-md transition-all w-[54px]" style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}>
+                        <div className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-b border-ibm-border pb-1.5 font-bold">
+                            地城
+                        </div>
+                        
+                        {/* Drawing mode buttons */}
+                        <div className="flex flex-col gap-1.5">
+                            <button
+                                onClick={() => setWallDrawingMode(prev => prev === 'wall' ? null : 'wall')}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    wallDrawingMode === 'wall'
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="绘制墙体 (Wall)"
+                            >
+                                <span>🧱</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    绘制墙体 (Wall)
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => setWallDrawingMode(prev => prev === 'door' ? null : 'door')}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    wallDrawingMode === 'door'
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="放置门 (Door)"
+                            >
+                                <span>🚪</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    放置门 (Door)
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => setWallDrawingMode(prev => prev === 'window' ? null : 'window')}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    wallDrawingMode === 'window'
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="绘制窗户 (Window)"
+                            >
+                                <span>🪟</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    绘制窗户 (Window)
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => setWallDrawingMode(prev => prev === 'delete' ? null : 'delete')}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    wallDrawingMode === 'delete'
+                                        ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="擦除线条 (Eraser)"
+                            >
+                                <span>🧹</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    擦除线条 (Eraser)
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* Thickness selector */}
+                        {['wall', 'door', 'window'].includes(wallDrawingMode || '') && (
+                            <div className="flex flex-col gap-1 border-t border-ibm-border pt-2">
+                                <p className="text-[8px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center mb-1">
+                                    粗细
+                                </p>
+                                <button
+                                    onClick={() => setWallThicknessMode('thin')}
+                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                        wallThicknessMode === 'thin'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
+                                    }`}
+                                >
+                                    Thin
+                                </button>
+                                <button
+                                    onClick={() => setWallThicknessMode('standard')}
+                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                        wallThicknessMode === 'standard'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
+                                    }`}
+                                >
+                                    Std
+                                </button>
+                                <button
+                                    onClick={() => setWallThicknessMode('massive')}
+                                    className={`w-[32px] h-[22px] rounded text-[9px] font-mono transition-all mx-auto border ${
+                                        wallThicknessMode === 'massive'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
+                                    }`}
+                                >
+                                    Thick
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {activeTab ? (
                     <GridBoard
                         tab={activeTab}
@@ -405,6 +557,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
                             });
                         }}
+                        wallDrawingMode={wallDrawingMode}
+                        wallThicknessMode={wallThicknessMode}
+                        onUpdateWalls={handleUpdateWalls}
                     />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-ibm-textSecondary">

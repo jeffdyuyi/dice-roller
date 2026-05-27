@@ -23,6 +23,16 @@ export interface WhiteboardToken {
     ownerName: string; // player name who placed it
 }
 
+export interface WallSegment {
+    id: string;
+    type: 'wall' | 'door' | 'window';
+    thickness: 'thin' | 'standard' | 'massive';
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+}
+
 export interface WhiteboardTab {
     id: string;
     name: string;
@@ -31,6 +41,7 @@ export interface WhiteboardTab {
     bgOpacity?: number; // 0 to 1
     cells: Record<string, CellData>; // Keyed by "q,r" or "x,y"
     tokens?: WhiteboardToken[]; // Player circular draggable tokens
+    walls?: WallSegment[]; // List of snapped wall/door/window segments
 }
 
 export interface WhiteboardProject {

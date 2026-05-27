@@ -58,7 +58,14 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [diceHistory, setDiceHistory] = useState<unknown[]>([]);
     const [latestRoll, setLatestRoll] = useState<unknown | null>(null);
     const [activeCharacter, setActiveCharacter] = useState<Character | null>(null);
-    const [myName, setMyName] = useState('Player-' + Math.floor(Math.random() * 1000));
+    const [myName, setMyName] = useState(() => {
+        let savedName = localStorage.getItem('dice_roller_my_name');
+        if (!savedName) {
+            savedName = 'Player-' + Math.floor(Math.random() * 1000);
+            localStorage.setItem('dice_roller_my_name', savedName);
+        }
+        return savedName;
+    });
     const [isManagerOpen, setManagerOpen] = useState(false);
     const [connectionError, setConnectionError] = useState<string | null>(null);
     const [latestNotification, setLatestNotification] = useState<{ message: string, type: 'info' | 'success' | 'error' } | null>(null);
@@ -319,6 +326,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const createRoom = useCallback((name: string, rid: string, rName: string, template: any | null, starterBoard?: WhiteboardProject | null) => {
         setMyName(name);
+        localStorage.setItem('dice_roller_my_name', name);
         setRoomName(rName);
         setRoomTemplate(template);
         setHostName(name); // Set hostName as room creator name
@@ -351,6 +359,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const joinRoom = useCallback((name: string, rid: string, charInfo?: unknown) => {
         if (!rid) return;
         setMyName(name);
+        localStorage.setItem('dice_roller_my_name', name);
         setCommState('WAITING');
         if (charInfo) {
             setActiveCharacter(charInfo as Character);
