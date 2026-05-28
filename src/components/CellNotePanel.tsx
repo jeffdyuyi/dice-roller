@@ -10,7 +10,7 @@ export const TERRAIN_COLORS = [
     { hex: '#8e8d8a', label: '岩山' },
     { hex: '#d8c3a5', label: '沙漠' },
     { hex: '#d9825e', label: '熔岩' },
-    { hex: '#4b604f', label: '森林' },
+    { hex: '#1d5229', label: '森林' },
     { hex: '#6b3e26', label: '泥地' },
     { hex: '#2d2d2d', label: '暗域' },
 ];
@@ -322,12 +322,6 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
 
     if (!isOpen) return null;
 
-    const handleColorClick = (hex: string) => {
-        const nc = currentColor === hex ? '' : hex;
-        setCurrentColor(nc);
-        onUpdateCell({ color: nc || undefined });
-    };
-
     const handleUpdateEntry = (entryId: string, fields: Partial<CellNoteEntry>) => {
         const updated = entries.map(e => e.id === entryId ? { ...e, ...fields } : e);
         setEntries(updated);
@@ -419,30 +413,46 @@ export function CellNotePanel({ isOpen, onClose, q, r, cellData, myName, onUpdat
 
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {/* === Color Section === */}
+                {/* === Custom Color Section === */}
                 <div className="px-4 py-3 border-b border-ibm-border">
-                    <p className="text-[10px] font-mono text-ibm-textSecondary uppercase mb-2">🎨 地貌背景色 (即选即生效)</p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {TERRAIN_COLORS.map(item => (
-                            <div key={item.hex} className="flex flex-col items-center gap-0.5">
+                    <p className="text-[10px] font-mono text-ibm-textSecondary uppercase mb-2.5">🎨 地块自定义背景色</p>
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-8 h-8 rounded border border-ibm-borderStrong overflow-hidden shrink-0 flex items-center justify-center bg-ibm-background">
+                            <input
+                                type="color"
+                                value={currentColor || '#161616'}
+                                onChange={(e) => {
+                                    setCurrentColor(e.target.value);
+                                    onUpdateCell({ color: e.target.value });
+                                }}
+                                className="absolute inset-0 w-full h-full p-0 border-0 cursor-pointer opacity-100 scale-150"
+                                title="点击选择自定义颜色"
+                            />
+                        </div>
+                        <div className="flex-grow flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="#ffffff 或 颜色名称"
+                                value={currentColor}
+                                onChange={(e) => {
+                                    setCurrentColor(e.target.value);
+                                    onUpdateCell({ color: e.target.value || undefined });
+                                }}
+                                className="flex-grow bg-ibm-background text-ibm-text border border-ibm-border px-2.5 py-1 text-[11px] font-mono outline-none"
+                                title="可手动录入 Hex 颜色代码值"
+                            />
+                            {currentColor && (
                                 <button
-                                    type="button"
-                                    onClick={() => handleColorClick(item.hex)}
-                                    className={`w-7 h-7 rounded-full transition-all ${currentColor === item.hex
-                                        ? 'ring-2 ring-offset-1 ring-ibm-text scale-110 ring-offset-ibm-layer'
-                                        : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
-                                    style={{ backgroundColor: item.hex }}
-                                    title={item.label}
-                                />
-                                <span className="text-[8px] font-mono text-ibm-textSecondary">{item.label}</span>
-                            </div>
-                        ))}
-                        {currentColor && (
-                            <button onClick={() => handleColorClick(currentColor)}
-                                className="text-[10px] font-mono text-ibm-textSecondary hover:text-ibm-text border border-ibm-border px-2 py-0.5 hover:bg-ibm-layerHover transition-all ml-1">
-                                清除
-                            </button>
-                        )}
+                                    onClick={() => {
+                                        setCurrentColor('');
+                                        onUpdateCell({ color: undefined });
+                                    }}
+                                    className="text-[10px] font-mono text-[#fa4d56] hover:text-white border border-[#fa4d56]/40 hover:border-[#fa4d56] hover:bg-[#fa4d56] px-2.5 py-1 transition-all shrink-0 cursor-pointer"
+                                >
+                                    清除颜色
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
