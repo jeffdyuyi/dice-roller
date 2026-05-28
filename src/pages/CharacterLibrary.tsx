@@ -337,7 +337,7 @@ export function CharacterLibrary() {
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-12 h-12 bg-ibm-background flex items-center justify-center text-ibm-text font-mono font-medium text-lg border border-ibm-border group-hover:border-[#ff832b] transition-colors">
+                                    <div className="w-12 h-12 rounded-full bg-ibm-primary/10 flex items-center justify-center text-ibm-primary font-mono font-bold text-lg border border-transparent shadow-inner select-none">
                                         {c.name ? c.name[0] : '角'}
                                     </div>
                                     <div className="truncate flex-1">
@@ -348,10 +348,12 @@ export function CharacterLibrary() {
                                     </div>
                                 </div>
                                 <div className="mt-auto pt-4 border-t border-ibm-border/40 flex justify-between items-center">
-                                    <span className="text-[12px] text-ibm-textSecondary font-mono uppercase px-2 py-0.5 border border-ibm-border">
-                                        {c.summary || '备忘库存'}
+                                    <span className="text-[12px] text-ibm-textPlaceholder font-sans">
+                                        {c.summary || '普通角色卡'}
                                     </span>
-                                    <span className="text-[12px] text-ibm-primary group-hover:text-[#ff832b] transition-colors">查看管理 →</span>
+                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] transition-all cursor-pointer shadow-sm">
+                                        查看管理 →
+                                    </span>
                                 </div>
                             </div>
                         ))}

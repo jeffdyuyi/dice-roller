@@ -256,7 +256,9 @@ export function WhiteboardLibrary() {
                                     标签数: {b.tabs.length} · 更新于 {new Date(b.updatedAt).toLocaleDateString()}
                                 </p>
                                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-ibm-border/40">
-                                    <span className="text-[12px] text-ibm-primary group-hover:underline">编辑网格 →</span>
+                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] transition-all cursor-pointer shadow-sm">
+                                        编辑网格 →
+                                    </span>
                                     {commState === 'CONNECTED' && isHost && (
                                         <button
                                             onClick={(e) => {
@@ -266,7 +268,7 @@ export function WhiteboardLibrary() {
                                                     alert(`白板 [${b.name}] 已载入房间并同步！`);
                                                 }
                                             }}
-                                            className="h-7 px-3 bg-ibm-primary hover:bg-ibm-primaryHover text-ibm-textOnColor text-xs transition-all border border-ibm-primary"
+                                            className="h-8 px-3 border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] text-xs font-mono font-bold transition-all shadow-sm"
                                         >
                                             🚀 载入至房间
                                         </button>
