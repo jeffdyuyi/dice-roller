@@ -414,9 +414,9 @@ export function MemoCardManager() {
                         <div className="flex gap-2">
                             <button
                                 onClick={handleCreateOrUpdateHandout}
-                                className="flex-1 bg-ibm-primary text-ibm-textOnColor py-2 text-xs font-mono uppercase font-bold tracking-wider hover:bg-ibm-primaryHover transition-colors"
+                                className="flex-1 bg-[#ff832b] border border-[#ff832b] text-white py-2 text-xs font-mono font-bold uppercase tracking-wider hover:bg-[#e86c14] hover:border-[#e86c14] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shadow-sm"
                             >
-                                {editingTemplateId ? '更新备忘卡' : '+ 创建备忘卡模板'}
+                                {editingTemplateId ? '保存更新' : '创建模板'}
                             </button>
                             {editingTemplateId && (
                                 <button
@@ -540,9 +540,9 @@ export function MemoCardManager() {
                             />
                             <button
                                 onClick={handleCreateChar}
-                                className="w-full bg-[#ff832b] hover:bg-[#e86c14] text-white py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider transition-colors"
+                                className="w-full bg-[#ff832b] border border-[#ff832b] hover:bg-[#e86c14] hover:border-[#e86c14] text-white py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all cursor-pointer shadow-sm"
                             >
-                                确认塑造角色卡
+                                塑造角色
                             </button>
                         </div>
                     </div>
@@ -626,20 +626,19 @@ export function MemoCardManager() {
                                 {activeCharacter ? `[${activeCharacter.name}] 的个人备忘看板` : '角色手记与线索'}
                             </h2>
                         </div>
-
                         {activeCharacter ? (
                             <button
                                 onClick={() => setShowPersonalForm(!showPersonalForm)}
-                                className="px-3 py-1 bg-ibm-primary text-ibm-textOnColor text-[10px] font-mono uppercase font-bold tracking-wider hover:bg-ibm-primaryHover transition-all shrink-0"
+                                className="px-3 py-1 bg-[#ff832b] border border-[#ff832b] text-white text-[10px] font-bold hover:bg-[#e86c14] hover:border-[#e86c14] hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer shadow-sm"
                             >
-                                {showPersonalForm ? '关闭新建' : '+ 记录个人笔记'}
+                                {showPersonalForm ? '收起' : '新建笔记'}
                             </button>
                         ) : null}
                     </div>
 
                     {/* Personal Note Create Form Drawer */}
                     {showPersonalForm && activeCharacter && (
-                        <div className="p-3 border border-ibm-primary/30 bg-ibm-background animate-in slide-in-from-top duration-300 space-y-2 mt-1.5">
+                        <div className="p-3 border border-ibm-border bg-ibm-background animate-in slide-in-from-top duration-300 space-y-2 mt-1.5">
                             <div className="grid grid-cols-3 gap-2">
                                 <input
                                     type="text"
@@ -686,9 +685,9 @@ export function MemoCardManager() {
                             <div className="flex gap-2 justify-end">
                                 <button
                                     onClick={handleCreatePersonalNote}
-                                    className="px-4 py-1.5 bg-ibm-primary text-ibm-textOnColor text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-ibm-primaryHover"
+                                    className="px-4 py-1.5 bg-[#ff832b] border border-[#ff832b] text-white text-[11px] font-bold hover:bg-[#e86c14] hover:border-[#e86c14] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
                                 >
-                                    确定创建
+                                    创建
                                 </button>
                                 <button
                                     onClick={() => setShowPersonalForm(false)}

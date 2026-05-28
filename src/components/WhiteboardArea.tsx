@@ -454,8 +454,18 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 <option value="hex" style={{ backgroundColor: 'var(--bg-layer-01, #161616)', color: 'var(--text-primary, #f4f4f4)' }}>六边形</option>
                                 <option value="square" style={{ backgroundColor: 'var(--bg-layer-01, #161616)', color: 'var(--text-primary, #f4f4f4)' }}>正方形</option>
                             </select>
-                            <button onClick={handleCreateTab} className="text-[11px] text-ibm-primary font-mono mr-1">加</button>
-                            <button onClick={() => setIsCreatingTab(false)} className="text-[11px] text-ibm-textSecondary font-mono">关</button>
+                            <button
+                                onClick={handleCreateTab}
+                                className="px-2 py-0.5 border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] text-[10px] font-bold rounded shadow-sm mr-1 cursor-pointer transition-all hover:scale-105 active:scale-95"
+                            >
+                                添加
+                            </button>
+                            <button
+                                onClick={() => setIsCreatingTab(false)}
+                                className="px-2 py-0.5 border border-ibm-border bg-ibm-layer text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover text-[10px] font-mono rounded transition-all cursor-pointer hover:scale-105 active:scale-95"
+                            >
+                                取消
+                            </button>
                         </div>
                     )}
                 </div>

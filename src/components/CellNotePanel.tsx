@@ -115,7 +115,8 @@ function IconSelector({ value, onChange, onClose }: {
                             className="flex-1 bg-ibm-layer border border-ibm-border px-2 py-1 text-ibm-text outline-none text-sm"
                         />
                         <button onClick={() => commit(local)}
-                            className="px-3 py-1 bg-ibm-primary text-ibm-textOnColor text-[11px] font-mono hover:bg-ibm-primaryHover transition-all">
+                            className="px-3 py-1 border border-[#ff832b] bg-[#ff832b] text-white text-[11px] font-bold hover:bg-[#e86c14] hover:border-[#e86c14] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
+                        >
                             确定
                         </button>
                         {local && (
@@ -286,8 +287,9 @@ function NewEntryForm({ myName, onAdd, onCancel }: {
                     取消
                 </button>
                 <button onClick={commit}
-                    className="px-4 py-1.5 text-[11px] font-medium bg-ibm-primary text-ibm-textOnColor hover:bg-ibm-primaryHover transition-all">
-                    + 确认添加
+                    className="px-4 py-1.5 text-[11px] font-bold border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
+                >
+                    添加
                 </button>
             </div>
         </div>
