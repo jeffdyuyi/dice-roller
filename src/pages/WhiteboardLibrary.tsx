@@ -232,7 +232,7 @@ export function WhiteboardLibrary() {
                             <div 
                                 key={b.id} 
                                 onClick={() => setSelectedBoardId(b.id)}
-                                className="p-6 border border-ibm-border bg-ibm-layer hover:border-ibm-borderStrong transition-all duration-200 cursor-pointer flex flex-col group relative"
+                                className="p-6 border border-ibm-border bg-ibm-layer hover:border-[var(--brand-orange)] hover:shadow-[0_8px_24px_rgba(255,131,43,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer flex flex-col group relative rounded-sm shadow-sm"
                             >
                                 <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
@@ -256,7 +256,7 @@ export function WhiteboardLibrary() {
                                     标签数: {b.tabs.length} · 更新于 {new Date(b.updatedAt).toLocaleDateString()}
                                 </p>
                                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-ibm-border/40">
-                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] transition-all cursor-pointer shadow-sm">
+                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-hover)] hover:border-[var(--brand-orange-hover)] transition-all cursor-pointer shadow-sm active:scale-95">
                                         编辑网格 →
                                     </span>
                                     {commState === 'CONNECTED' && isHost && (
@@ -268,7 +268,7 @@ export function WhiteboardLibrary() {
                                                     alert(`白板 [${b.name}] 已载入房间并同步！`);
                                                 }
                                             }}
-                                            className="h-8 px-3 border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] text-xs font-mono font-bold transition-all shadow-sm"
+                                            className="h-8 px-3 border border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-hover)] hover:border-[var(--brand-orange-hover)] text-xs font-mono font-bold transition-all shadow-sm active:scale-95"
                                         >
                                             🚀 载入至房间
                                         </button>

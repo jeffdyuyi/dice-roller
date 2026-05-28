@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  /* Tactile Brand Orange Theme variables */
+  --brand-orange: #ff832b;
+  --brand-orange-hover: #e86c14;
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-hover: var(--brand-orange-hover);
+
   /* IBM Carbon Light Theme (g10) */
   --bg-background: #f4f4f4;
   --bg-layer-01: #ffffff;
@@ -37,6 +43,10 @@
 }
 
 .dark {
+  /* Tactile Brand Orange Theme variables */
+  --brand-orange: #ff832b;
+  --brand-orange-hover: #e86c14;
+
   /* IBM Carbon Dark Theme (g100) */
   --bg-background: #161616;
   --bg-layer-01: #262626;

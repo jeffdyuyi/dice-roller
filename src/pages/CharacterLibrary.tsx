@@ -325,7 +325,7 @@ export function CharacterLibrary() {
                             <div 
                                 key={c.id} 
                                 onClick={() => handleSelectChar(c)}
-                                className="p-6 border border-ibm-border bg-ibm-layer hover:border-[#ff832b] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col group relative"
+                                className="p-6 border border-ibm-border bg-ibm-layer hover:border-[var(--brand-orange)] hover:shadow-[0_8px_24px_rgba(255,131,43,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer flex flex-col group relative rounded-sm shadow-sm"
                             >
                                 <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
@@ -351,7 +351,7 @@ export function CharacterLibrary() {
                                     <span className="text-[12px] text-ibm-textPlaceholder font-sans">
                                         {c.summary || '普通角色卡'}
                                     </span>
-                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[#ff832b] bg-[#ff832b] text-white hover:bg-[#e86c14] hover:border-[#e86c14] transition-all cursor-pointer shadow-sm">
+                                    <span className="px-3.5 py-1.5 text-[11px] font-bold border border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-hover)] hover:border-[var(--brand-orange-hover)] transition-all cursor-pointer shadow-sm active:scale-95">
                                         查看管理 →
                                     </span>
                                 </div>
