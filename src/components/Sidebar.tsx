@@ -127,24 +127,31 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 />
                                 
                                 <div className="mt-4 pt-4 border-t border-ibm-border flex justify-between items-center">
-                                    <label className="flex items-center gap-2 cursor-pointer group">
-                                        <div className="relative flex items-center">
-                                            <input type="checkbox" checked={isHidden} onChange={e => setIsHidden(e.target.checked)} className="peer sr-only" />
-                                            <div className="w-10 h-5 bg-ibm-layer border border-ibm-border rounded-none peer-checked:bg-ibm-primary transition-colors"></div>
-                                            <div className="absolute left-[2px] top-[2px] w-4 h-4 bg-ibm-textSecondary rounded-none transition-transform peer-checked:translate-x-5 peer-checked:bg-ibm-textOnColor"></div>
+                                    <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+                                        <div 
+                                            className={`w-5 h-5 border transition-all flex items-center justify-center rounded-sm ${
+                                                isHidden 
+                                                    ? 'bg-ibm-primary border-ibm-primary text-white shadow-sm scale-105' 
+                                                    : 'bg-ibm-background border-ibm-border hover:border-ibm-borderStrong text-transparent'
+                                            }`}
+                                            onClick={() => setIsHidden(prev => !prev)}
+                                        >
+                                            <span className="text-[12px] font-bold leading-none select-none">✓</span>
                                         </div>
-                                        <span className="text-[13px] font-mono text-ibm-textSecondary group-hover:text-ibm-text transition-colors select-none uppercase tracking-xai">暗骰</span>
+                                        <span className="text-[13px] font-mono text-ibm-textSecondary group-hover:text-ibm-text transition-colors select-none uppercase tracking-xai">
+                                            暗骰 {isHidden && <span className="text-ibm-primary font-bold">(已开启)</span>}
+                                        </span>
                                     </label>
-                                    <button onClick={handleFormulaRoll} className="bg-ibm-primary text-ibm-textOnColor border border-ibm-primary px-6 py-2 rounded-none text-[12px] font-sans font-medium transition-all hover:bg-ibm-primaryHover uppercase tracking-xai">执行</button>
+                                    <button onClick={handleFormulaRoll} className="bg-ibm-primary text-ibm-textOnColor border border-ibm-primary px-6 py-2 rounded-none text-[12px] font-sans font-medium transition-all hover:bg-ibm-primaryHover hover:scale-[1.02] active:scale-[0.98] uppercase tracking-xai">执行</button>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-4 gap-2">
                                 {/* Dice Shortcuts */}
                                 {[ 'd4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100' ].map(d => (
-                                    <button key={d} onClick={() => insertText(d)} className="h-10 bg-ibm-layerHover border border-ibm-border hover:bg-ibm-primary hover:text-ibm-textOnColor rounded-none text-[14px] font-mono font-medium text-ibm-text transition-all uppercase">{d}</button>
+                                    <button key={d} onClick={() => insertText(d)} className="h-10 bg-ibm-layerHover border border-ibm-border hover:bg-ibm-primary hover:text-ibm-textOnColor hover:scale-105 active:scale-95 transition-all rounded-none text-[14px] font-mono font-medium text-ibm-text uppercase">{d}</button>
                                 ))}
-                                <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-10 bg-transparent border border-ibm-border hover:bg-ibm-danger hover:text-ibm-textOnColor hover:border-ibm-danger rounded-none text-ibm-text font-mono font-medium transition-all flex items-center justify-center">
+                                <button onClick={() => setFormulaText(p => p.slice(0, -1))} className="h-10 bg-transparent border border-ibm-border hover:bg-ibm-danger hover:text-ibm-textOnColor hover:border-ibm-danger hover:scale-105 active:scale-95 transition-all rounded-none text-ibm-text font-mono font-medium flex items-center justify-center">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
                                 </button>
 
@@ -153,7 +160,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                     <button
                                         key={idx}
                                         onClick={() => insertText(item.toString())}
-                                        className={`h-10 font-mono font-medium rounded-none transition-all text-[16px] border ${typeof item === 'number' || item === '0' || item === 'd'
+                                        className={`h-10 font-mono font-medium rounded-none hover:scale-105 active:scale-95 transition-all text-[16px] border ${typeof item === 'number' || item === '0' || item === 'd'
                                             ? 'bg-transparent border-ibm-border text-ibm-text hover:bg-ibm-layerHover'
                                             : 'bg-ibm-layerHover border-ibm-border text-ibm-text hover:bg-ibm-primary hover:text-ibm-textOnColor'
                                             }`}
@@ -163,7 +170,7 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 ))}
 
                                 {/* Execute Button in Grid */}
-                                <button onClick={handleFormulaRoll} className="col-span-3 h-10 bg-ibm-primary text-ibm-textOnColor rounded-none font-sans font-medium hover:bg-ibm-primaryHover transition-all uppercase tracking-xai">
+                                <button onClick={handleFormulaRoll} className="col-span-3 h-10 bg-ibm-primary text-ibm-textOnColor rounded-none font-sans font-medium hover:bg-ibm-primaryHover hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-xai">
                                     执 行
                                 </button>
                             </div>
@@ -200,19 +207,26 @@ export function Sidebar({ onRoll }: SidebarProps) {
                                 </div>
 
                                 {/* Daggerheart Advantage Toggle */}
-                                <div className="flex border border-ibm-border p-1 rounded-none bg-transparent">
-                                    {(['none', 'advantage', 'disadvantage'] as const).map((type) => (
-                                        <button
-                                            key={type}
-                                            onClick={() => setDhAdv(type)}
-                                            className={`flex-1 py-2 text-[12px] font-sans uppercase tracking-xai font-medium rounded-none transition-all ${dhAdv === type
-                                                ? 'bg-ibm-primary text-ibm-textOnColor'
-                                                : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'
+                                <div className="flex border border-ibm-border p-1 rounded-none bg-transparent w-full">
+                                    {(['none', 'advantage', 'disadvantage'] as const).map((type) => {
+                                        const isActive = dhAdv === type;
+                                        return (
+                                            <button
+                                                key={type}
+                                                onClick={() => setDhAdv(type)}
+                                                className={`flex-1 py-2 text-[12px] font-sans uppercase tracking-xai font-medium rounded-none transition-all flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-[0.98] ${
+                                                    isActive
+                                                        ? 'bg-ibm-primary text-ibm-textOnColor font-bold shadow-md'
+                                                        : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover bg-transparent'
                                                 }`}
-                                        >
-                                            {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
-                                        </button>
-                                    ))}
+                                            >
+                                                {isActive && <span className="text-[10px] font-bold">✓</span>}
+                                                <span>
+                                                    {type === 'none' ? '常规' : type === 'advantage' ? '优势' : '劣势'}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
 
                                 <button onClick={handleDhRoll} className="w-full bg-ibm-primary text-ibm-textOnColor rounded-none font-sans uppercase tracking-xai font-medium py-3 hover:bg-ibm-primaryHover transition-all">

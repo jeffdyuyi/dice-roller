@@ -44,6 +44,10 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     // Fog of war states & handlers
     const [fogDrawingMode, setFogDrawingMode] = useState<'paint' | 'erase' | null>(null);
 
+    // Alignment and Painting Brush states
+    const [isAlignMode, setIsAlignMode] = useState(false);
+    const [tileColorBrushMode, setTileColorBrushMode] = useState<string | null>(null);
+
     const handleUpdateFogOfWar = (updatedFog: Record<string, boolean>) => {
         if (!activeTab || !hasEditPermission) return;
         const updatedTab = {
@@ -80,6 +84,8 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
             setRecenterTrigger(prev => prev + 1);
             setWallDrawingMode(null);
             setFogDrawingMode(null);
+            setIsAlignMode(false);
+            setTileColorBrushMode(null);
         }
     }, [activeTabId]);
 
@@ -135,6 +141,51 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
         onChange({
             ...project,
             tabs: updatedTabs
+        });
+    };
+
+    const handleBatchUpdateCells = (cellsUpdates: Record<string, Partial<CellData>>) => {
+        if (!activeTab) return;
+        const updatedCells = { ...activeTab.cells };
+        
+        Object.entries(cellsUpdates).forEach(([key, updatedFields]) => {
+            const parts = key.split(',');
+            const q = parseInt(parts[0], 10);
+            const r = parseInt(parts[1], 10);
+            
+            const existingCell = updatedCells[key] || {
+                q,
+                r,
+                entries: []
+            };
+            updatedCells[key] = {
+                ...existingCell,
+                ...updatedFields
+            };
+        });
+        
+        const updatedTab: WhiteboardTab = {
+            ...activeTab,
+            cells: updatedCells
+        };
+        
+        onChange({
+            ...project,
+            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+        });
+    };
+
+    const handleUpdateBgPosition = (bgX: number, bgY: number, bgScale: number) => {
+        if (!activeTab || !hasEditPermission) return;
+        const updatedTab = {
+            ...activeTab,
+            bgX,
+            bgY,
+            bgScale
+        };
+        onChange({
+            ...project,
+            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
         });
     };
 
@@ -221,13 +272,18 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
             const updatedTab: WhiteboardTab = {
                 ...activeTab,
                 bgImage: base64,
-                bgOpacity: activeTab.bgOpacity ?? 0.5
+                bgOpacity: activeTab.bgOpacity ?? 0.5,
+                bgX: activeTab.bgX ?? 0,
+                bgY: activeTab.bgY ?? 0,
+                bgScale: activeTab.bgScale ?? 1
             };
             const updatedTabs = project.tabs.map(t => t.id === activeTab.id ? updatedTab : t);
             onChange({
                 ...project,
                 tabs: updatedTabs
             });
+            // Force center camera viewport layout around coordinates origin
+            setRecenterTrigger(prev => prev + 1);
         };
         reader.readAsDataURL(file);
     };
@@ -375,6 +431,22 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                         className="w-12 h-1 cursor-pointer accent-ibm-primary"
                                         title="底图透明度"
                                     />
+                                    <button
+                                        onClick={() => {
+                                            setIsAlignMode(prev => !prev);
+                                            setWallDrawingMode(null);
+                                            setFogDrawingMode(null);
+                                            setTileColorBrushMode(null);
+                                        }}
+                                        className={`h-6 px-1.5 rounded transition-all text-[10px] border flex items-center justify-center font-bold ${
+                                            isAlignMode
+                                                ? 'bg-ibm-primary border-ibm-primary text-white shadow-sm'
+                                                : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover hover:text-ibm-text text-ibm-textSecondary'
+                                        }`}
+                                        title="开启底图鼠标拖拽/微调对齐校准"
+                                    >
+                                        校准对齐
+                                    </button>
                                     <button 
                                         onClick={handleRemoveBg}
                                         className="text-[#fa4d56] hover:text-[#da1e28] ml-1 font-mono text-[10px]"
@@ -439,6 +511,145 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
             {/* Core Canvas Area */}
             <div ref={containerRef} className="flex-1 w-full relative">
+                {/* 1. Alignment Adjustment Floating Banner */}
+                {isAlignMode && activeTab && (
+                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40 bg-ibm-layer/95 border border-ibm-primary/80 shadow-2xl px-4 py-2.5 flex items-center gap-4 rounded-full backdrop-blur-md transition-all text-xs border-solid" style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}>
+                        <span className="font-bold text-ibm-primary shrink-0 flex items-center gap-1.5 animate-pulse">
+                            <span className="w-2 h-2 rounded-full bg-ibm-primary" />
+                            底图校准对齐模式
+                        </span>
+                        <div className="h-4 w-px bg-ibm-border" />
+                        <div className="flex items-center gap-1">
+                            <span className="text-ibm-textSecondary mr-1 font-sans">位移:</span>
+                            <button
+                                onClick={() => handleUpdateBgPosition((activeTab.bgX ?? 0) - 1, activeTab.bgY ?? 0, activeTab.bgScale ?? 1)}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-sm font-bold"
+                                title="向左微调 1px"
+                            >
+                                ←
+                            </button>
+                            <button
+                                onClick={() => handleUpdateBgPosition(activeTab.bgX ?? 0, (activeTab.bgY ?? 0) + 1, activeTab.bgScale ?? 1)}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-sm font-bold"
+                                title="向下微调 1px"
+                            >
+                                ↓
+                            </button>
+                            <button
+                                onClick={() => handleUpdateBgPosition(activeTab.bgX ?? 0, (activeTab.bgY ?? 0) - 1, activeTab.bgScale ?? 1)}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-sm font-bold"
+                                title="向上微调 1px"
+                            >
+                                ↑
+                            </button>
+                            <button
+                                onClick={() => handleUpdateBgPosition((activeTab.bgX ?? 0) + 1, activeTab.bgY ?? 0, activeTab.bgScale ?? 1)}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-sm font-bold"
+                                title="向右微调 1px"
+                            >
+                                →
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-2">
+                            <span className="text-ibm-textSecondary mr-1 font-sans">缩放:</span>
+                            <button
+                                onClick={() => handleUpdateBgPosition(activeTab.bgX ?? 0, activeTab.bgY ?? 0, Math.max(0.1, (activeTab.bgScale ?? 1) - 0.01))}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-xs font-bold"
+                                title="缩放 -1%"
+                            >
+                                -
+                            </button>
+                            <span className="font-mono w-12 text-center text-ibm-text font-bold">
+                                {Math.round((activeTab.bgScale ?? 1) * 100)}%
+                            </span>
+                            <button
+                                onClick={() => handleUpdateBgPosition(activeTab.bgX ?? 0, activeTab.bgY ?? 0, (activeTab.bgScale ?? 1) + 0.01)}
+                                className="w-6 h-6 border border-ibm-border bg-ibm-background hover:bg-ibm-layerHover text-ibm-text flex items-center justify-center rounded font-mono active:scale-95 transition-all text-xs font-bold"
+                                title="缩放 +1%"
+                            >
+                                +
+                            </button>
+                        </div>
+                        <div className="h-4 w-px bg-ibm-border" />
+                        <button
+                            onClick={() => handleUpdateBgPosition(0, 0, 1)}
+                            className="px-2.5 h-6 border border-ibm-border hover:bg-ibm-layerHover text-ibm-textSecondary rounded flex items-center justify-center transition-all active:scale-95 text-[10px] font-sans"
+                        >
+                            原点复位
+                        </button>
+                        <button
+                            onClick={() => setIsAlignMode(false)}
+                            className="px-3 h-6 bg-ibm-primary hover:bg-ibm-primaryHover text-white rounded flex items-center justify-center transition-all active:scale-95 shadow-md font-bold font-sans"
+                        >
+                            完成校准
+                        </button>
+                    </div>
+                )}
+
+                {/* 2. Terrain Painting Brush Floating Sidebar */}
+                {activeTab && hasEditPermission && (
+                    <div 
+                        className={`absolute z-40 bg-ibm-layer/95 border border-ibm-border shadow-2xl p-2.5 flex flex-col gap-3 rounded backdrop-blur-md transition-all w-[54px] ${
+                            activeTab.gridType === 'square' ? 'left-[142px]' : 'left-[78px]'
+                        } top-4`}
+                        style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}
+                    >
+                        <div className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-b border-ibm-border pb-1.5 font-bold" title="地貌涂色刷控制器">
+                            刷子
+                        </div>
+
+                        {/* Terrain brush buttons */}
+                        <div className="flex flex-col gap-1.5">
+                            {TERRAIN_COLORS.map(item => (
+                                <button
+                                    key={item.hex}
+                                    onClick={() => {
+                                        setTileColorBrushMode(prev => prev === item.hex ? null : item.hex);
+                                        setWallDrawingMode(null);
+                                        setFogDrawingMode(null);
+                                        setIsAlignMode(false);
+                                    }}
+                                    className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-all relative group mx-auto border hover:scale-105 active:scale-95 ${
+                                        tileColorBrushMode === item.hex
+                                            ? 'border-ibm-primary scale-110 shadow-md ring-2 ring-ibm-primary/40'
+                                            : 'border-ibm-border/60'
+                                    }`}
+                                    style={{ backgroundColor: item.hex }}
+                                    title={`地貌刷: ${item.label}`}
+                                >
+                                    {tileColorBrushMode === item.hex && (
+                                        <span className="text-[10px] font-bold text-white shadow-sm drop-shadow-md">🖌️</span>
+                                    )}
+                                    <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                        地貌刷: {item.label}
+                                    </span>
+                                </button>
+                            ))}
+
+                            {/* Brush Eraser */}
+                            <button
+                                onClick={() => {
+                                    setTileColorBrushMode(prev => prev === 'eraser' ? null : 'eraser');
+                                    setWallDrawingMode(null);
+                                    setFogDrawingMode(null);
+                                    setIsAlignMode(false);
+                                }}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    tileColorBrushMode === 'eraser'
+                                        ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="地貌橡皮擦"
+                            >
+                                <span>🧹</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    地貌橡皮擦 (Eraser)
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Snapped Vector Floorplan Drawing Floating Sidebar */}
                 {activeTab && activeTab.gridType === 'square' && hasEditPermission && (
                     <div className="absolute left-4 top-4 z-40 bg-ibm-layer/95 border border-ibm-border shadow-2xl p-2.5 flex flex-col gap-3 rounded backdrop-blur-md transition-all w-[54px]" style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}>
@@ -450,7 +661,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         <div className="flex flex-col gap-1.5">
                             <button
                                 onClick={() => setWallDrawingMode(prev => prev === 'wall' ? null : 'wall')}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     wallDrawingMode === 'wall'
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -465,7 +676,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
                             <button
                                 onClick={() => setWallDrawingMode(prev => prev === 'door' ? null : 'door')}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     wallDrawingMode === 'door'
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -480,7 +691,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
                             <button
                                 onClick={() => setWallDrawingMode(prev => prev === 'window' ? null : 'window')}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     wallDrawingMode === 'window'
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -495,7 +706,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
 
                             <button
                                 onClick={() => setWallDrawingMode(prev => prev === 'delete' ? null : 'delete')}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     wallDrawingMode === 'delete'
                                         ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -517,9 +728,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 </p>
                                 <button
                                     onClick={() => setWallThicknessMode('thin')}
-                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
                                         wallThicknessMode === 'thin'
-                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold shadow-sm'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
@@ -527,9 +738,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 </button>
                                 <button
                                     onClick={() => setWallThicknessMode('standard')}
-                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
                                         wallThicknessMode === 'standard'
-                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold shadow-sm'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
@@ -537,9 +748,9 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 </button>
                                 <button
                                     onClick={() => setWallThicknessMode('massive')}
-                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border ${
+                                    className={`w-[32px] h-[22px] rounded text-[10px] transition-all mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
                                         wallThicknessMode === 'massive'
-                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold'
+                                            ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold shadow-sm'
                                             : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
                                     }`}
                                 >
@@ -579,7 +790,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                         setFogDrawingMode(null);
                                     }
                                 }}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     activeTab.fogEnabled
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -606,7 +817,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                     setFogDrawingMode(prev => prev === 'paint' ? null : 'paint');
                                     setWallDrawingMode(null);
                                 }}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     fogDrawingMode === 'paint'
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -632,7 +843,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                     setFogDrawingMode(prev => prev === 'erase' ? null : 'erase');
                                     setWallDrawingMode(null);
                                 }}
-                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md ${
                                     fogDrawingMode === 'erase'
                                         ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
                                         : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
@@ -667,7 +878,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                         tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
                                     });
                                 }}
-                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text"
+                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md text-ibm-text"
                                 title="全屏遮罩 (Fog All)"
                             >
                                 <span>⬛</span>
@@ -690,7 +901,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                         });
                                     }
                                 }}
-                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text"
+                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover hover:scale-105 active:scale-95 cursor-pointer shadow-sm hover:shadow-md text-ibm-text"
                                 title="清除迷雾 (Clear All)"
                             >
                                 <span>⬜</span>
@@ -730,6 +941,10 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         onUpdateWalls={handleUpdateWalls}
                         fogDrawingMode={fogDrawingMode}
                         onUpdateFogOfWar={handleUpdateFogOfWar}
+                        isAlignMode={isAlignMode}
+                        onUpdateBgPosition={handleUpdateBgPosition}
+                        tileColorBrushMode={tileColorBrushMode}
+                        onBatchUpdateCells={handleBatchUpdateCells}
                     />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-ibm-textSecondary">

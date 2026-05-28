@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Line, Text, Rect, Image as KonvaImage, Group, Circle } from 'react-konva';
-import type { WhiteboardTab, WhiteboardToken, WallSegment } from '../features/whiteboards/types';
+import type { WhiteboardTab, WhiteboardToken, WallSegment, CellData, CellNoteEntry } from '../features/whiteboards/types';
 import React from 'react';
 
 // POINTY-TOPPED HEXAGON GEOMETRY CONSTANTS & HELPERS
@@ -46,6 +46,80 @@ const pixelToHex = (x: number, y: number) => {
     return hexRound(q, r);
 };
 
+const getConnectedWallPaths = (walls: WallSegment[], gridSize: number) => {
+    const wallTypeSegments = walls.filter(w => w.type === 'wall');
+    const otherSegments = walls.filter(w => w.type !== 'wall');
+    
+    const paths: { thickness: string; points: number[]; ids: string[] }[] = [];
+    const visited = new Set<string>();
+    
+    const thicknesses = ['thin', 'standard', 'massive'] as const;
+    
+    for (const thick of thicknesses) {
+        const thicknessWalls = wallTypeSegments.filter(w => w.thickness === thick);
+        
+        for (const wall of thicknessWalls) {
+            if (visited.has(wall.id)) continue;
+            
+            const pathPoints = [wall.startX * gridSize, wall.startY * gridSize, wall.endX * gridSize, wall.endY * gridSize];
+            const pathIds = [wall.id];
+            visited.add(wall.id);
+            
+            let extended = true;
+            while (extended) {
+                extended = false;
+                const startX = pathPoints[0];
+                const startY = pathPoints[1];
+                const endX = pathPoints[pathPoints.length - 2];
+                const endY = pathPoints[pathPoints.length - 1];
+                
+                for (const other of thicknessWalls) {
+                    if (visited.has(other.id)) continue;
+                    
+                    const osx = other.startX * gridSize;
+                    const osy = other.startY * gridSize;
+                    const oex = other.endX * gridSize;
+                    const oey = other.endY * gridSize;
+                    
+                    if (Math.abs(endX - osx) < 0.1 && Math.abs(endY - osy) < 0.1) {
+                        pathPoints.push(oex, oey);
+                        pathIds.push(other.id);
+                        visited.add(other.id);
+                        extended = true;
+                        break;
+                    } else if (Math.abs(endX - oex) < 0.1 && Math.abs(endY - oey) < 0.1) {
+                        pathPoints.push(osx, osy);
+                        pathIds.push(other.id);
+                        visited.add(other.id);
+                        extended = true;
+                        break;
+                    } else if (Math.abs(startX - osx) < 0.1 && Math.abs(startY - osy) < 0.1) {
+                        pathPoints.unshift(oex, oey);
+                        pathIds.unshift(other.id);
+                        visited.add(other.id);
+                        extended = true;
+                        break;
+                    } else if (Math.abs(startX - oex) < 0.1 && Math.abs(startY - oey) < 0.1) {
+                        pathPoints.unshift(osx, osy);
+                        pathIds.unshift(other.id);
+                        visited.add(other.id);
+                        extended = true;
+                        break;
+                    }
+                }
+            }
+            
+            paths.push({
+                thickness: thick,
+                points: pathPoints,
+                ids: pathIds
+            });
+        }
+    }
+    
+    return { paths, otherSegments };
+};
+
 export interface CellInteractionEvent {
     type: 'click' | 'dblclick' | 'contextmenu' | 'longpress' | 'dragstart';
     q: number;
@@ -68,6 +142,12 @@ interface GridBoardProps {
     onUpdateWalls?: (walls: WallSegment[]) => void;
     fogDrawingMode?: 'paint' | 'erase' | null;
     onUpdateFogOfWar?: (fog: Record<string, boolean>) => void;
+    
+    // New Props for Alignment and Painting Brush
+    isAlignMode?: boolean;
+    onUpdateBgPosition?: (bgX: number, bgY: number, bgScale: number) => void;
+    tileColorBrushMode?: string | null;
+    onBatchUpdateCells?: (cellsUpdates: Record<string, Partial<CellData>>) => void;
 }
 
 export function GridBoard({ 
@@ -83,7 +163,11 @@ export function GridBoard({
     wallThicknessMode = 'standard',
     onUpdateWalls,
     fogDrawingMode = null,
-    onUpdateFogOfWar
+    onUpdateFogOfWar,
+    isAlignMode = false,
+    onUpdateBgPosition,
+    tileColorBrushMode = null,
+    onBatchUpdateCells
 }: GridBoardProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
@@ -98,6 +182,18 @@ export function GridBoard({
     const isDrawingFog = useRef(false);
     const lastDrawnCell = useRef<string | null>(null);
     const fogRef = useRef<Record<string, boolean>>({});
+
+    // Terrain painting local rendering overlay and refs
+    const [localPaintedCells, setLocalPaintedCells] = useState<Record<string, string | undefined>>({});
+    const isDrawingTerrain = useRef(false);
+    const lastPaintedCell = useRef<string | null>(null);
+    const terrainPaintRef = useRef<Record<string, Partial<CellData>>>({});
+
+    // Reset local painted overlays when active tab shifts
+    useEffect(() => {
+        setLocalPaintedCells({});
+        terrainPaintRef.current = {};
+    }, [tab.id]);
 
     useEffect(() => {
         fogRef.current = tab.fogOfWar || {};
@@ -196,6 +292,23 @@ export function GridBoard({
             return;
         }
 
+        // Intercept Terrain Painting brush strokes
+        if (tileColorBrushMode && coords) {
+            isDrawingTerrain.current = true;
+            const key = `${coords.q},${coords.r}`;
+            const targetColor = tileColorBrushMode === 'eraser' ? undefined : tileColorBrushMode;
+            
+            terrainPaintRef.current = {
+                [key]: { color: targetColor }
+            };
+            
+            lastPaintedCell.current = key;
+            setLocalPaintedCells({
+                [key]: targetColor
+            });
+            return;
+        }
+
         if (!wallDrawingMode || isHex) return;
         
         // Ignore right clicks
@@ -242,6 +355,29 @@ export function GridBoard({
             return;
         }
 
+        // Intercept Terrain Painting drag moves
+        if (isDrawingTerrain.current && tileColorBrushMode) {
+            const coords = getEventCoords();
+            if (coords) {
+                const key = `${coords.q},${coords.r}`;
+                if (key !== lastPaintedCell.current) {
+                    const targetColor = tileColorBrushMode === 'eraser' ? undefined : tileColorBrushMode;
+                    
+                    terrainPaintRef.current = {
+                        ...terrainPaintRef.current,
+                        [key]: { color: targetColor }
+                    };
+                    
+                    lastPaintedCell.current = key;
+                    setLocalPaintedCells(prev => ({
+                        ...prev,
+                        [key]: targetColor
+                    }));
+                }
+            }
+            return;
+        }
+
         if (isHex) return;
         
         const logicalPos = getStageLogicalPosition();
@@ -281,6 +417,18 @@ export function GridBoard({
             if (onUpdateFogOfWar) {
                 onUpdateFogOfWar(fogRef.current);
             }
+            return;
+        }
+
+        // End Terrain Painting brush stroke
+        if (isDrawingTerrain.current) {
+            isDrawingTerrain.current = false;
+            lastPaintedCell.current = null;
+            setLocalPaintedCells({});
+            if (onBatchUpdateCells && Object.keys(terrainPaintRef.current).length > 0) {
+                onBatchUpdateCells(terrainPaintRef.current);
+            }
+            terrainPaintRef.current = {};
             return;
         }
 
@@ -552,21 +700,75 @@ export function GridBoard({
         }
     }
 
-    // Filter valid cells to render
-    const cellsToRender = Object.values(tab.cells).filter(
-        c => c.color || c.entries.length > 0
+    // Filter valid cells to render, merged with local painted cell overlays
+    const cellsToRenderMap = [
+        ...Object.values(tab.cells),
+        ...Object.entries(localPaintedCells).map(([key, color]) => {
+            const [q, r] = key.split(',').map(Number);
+            return {
+                q,
+                r,
+                color,
+                entries: tab.cells[key]?.entries || []
+            };
+        })
+    ].reduce((acc, cell) => {
+        // Deduplicate: localPaintedCells takes priority!
+        acc[`${cell.q},${cell.r}`] = cell;
+        return acc;
+    }, {} as Record<string, any>);
+    
+    const cellsToRender = Object.values(cellsToRenderMap).filter(
+        (c: any) => c.color || c.entries.length > 0
     );
 
-    // Render preview and existing walls
+    // Render preview and existing walls with smart CAD joining
     const renderWalls = () => {
         if (isHex) return null;
         
         const wallsList = tab.walls || [];
+        const { paths, otherSegments } = getConnectedWallPaths(wallsList, gridSize);
         
         return (
             <Group>
-                {/* 1. Existing walls */}
-                {wallsList.map((wall) => {
+                {/* 1. Connected wall paths (smooth CAD style) */}
+                {paths.map((path, idx) => {
+                    const thicknessWidth = 
+                        path.thickness === 'thin' ? 3 :
+                        path.thickness === 'massive' ? 16 : 8;
+                        
+                    const isHovered = path.ids.includes(hoveredWallId || '') && wallDrawingMode === 'delete';
+                    
+                    return (
+                        <Group key={`path-${idx}`}>
+                            {/* Outer Shadow & stroke */}
+                            <Line
+                                points={path.points}
+                                stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#161616' : '#262626')}
+                                strokeWidth={thicknessWidth}
+                                shadowColor="#000000"
+                                shadowBlur={4}
+                                shadowOpacity={0.4}
+                                shadowOffset={{ x: 1, y: 1 }}
+                                lineCap="round"
+                                lineJoin="round"
+                            />
+                            {/* Inner fill */}
+                            {thicknessWidth > 3 && (
+                                <Line
+                                    points={path.points}
+                                    stroke={isHovered ? '#ff832b' : (isDarkMode ? '#8d8d8d' : '#e0e0e0')}
+                                    strokeWidth={thicknessWidth - 4}
+                                    lineCap="round"
+                                    lineJoin="round"
+                                />
+                            )}
+                        </Group>
+                    );
+                })}
+
+                {/* 1.2 Doors & Windows and other individual segments */}
+                {otherSegments.map((wall) => {
                     const x1 = wall.startX * gridSize;
                     const y1 = wall.startY * gridSize;
                     const x2 = wall.endX * gridSize;
@@ -577,47 +779,18 @@ export function GridBoard({
                     const len = Math.sqrt(dx * dx + dy * dy);
                     if (len === 0) return null;
                     
-                    // Width based on thickness prop
                     const thicknessWidth = 
                         wall.thickness === 'thin' ? 3 :
-                        wall.thickness === 'massive' ? 16 : 8; // standard = 8
+                        wall.thickness === 'massive' ? 16 : 8;
                         
                     const isHovered = wall.id === hoveredWallId && wallDrawingMode === 'delete';
                     
-                    if (wall.type === 'wall') {
-                        // Blueprint style rendering: double-outline CAD style
-                        return (
-                            <Group key={`wall-${wall.id}`}>
-                                {/* Outer Shadow & stroke */}
-                                <Line
-                                    points={[x1, y1, x2, y2]}
-                                    stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#161616' : '#262626')}
-                                    strokeWidth={thicknessWidth}
-                                    shadowColor="#000000"
-                                    shadowBlur={4}
-                                    shadowOpacity={0.4}
-                                    shadowOffset={{ x: 1, y: 1 }}
-                                    lineCap="round"
-                                />
-                                {/* Inner fill */}
-                                {thicknessWidth > 3 && (
-                                    <Line
-                                        points={[x1, y1, x2, y2]}
-                                        stroke={isHovered ? '#ff832b' : (isDarkMode ? '#8d8d8d' : '#e0e0e0')}
-                                        strokeWidth={thicknessWidth - 4}
-                                        lineCap="round"
-                                    />
-                                )}
-                            </Group>
-                        );
-                    } else if (wall.type === 'door') {
-                        // Professional blueprint interactive door swing
+                    if (wall.type === 'door') {
                         const isOpen = !!wall.isOpen;
                         const angle = 90 * Math.PI / 180;
                         const rx = (dx * Math.cos(angle) - dy * Math.sin(angle)) * 0.95;
                         const ry = (dx * Math.sin(angle) + dy * Math.cos(angle)) * 0.95;
                         
-                        // Door jamb vectors
                         const ux = -dy / len;
                         const uy = dx / len;
                         const jambLength = thicknessWidth + 4;
@@ -645,22 +818,17 @@ export function GridBoard({
                                     if (stage) stage.container().style.cursor = 'default';
                                 }}
                             >
-                                {/* Invisible wide interactive touch-line */}
                                 <Line
                                     points={[x1, y1, x2, y2]}
                                     stroke="transparent"
                                     strokeWidth={20}
                                 />
-
-                                {/* Door Pane */}
                                 <Line
                                     points={isOpen ? [x1, y1, x1 + rx, y1 + ry] : [x1, y1, x2, y2]}
                                     stroke={doorColor}
                                     strokeWidth={Math.max(3, thicknessWidth / 2)}
                                     lineCap="round"
                                 />
-
-                                {/* Swing Arc (Only drawn when open) */}
                                 {isOpen && (
                                     <Line
                                         points={[x1 + rx, y1 + ry, x2, y2]}
@@ -669,14 +837,11 @@ export function GridBoard({
                                         dash={[2, 2]}
                                     />
                                 )}
-
-                                {/* Door Jamb 1 */}
                                 <Line
                                     points={[x1 - ux * jambLength / 2, y1 - uy * jambLength / 2, x1 + ux * jambLength / 2, y1 + uy * jambLength / 2]}
                                     stroke={jambColor}
                                     strokeWidth={2}
                                 />
-                                {/* Door Jamb 2 */}
                                 <Line
                                     points={[x2 - ux * jambLength / 2, y2 - uy * jambLength / 2, x2 + ux * jambLength / 2, y2 + uy * jambLength / 2]}
                                     stroke={jambColor}
@@ -685,27 +850,23 @@ export function GridBoard({
                             </Group>
                         );
                     } else if (wall.type === 'window') {
-                        // Window: Glass cyan center flanked by thin double lines
                         const ux = -dy / len;
                         const uy = dx / len;
                         const spacing = Math.max(2, thicknessWidth / 3);
                         
                         return (
                             <Group key={`window-${wall.id}`}>
-                                {/* Background fill bar */}
                                 <Line
                                     points={[x1, y1, x2, y2]}
                                     stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#262626' : '#f4f4f4')}
                                     strokeWidth={thicknessWidth}
                                     lineCap="square"
                                 />
-                                {/* Main cyan glass core */}
                                 <Line
                                     points={[x1, y1, x2, y2]}
                                     stroke={isHovered ? '#fa4d56' : '#00d8ff'}
                                     strokeWidth={2}
                                 />
-                                {/* Outer flanking lines */}
                                 <Line
                                     points={[x1 + ux * spacing, y1 + uy * spacing, x2 + ux * spacing, y2 + uy * spacing]}
                                     stroke={isHovered ? '#fa4d56' : (isDarkMode ? '#8d8d8d' : '#525252')}
@@ -768,10 +929,10 @@ export function GridBoard({
                 ref={stageRef}
                 width={dimensions.width}
                 height={dimensions.height}
-                draggable={!wallDrawingMode && !fogDrawingMode}
+                draggable={!wallDrawingMode && !fogDrawingMode && !isAlignMode && !tileColorBrushMode}
                 onWheel={handleWheel}
                 onDragStart={() => {
-                    onCellInteraction({ type: 'dragstart', q: 0, r: 0, screenX: 0, screenY: 0 });
+                     onCellInteraction({ type: 'dragstart', q: 0, r: 0, screenX: 0, screenY: 0 });
                 }}
                 onDragEnd={handleDragEnd}
                 onClick={handleStageClick}
@@ -798,10 +959,30 @@ export function GridBoard({
                     {bgImg && (
                         <KonvaImage
                             image={bgImg}
-                            x={0}
-                            y={0}
+                            x={tab.bgX ?? 0}
+                            y={tab.bgY ?? 0}
+                            scaleX={tab.bgScale ?? 1}
+                            scaleY={tab.bgScale ?? 1}
                             opacity={tab.bgOpacity ?? 0.5}
-                            listening={false}
+                            listening={isAlignMode}
+                            draggable={isAlignMode}
+                            onDragEnd={(e) => {
+                                const newBgX = Math.round(e.target.x());
+                                const newBgY = Math.round(e.target.y());
+                                if (onUpdateBgPosition) {
+                                    onUpdateBgPosition(newBgX, newBgY, tab.bgScale ?? 1);
+                                }
+                            }}
+                            onMouseEnter={(e: any) => {
+                                if (isAlignMode) {
+                                    const stage = e.target.getStage();
+                                    if (stage) stage.container().style.cursor = 'move';
+                                }
+                            }}
+                            onMouseLeave={(e: any) => {
+                                const stage = e.target.getStage();
+                                if (stage) stage.container().style.cursor = 'default';
+                            }}
                         />
                     )}
                 </Layer>
@@ -954,7 +1135,7 @@ export function GridBoard({
                         const currentSize = isHex ? hexSize * 2 : gridSize;
 
                         // Collect all entry icons into one display string
-                        const entryIcons = cell.entries.map(e => e.icon).filter(Boolean) as string[];
+                        const entryIcons = cell.entries.map((e: CellNoteEntry) => e.icon).filter(Boolean) as string[];
                         const markersString = entryIcons.join(' ');
                         const markersLength = entryIcons.join('').length;
 

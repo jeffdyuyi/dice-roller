@@ -40,6 +40,9 @@ export interface WhiteboardTab {
     gridType: 'square' | 'hex';
     bgImage?: string; // Base64 data URL
     bgOpacity?: number; // 0 to 1
+    bgX?: number; // Background offset X
+    bgY?: number; // Background offset Y
+    bgScale?: number; // Background scale multiplier
     cells: Record<string, CellData>; // Keyed by "q,r" or "x,y"
     tokens?: WhiteboardToken[]; // Player circular draggable tokens
     walls?: WallSegment[]; // List of snapped wall/door/window segments
