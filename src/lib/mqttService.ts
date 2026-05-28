@@ -71,7 +71,7 @@ class MqttService {
         console.log(`[MQTT] Connecting to broker: ${brokerUrl}`);
         this.client = mqtt.connect(brokerUrl, connectOptions);
         
-        this.setupEvents(connectOptions);
+        this.setupEvents();
 
         // Fallback mechanism: if public connection fails or takes > 4s, try local network WebSocket broker fallback
         if (!localStorage.getItem('custom_mqtt_broker') && brokerUrl.startsWith('wss://broker.emqx.io')) {
@@ -84,13 +84,13 @@ class MqttService {
                     const localBroker = `ws://${window.location.hostname}:9001/mqtt`;
                     console.log(`[MQTT] Connecting to local fallback broker: ${localBroker}`);
                     this.client = mqtt.connect(localBroker, connectOptions);
-                    this.setupEvents(connectOptions);
+                    this.setupEvents();
                 }
             }, 4000);
         }
     }
 
-    private setupEvents(connectOptions: any) {
+    private setupEvents() {
         if (!this.client) return;
 
         this.client.on('connect', () => {
