@@ -36,6 +36,22 @@ export function RoomConfigurator() {
     const [quickEditFields, setQuickEditFields] = useState<string[]>(['生命', '先攻']);
     const [newFieldName, setNewFieldName] = useState('');
 
+    // Local-First custom broker configurations
+    const [customBrokerInput, setCustomBrokerInput] = useState(() => {
+        return localStorage.getItem('custom_mqtt_broker') || '';
+    });
+
+    const handleSaveCustomBroker = () => {
+        const val = customBrokerInput.trim();
+        if (val) {
+            localStorage.setItem('custom_mqtt_broker', val);
+            alert(`已成功设置自定义 MQTT Broker: ${val}\n重新连接时生效！`);
+        } else {
+            localStorage.removeItem('custom_mqtt_broker');
+            alert('已恢复为公网默认 EMQX Broker！重新连接时生效。');
+        }
+    };
+
     useEffect(() => {
         // Sync query params when they change
         setMode(queryMode);
@@ -474,6 +490,46 @@ export function RoomConfigurator() {
                                 <li><strong>角色档案联动</strong>：玩家关联角色后，您的所有属性、冒险笔记将随同掷骰数据实时分享给房主，房主还可为您下发专属冒险备忘。</li>
                                 <li><strong>房间失效判定</strong>：当检测到房主下线或关闭页面时，联机大厅的该房间会在 3 分钟内自动从公共列表中静默下架。</li>
                             </ul>
+                        </div>
+
+                        {/* 📶 Local LAN Guidance and Custom MQTT Broker */}
+                        <div className="border border-ibm-border bg-ibm-layer p-6 space-y-4">
+                            <h4 className="text-xs font-mono uppercase tracking-widest text-[#ff832b] font-bold border-b border-ibm-border/30 pb-2">
+                                📶 局域网离线/自组网联机指南
+                            </h4>
+                            <p className="text-[11px] text-ibm-textSecondary leading-relaxed">
+                                当游玩场所（如地下室、展会等）<strong>无公网连接</strong>但处于同一 Wi-Fi 或热点下时，GM 与玩家可通过局域网自组网正常联机：
+                            </p>
+                            <div className="text-[11px] text-ibm-textSecondary space-y-2 bg-ibm-background/40 p-3.5 border border-ibm-border/60">
+                                <p><strong>1. 开启本地代理：</strong>GM 需在电脑上运行本地 MQTT 代理服务（例如 Mosquitto），并允许 WebSocket 连接（默认端口 9001）。</p>
+                                <p><strong>2. 获取局域网 IP：</strong>GM 在终端运行 <code className="font-mono text-white bg-ibm-layer px-1 py-0.5">ipconfig</code>，获取局域网 IPv4（例如 <code className="font-mono">192.168.1.100</code>）。</p>
+                                <p><strong>3. 联机直连配置：</strong>将局域网代理地址填入下方配置，点击保存。玩家直接扫码或访问 GM IP 即可流畅对战。</p>
+                            </div>
+                            
+                            <div className="space-y-2 pt-2">
+                                <label className="text-[10px] font-mono uppercase tracking-widest text-ibm-textSecondary block">
+                                    自定义 MQTT Broker 地址 (WebSocket)
+                                </label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={customBrokerInput} 
+                                        onChange={e => setCustomBrokerInput(e.target.value)} 
+                                        className="flex-1 bg-ibm-background border border-ibm-border text-ibm-text px-3 py-2 text-xs focus:border-[#ff832b] outline-none transition-all placeholder:text-ibm-textSecondary/50 font-mono" 
+                                        placeholder="例如: ws://192.168.1.100:9001/mqtt"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveCustomBroker}
+                                        className="bg-ibm-background border border-[#ff832b]/40 hover:bg-[#ff832b]/10 hover:border-[#ff832b] text-[#ff832b] px-3 text-xs font-mono transition-all"
+                                    >
+                                        保存
+                                    </button>
+                                </div>
+                                <p className="text-[9px] text-ibm-textPlaceholder">
+                                    留空并保存可重置为公网默认节点：<code className="font-mono">wss://broker.emqx.io:8084/mqtt</code>
+                                </p>
+                            </div>
                         </div>
 
                         <div className="border border-ibm-border bg-ibm-layer p-6 space-y-3">

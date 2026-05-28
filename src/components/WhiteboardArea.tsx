@@ -41,6 +41,21 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
     const [wallDrawingMode, setWallDrawingMode] = useState<'wall' | 'door' | 'window' | 'delete' | null>(null);
     const [wallThicknessMode, setWallThicknessMode] = useState<'thin' | 'standard' | 'massive'>('standard');
 
+    // Fog of war states & handlers
+    const [fogDrawingMode, setFogDrawingMode] = useState<'paint' | 'erase' | null>(null);
+
+    const handleUpdateFogOfWar = (updatedFog: Record<string, boolean>) => {
+        if (!activeTab || !hasEditPermission) return;
+        const updatedTab = {
+            ...activeTab,
+            fogOfWar: updatedFog
+        };
+        onChange({
+            ...project,
+            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+        });
+    };
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [bounds, setBounds] = useState({ width: 800, height: 600 });
@@ -64,6 +79,7 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
         if (activeTabId) {
             setRecenterTrigger(prev => prev + 1);
             setWallDrawingMode(null);
+            setFogDrawingMode(null);
         }
     }, [activeTabId]);
 
@@ -534,6 +550,158 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                     </div>
                 )}
 
+                {/* Fog of War (FOW) GM Floating Sidebar */}
+                {activeTab && hasEditPermission && (
+                    <div 
+                        className={`absolute z-40 bg-ibm-layer/95 border border-ibm-border shadow-2xl p-2.5 flex flex-col gap-3 rounded backdrop-blur-md transition-all w-[54px] ${
+                            activeTab.gridType === 'square' ? 'left-[78px]' : 'left-4'
+                        } top-4`}
+                        style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}
+                    >
+                        <div className="text-[10px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-b border-ibm-border pb-1.5 font-bold" title="战争迷雾 (Fog of War) 控制器">
+                            迷雾
+                        </div>
+
+                        {/* Fog Tool buttons */}
+                        <div className="flex flex-col gap-1.5">
+                            {/* Toggle Fog Master */}
+                            <button
+                                onClick={() => {
+                                    const updatedTab = {
+                                        ...activeTab,
+                                        fogEnabled: !activeTab.fogEnabled
+                                    };
+                                    onChange({
+                                        ...project,
+                                        tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                    });
+                                    if (activeTab.fogEnabled) {
+                                        setFogDrawingMode(null);
+                                    }
+                                }}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    activeTab.fogEnabled
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title={activeTab.fogEnabled ? '禁用迷雾' : '启用迷雾'}
+                            >
+                                <span>👁️‍🗨️</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    {activeTab.fogEnabled ? '禁用战争迷雾' : '启用战争迷雾'}
+                                </span>
+                            </button>
+
+                            {/* Paint Fog */}
+                            <button
+                                onClick={() => {
+                                    if (!activeTab.fogEnabled) {
+                                        // Auto enable fog when clicking tools
+                                        const updatedTab = { ...activeTab, fogEnabled: true };
+                                        onChange({
+                                            ...project,
+                                            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                        });
+                                    }
+                                    setFogDrawingMode(prev => prev === 'paint' ? null : 'paint');
+                                    setWallDrawingMode(null);
+                                }}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    fogDrawingMode === 'paint'
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="涂抹迷雾 (Brush)"
+                            >
+                                <span>🌑</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    涂抹迷雾 (Paint Fog)
+                                </span>
+                            </button>
+
+                            {/* Erase Fog */}
+                            <button
+                                onClick={() => {
+                                    if (!activeTab.fogEnabled) {
+                                        const updatedTab = { ...activeTab, fogEnabled: true };
+                                        onChange({
+                                            ...project,
+                                            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                        });
+                                    }
+                                    setFogDrawingMode(prev => prev === 'erase' ? null : 'erase');
+                                    setWallDrawingMode(null);
+                                }}
+                                className={`w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border ${
+                                    fogDrawingMode === 'erase'
+                                        ? 'bg-ibm-primary border-ibm-primary text-white shadow-md'
+                                        : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                }`}
+                                title="擦除迷雾 (Eraser)"
+                            >
+                                <span>☀️</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    擦除迷雾 (Erase Fog)
+                                </span>
+                            </button>
+
+                            {/* Fog All */}
+                            <button
+                                onClick={() => {
+                                    const newFog: Record<string, boolean> = {};
+                                    for (let q = -18; q <= 18; q++) {
+                                        for (let r = -18; r <= 18; r++) {
+                                            newFog[`${q},${r}`] = true;
+                                        }
+                                    }
+                                    Object.keys(activeTab.cells).forEach(key => {
+                                        newFog[key] = true;
+                                    });
+                                    const updatedTab = {
+                                        ...activeTab,
+                                        fogEnabled: true,
+                                        fogOfWar: newFog
+                                    };
+                                    onChange({
+                                        ...project,
+                                        tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                    });
+                                }}
+                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text"
+                                title="全屏遮罩 (Fog All)"
+                            >
+                                <span>⬛</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    全屏遮罩 (Fog All)
+                                </span>
+                            </button>
+
+                            {/* Clear All Fog */}
+                            <button
+                                onClick={() => {
+                                    if (confirm('确定清除当前白板的所有战争迷雾遮罩吗？')) {
+                                        const updatedTab = {
+                                            ...activeTab,
+                                            fogOfWar: {}
+                                        };
+                                        onChange({
+                                            ...project,
+                                            tabs: project.tabs.map(t => t.id === activeTab.id ? updatedTab : t)
+                                        });
+                                    }
+                                }}
+                                className="w-[32px] h-[32px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text"
+                                title="清除迷雾 (Clear All)"
+                            >
+                                <span>⬜</span>
+                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-md">
+                                    清除迷雾 (Clear All)
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {activeTab ? (
                     <GridBoard
                         tab={activeTab}
@@ -560,6 +728,8 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                         wallDrawingMode={wallDrawingMode}
                         wallThicknessMode={wallThicknessMode}
                         onUpdateWalls={handleUpdateWalls}
+                        fogDrawingMode={fogDrawingMode}
+                        onUpdateFogOfWar={handleUpdateFogOfWar}
                     />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-ibm-textSecondary">

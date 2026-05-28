@@ -43,6 +43,8 @@ export interface WhiteboardTab {
     cells: Record<string, CellData>; // Keyed by "q,r" or "x,y"
     tokens?: WhiteboardToken[]; // Player circular draggable tokens
     walls?: WallSegment[]; // List of snapped wall/door/window segments
+    fogOfWar?: Record<string, boolean>; // Coordinates of tiles covered in fog "q,r"
+    fogEnabled?: boolean; // Toggles whether fog of war is active on this tab
 }
 
 export interface WhiteboardProject {

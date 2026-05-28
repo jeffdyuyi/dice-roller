@@ -66,6 +66,8 @@ interface GridBoardProps {
     wallDrawingMode?: 'wall' | 'door' | 'window' | 'delete' | null;
     wallThicknessMode?: 'thin' | 'standard' | 'massive';
     onUpdateWalls?: (walls: WallSegment[]) => void;
+    fogDrawingMode?: 'paint' | 'erase' | null;
+    onUpdateFogOfWar?: (fog: Record<string, boolean>) => void;
 }
 
 export function GridBoard({ 
@@ -79,7 +81,9 @@ export function GridBoard({
     onUpdateTokens,
     wallDrawingMode = null,
     wallThicknessMode = 'standard',
-    onUpdateWalls
+    onUpdateWalls,
+    fogDrawingMode = null,
+    onUpdateFogOfWar
 }: GridBoardProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<any>(null);
@@ -88,6 +92,17 @@ export function GridBoard({
     const [scale, setScale] = useState(1);
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const [bgImg, setBgImg] = useState<HTMLImageElement | null>(null);
+
+    // Fog of war local rendering and strokes ref
+    const [localFog, setLocalFog] = useState<Record<string, boolean>>({});
+    const isDrawingFog = useRef(false);
+    const lastDrawnCell = useRef<string | null>(null);
+    const fogRef = useRef<Record<string, boolean>>({});
+
+    useEffect(() => {
+        fogRef.current = tab.fogOfWar || {};
+        setLocalFog(tab.fogOfWar || {});
+    }, [tab.fogOfWar]);
 
     const gridSize = 50; // Grid square size
     const isHex = tab.gridType === 'hex';
@@ -164,6 +179,23 @@ export function GridBoard({
     };
 
     const handleMouseDown = (e: any) => {
+        // Intercept Fog of War drawing strokes
+        const coords = getEventCoords();
+        if (fogDrawingMode && coords) {
+            isDrawingFog.current = true;
+            const key = `${coords.q},${coords.r}`;
+            const nextFog = { ...fogRef.current };
+            if (fogDrawingMode === 'paint') {
+                nextFog[key] = true;
+            } else {
+                delete nextFog[key];
+            }
+            fogRef.current = nextFog;
+            setLocalFog(nextFog);
+            lastDrawnCell.current = key;
+            return;
+        }
+
         if (!wallDrawingMode || isHex) return;
         
         // Ignore right clicks
@@ -190,6 +222,26 @@ export function GridBoard({
     };
 
     const handleMouseMove = () => {
+        // Intercept Fog of War drawing drag moves
+        if (isDrawingFog.current && fogDrawingMode) {
+            const coords = getEventCoords();
+            if (coords) {
+                const key = `${coords.q},${coords.r}`;
+                if (key !== lastDrawnCell.current) {
+                    const nextFog = { ...fogRef.current };
+                    if (fogDrawingMode === 'paint') {
+                        nextFog[key] = true;
+                    } else {
+                        delete nextFog[key];
+                    }
+                    fogRef.current = nextFog;
+                    setLocalFog(nextFog);
+                    lastDrawnCell.current = key;
+                }
+            }
+            return;
+        }
+
         if (isHex) return;
         
         const logicalPos = getStageLogicalPosition();
@@ -222,6 +274,16 @@ export function GridBoard({
     };
 
     const handleMouseUp = () => {
+        // End Fog of War drawing stroke
+        if (isDrawingFog.current) {
+            isDrawingFog.current = false;
+            lastDrawnCell.current = null;
+            if (onUpdateFogOfWar) {
+                onUpdateFogOfWar(fogRef.current);
+            }
+            return;
+        }
+
         if (!drawingWall || !wallDrawingMode || isHex) return;
         
         const startX = drawingWall.startX;
@@ -706,7 +768,7 @@ export function GridBoard({
                 ref={stageRef}
                 width={dimensions.width}
                 height={dimensions.height}
-                draggable={!wallDrawingMode}
+                draggable={!wallDrawingMode && !fogDrawingMode}
                 onWheel={handleWheel}
                 onDragStart={() => {
                     onCellInteraction({ type: 'dragstart', q: 0, r: 0, screenX: 0, screenY: 0 });
@@ -796,10 +858,81 @@ export function GridBoard({
                     {renderWalls()}
                 </Layer>
 
+                {/* 3.6. Fog of War Layer (High-performance Viewport Culling & Double Opacity Mask) */}
+                {tab.fogEnabled && (
+                    <Layer>
+                        {(() => {
+                            const fogShapes = [];
+                            const fogKeys = Object.keys(localFog);
+                            
+                            for (const key of fogKeys) {
+                                if (!localFog[key]) continue;
+                                const parts = key.split(',');
+                                const q = parseInt(parts[0], 10);
+                                const r = parseInt(parts[1], 10);
+                                if (isNaN(q) || isNaN(r)) continue;
+
+                                // 1. Dynamic Viewport Culling bounds check
+                                if (isHex) {
+                                    const { cx, cy } = getHexCenter(q, r);
+                                    const isVisible = 
+                                        cx >= minX - hexSize * 2 &&
+                                        cx <= maxX + hexSize * 2 &&
+                                        cy >= minY - hexSize * 2 &&
+                                        cy <= maxY + hexSize * 2;
+                                        
+                                    if (!isVisible) continue;
+                                    
+                                    fogShapes.push(
+                                        <Line
+                                            key={`fog-${key}`}
+                                            points={getHexPoints(cx, cy, hexSize + 0.5)}
+                                            closed
+                                            fill="#000000"
+                                            opacity={isHost ? 0.35 : 1.0}
+                                            listening={false}
+                                        />
+                                    );
+                                } else {
+                                    const x = q * gridSize;
+                                    const y = r * gridSize;
+                                    const isVisible = 
+                                        x >= minX - gridSize * 2 &&
+                                        x <= maxX + gridSize * 2 &&
+                                        y >= minY - gridSize * 2 &&
+                                        y <= maxY + gridSize * 2;
+                                        
+                                    if (!isVisible) continue;
+
+                                    fogShapes.push(
+                                        <Rect
+                                            key={`fog-${key}`}
+                                            x={x}
+                                            y={y}
+                                            width={gridSize}
+                                            height={gridSize}
+                                            fill="#000000"
+                                            opacity={isHost ? 0.35 : 1.0}
+                                            listening={false}
+                                        />
+                                    );
+                                }
+                            }
+                            return fogShapes;
+                        })()}
+                    </Layer>
+                )}
+
                 {/* 3.7. Cell annotations, markers, notes, selected highlight layer */}
                 <Layer>
                     {/* B. Entry Icon Tokens */}
-                    {cellsToRender.map((cell) => {
+                    {cellsToRender.filter(cell => {
+                        const isFogged = localFog[`${cell.q},${cell.r}`];
+                        if (tab.fogEnabled && isFogged && !isHost) {
+                            return false;
+                        }
+                        return true;
+                    }).map((cell) => {
                         if (cell.entries.length === 0) return null;
 
                         let tx = 0;
@@ -867,8 +1000,11 @@ export function GridBoard({
                     })}
 
                     {/* C. Highlight Selected Cell */}
-                    {selectedCell && (
-                        isHex ? (() => {
+                    {selectedCell && (() => {
+                        const isFogged = localFog[`${selectedCell.q},${selectedCell.r}`];
+                        if (tab.fogEnabled && isFogged && !isHost) return null;
+                        
+                        return isHex ? (() => {
                             const { cx, cy } = getHexCenter(selectedCell.q, selectedCell.r);
                             return (
                                 <Line
@@ -891,13 +1027,19 @@ export function GridBoard({
                                 fill="rgba(255, 131, 43, 0.04)"
                                 listening={false}
                             />
-                        )
-                    )}
+                        );
+                    })()}
                 </Layer>
 
                 {/* 4. Draggable Circular Tokens Layer */}
                 <Layer>
-                    {(tab.tokens || []).map((token) => {
+                    {(tab.tokens || []).filter(token => {
+                        const isFogged = localFog[`${token.q},${token.r}`];
+                        if (tab.fogEnabled && isFogged && !isHost) {
+                            return false;
+                        }
+                        return true;
+                    }).map((token) => {
                         const { cx, cy } = isHex
                             ? getHexCenter(token.q, token.r)
                             : { cx: (token.q + 0.5) * gridSize, cy: (token.r + 0.5) * gridSize };

@@ -4,7 +4,14 @@ import { saveCharacter } from '../features/characters/api';
 import type { Character } from '../features/characters/types';
 import type { WhiteboardProject } from '../features/whiteboards/types';
 import { saveWhiteboard, getMyWhiteboards } from '../features/whiteboards/api';
+import { webrtcInstance } from '../lib/webrtcManager';
 
+interface OfflineAction {
+    id: string;
+    type: 'WHITEBOARD_PATCH' | 'QUICK_EDIT_SYNC';
+    payload: any;
+    timestamp: number;
+}
 
 export type RoomCommState = 'DISCONNECTED' | 'WAITING' | 'CONNECTED';
 
@@ -49,6 +56,14 @@ const MqttContext = createContext<MqttContextType | undefined>(undefined);
 
 export function MqttProvider({ children }: { children: ReactNode }) {
     const [commState, setCommState] = useState<RoomCommState>('DISCONNECTED');
+    const [myId, setMyId] = useState<string>(() => {
+        let savedId = localStorage.getItem('dice_roller_my_id');
+        if (!savedId) {
+            savedId = 'player-' + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('dice_roller_my_id', savedId);
+        }
+        return savedId;
+    });
     const [activeLobbyRooms, setActiveLobbyRooms] = useState<LobbyRoom[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
     const [roomName, setRoomName] = useState<string | null>(null);
@@ -73,6 +88,30 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     const [roomWhiteboard, setRoomWhiteboard] = useState<WhiteboardProject | null>(null);
     const [hostName, setHostName] = useState<string | null>(null);
 
+    // Local-First offline actions buffering queue
+    const [offlineQueue, setOfflineQueue] = useState<OfflineAction[]>(() => {
+        try {
+            const stored = localStorage.getItem('trpg_offline_actions');
+            return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const queueOfflineAction = useCallback((type: 'WHITEBOARD_PATCH' | 'QUICK_EDIT_SYNC', payload: any) => {
+        const newAction: OfflineAction = {
+            id: 'act-' + Math.random().toString(36).substring(2, 9),
+            type,
+            payload,
+            timestamp: Date.now()
+        };
+        setOfflineQueue(prev => {
+            const next = [...prev, newAction];
+            localStorage.setItem('trpg_offline_actions', JSON.stringify(next));
+            return next;
+        });
+    }, []);
+
     const showNotification = useCallback((message: string, type: 'info' | 'success' | 'error' = 'info') => {
         setLatestNotification({ message, type });
         setTimeout(() => setLatestNotification(null), 4000);
@@ -81,6 +120,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         // Automatically connect to global lobby on app start
         mqttInstance.connectGlobal();
+        setMyId(mqttInstance.myId);
 
         let lastRooms: LobbyRoom[] = [];
         const updateLobby = (rooms: LobbyRoom[]) => {
@@ -107,7 +147,8 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             }
         });
 
-        const unsubMsg = mqttInstance.onMessage((msg: RoomMessage) => {
+        // The unified room message processor (reused for MQTT & WebRTC direct channel)
+        const handleIncomingRoomMessage = (msg: RoomMessage) => {
             if (msg.type === 'JOIN_REQUEST') {
                 if (mqttInstance.isHost) {
                     // Push the join request to host's chat history
@@ -145,6 +186,12 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 setHostName(msg.senderName); // Store host name
                 setConnectionError(null);
                 showNotification(`成功加入 [${msg.payload?.roomName || '联机房间'}]`, 'success');
+
+                // WebRTC direct connection: new player initiates peer connection to GM
+                const hostId = msg.senderId;
+                webrtcInstance.initiateConnection(hostId, (signal) => {
+                    mqttInstance.sendToHost('WEBRTC_SIGNAL', { signal });
+                });
             } else if (msg.type === 'JOIN_REJECTED') {
                 setConnectionError('被房主拒绝加入');
                 showNotification('被房主拒绝加入', 'error');
@@ -161,6 +208,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                         mqttInstance.broadcast('PLAYER_LIST', { list: next });
                         return next;
                     });
+                    webrtcInstance.closeConnection(msg.senderId);
                     showNotification(`${msg.senderName} 离开了房间`, 'info');
                 }
             } else if (msg.type === 'ROOM_CLOSED') {
@@ -178,7 +226,6 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const chatData = { type: 'chat', text: msg.payload?.text, userName: msg.senderName, timestamp: msg.timestamp };
                 setDiceHistory(prev => [...prev, chatData]);
             } else if (msg.type === 'CHARACTER_ADJUST') {
-                // Backward compatibility if needed, though deprecated
                 if (!mqttInstance.isHost) {
                     const adjustedData = msg.payload?.characterData;
                     setActiveCharacter(prev => {
@@ -221,7 +268,6 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
                 showNotification(`收到来自 ${msg.senderName} 的新笔记`, 'info');
             } else if (msg.type === 'CHARACTER_SYNC') {
-                // Update specific player in the list
                 setConnectedPlayers(prev => prev.map(p =>
                     p.id === msg.senderId
                         ? { ...p, characterData: msg.payload?.characterData }
@@ -251,42 +297,140 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const { project } = msg.payload || {};
                 if (project) {
                     setRoomWhiteboard(project);
-                    // Sync and save locally for players/host using matching name + host name
                     (async () => {
                         try {
-                            const localUser = mqttInstance.myId || 'local-user';
+                            const localUser = myId || 'local-user';
                             const localBoards = await getMyWhiteboards(localUser);
                             const senderHostName = msg.senderName;
                             
-                            // Check both board name AND host name match
                             const existing = localBoards.find(
                                 w => w.name === project.name && w.hostName === senderHostName
                             );
                             
                             if (existing) {
-                                const updatedLocal: WhiteboardProject = {
+                                await saveWhiteboard({
                                     ...existing,
                                     tabs: project.tabs,
-                                    updatedAt: Date.now() // Timestamp updated
-                                };
-                                    await saveWhiteboard(updatedLocal);
+                                    updatedAt: Date.now()
+                                });
                             } else {
-                                const newLocal: WhiteboardProject = {
-                                    id: 'board-' + Date.now().toString(36),
+                                await saveWhiteboard({
+                                    id: 'board-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5),
                                     name: project.name,
-                                    hostName: senderHostName, // Save hostName
+                                    hostName: senderHostName,
                                     userId: localUser,
-                                    updatedAt: Date.now(), // Timestamp set
+                                    updatedAt: Date.now(),
                                     tabs: project.tabs
-                                };
-                                await saveWhiteboard(newLocal);
+                                });
                             }
                         } catch (err) {
                             console.error('Error syncing received room whiteboard locally:', err);
                         }
                     })();
                 }
+            } else if (msg.type === 'WHITEBOARD_PATCH') {
+                const { tabId, patchType, key, value } = msg.payload || {};
+                if (tabId && patchType) {
+                    setRoomWhiteboard(prev => {
+                        if (!prev) return prev;
+                        const nextTabs = prev.tabs.map(tab => {
+                            if (tab.id !== tabId) return tab;
+                            
+                            if (patchType === 'fog_enabled') {
+                                return { ...tab, fogEnabled: value };
+                            }
+                            if (patchType === 'cell') {
+                                return {
+                                    ...tab,
+                                    cells: { ...(tab.cells || {}), [key]: value }
+                                };
+                            }
+                            if (patchType === 'cell_delete') {
+                                const nextCells = { ...(tab.cells || {}) };
+                                delete nextCells[key];
+                                return { ...tab, cells: nextCells };
+                            }
+                            if (patchType === 'fog') {
+                                const nextFog = { ...(tab.fogOfWar || {}) };
+                                if (value === false) {
+                                    delete nextFog[key];
+                                } else {
+                                    nextFog[key] = value;
+                                }
+                                return { ...tab, fogOfWar: nextFog };
+                            }
+                            if (patchType === 'fog_all') {
+                                return { ...tab, fogOfWar: value || {} };
+                            }
+                            if (patchType === 'token') {
+                                const nextTokens = (tab.tokens || []).filter(t => t.id !== key);
+                                nextTokens.push(value);
+                                return { ...tab, tokens: nextTokens };
+                            }
+                            if (patchType === 'token_delete') {
+                                return {
+                                    ...tab,
+                                    tokens: (tab.tokens || []).filter(t => t.id !== key)
+                                };
+                            }
+                            if (patchType === 'wall') {
+                                const nextWalls = (tab.walls || []).filter(w => w.id !== key);
+                                nextWalls.push(value);
+                                return { ...tab, walls: nextWalls };
+                            }
+                            if (patchType === 'wall_delete') {
+                                return {
+                                    ...tab,
+                                    walls: (tab.walls || []).filter(w => w.id !== key)
+                                };
+                            }
+                            return tab;
+                        });
+
+                        const updatedProject = { ...prev, tabs: nextTabs, updatedAt: Date.now() };
+
+                        (async () => {
+                            try {
+                                const localUser = myId || 'local-user';
+                                const localBoards = await getMyWhiteboards(localUser);
+                                const senderHostName = msg.senderName;
+                                const existing = localBoards.find(w => 
+                                    isHost 
+                                        ? w.name === updatedProject.name
+                                        : (w.name === updatedProject.name && w.hostName === senderHostName)
+                                );
+                                if (existing) {
+                                    await saveWhiteboard({
+                                        ...existing,
+                                        tabs: updatedProject.tabs,
+                                        updatedAt: Date.now()
+                                    });
+                                }
+                            } catch (err) {
+                                console.error('Error saving patched whiteboard locally:', err);
+                            }
+                        })();
+
+                        return updatedProject;
+                    });
+                }
+            } else if (msg.type === 'WEBRTC_SIGNAL') {
+                const { signal } = msg.payload || {};
+                if (signal) {
+                    webrtcInstance.handleSignal(msg.senderId, signal, (replySignal) => {
+                        if (mqttInstance.isHost) {
+                            mqttInstance.sendToPlayer(msg.senderId, 'WEBRTC_SIGNAL', { signal: replySignal });
+                        } else {
+                            mqttInstance.sendToHost('WEBRTC_SIGNAL', { signal: replySignal });
+                        }
+                    });
+                }
             }
+        };
+
+        const unsubMsg = mqttInstance.onMessage(handleIncomingRoomMessage);
+        webrtcInstance.onMessage((_, msg) => {
+            handleIncomingRoomMessage(msg);
         });
 
         return () => {
@@ -331,6 +475,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const disconnectLocal = useCallback(() => {
         mqttInstance.disconnect();
+        webrtcInstance.closeAll();
         setCommState('DISCONNECTED');
         setRoomId(null);
         setRoomName(null);
@@ -345,22 +490,55 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setActiveCharacter(null);
     }, []);
 
+    // Event Sourcing offline action queue replay on reconnection
+    useEffect(() => {
+        if (commState === 'CONNECTED' && offlineQueue.length > 0) {
+            console.log(`[Event Sourcing] Replaying ${offlineQueue.length} offline actions...`);
+            
+            const sortedActions = [...offlineQueue].sort((a, b) => a.timestamp - b.timestamp);
+            
+            sortedActions.forEach(action => {
+                const msg = {
+                    type: action.type,
+                    senderId: mqttInstance.myId,
+                    senderName: mqttInstance.myName,
+                    timestamp: action.timestamp,
+                    payload: action.payload
+                };
+                
+                const sentP2P = webrtcInstance.broadcastP2P(msg);
+                if (!sentP2P) {
+                    mqttInstance.broadcast(action.type, action.payload);
+                }
+            });
+
+            setOfflineQueue([]);
+            localStorage.removeItem('trpg_offline_actions');
+            showNotification(`已自动重连！同步并回溯了 ${sortedActions.length} 条离线操作。`, 'success');
+        }
+    }, [commState, offlineQueue, showNotification]);
+
     const createRoom = useCallback((name: string, rid: string, rName: string, template: any | null, starterBoard?: WhiteboardProject | null) => {
         setMyName(name);
         localStorage.setItem('dice_roller_my_name', name);
         setRoomName(rName);
         setRoomTemplate(template);
-        setHostName(name); // Set hostName as room creator name
+        setHostName(name); 
         setCommState('WAITING');
         setConnectionError(null);
+        
         if (starterBoard) {
-            setRoomWhiteboard({
+            const boardWithTime = {
                 ...starterBoard,
                 id: 'board-room-' + (rid || 'default'),
-                name: rName || starterBoard.name
-            });
+                name: starterBoard.name,
+                updatedAt: Date.now()
+            };
+            setRoomWhiteboard(boardWithTime);
         }
+        
         mqttInstance.init(name, rid || null, true);
+        setMyId(mqttInstance.myId);
         showNotification(`正在创建房间: ${rName}...`, 'info');
 
         setTimeout(() => {
@@ -369,7 +547,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                 const boardWithTime = {
                     ...starterBoard,
                     id: 'board-room-' + (rid || 'default'),
-                    name: rName || starterBoard.name,
+                    name: starterBoard.name,
                     updatedAt: Date.now()
                 };
                 mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
@@ -388,7 +566,8 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             setActiveCharacter(null);
         }
         mqttInstance.init(name, rid, false);
-        // Request will be sent after connection is established
+        setMyId(mqttInstance.myId);
+        
         setTimeout(() => {
             mqttInstance.sendToHost('JOIN_REQUEST', { 
                 guestMode: charInfo === null,
@@ -409,7 +588,6 @@ export function MqttProvider({ children }: { children: ReactNode }) {
                         roomTemplate: roomTemplate
                     } as any);
 
-                    // Sync latest roll if it exists
                     if (latestRoll) {
                         mqttInstance.broadcast('DICE_ROLL', latestRoll);
                     }
@@ -420,7 +598,6 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             return prevPending.filter(p => p.id !== pId);
         });
 
-        // Also update the join request status in history
         setDiceHistory(prev => prev.map(item => 
             (item as any).type === 'join_request' && (item as any).senderId === pId 
                 ? { ...(item as any), status: 'accepted' }
@@ -437,7 +614,6 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const rejectPlayer = useCallback((pId: string) => {
         setPendingPlayers(prev => prev.filter(p => p.id !== pId));
-        // Also update the join request status in history
         setDiceHistory(prev => prev.map(item => 
             (item as any).type === 'join_request' && (item as any).senderId === pId 
                 ? { ...(item as any), status: 'rejected' }
@@ -452,6 +628,7 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             mqttInstance.broadcast('PLAYER_LIST', { list: next } as any);
             return next;
         });
+        webrtcInstance.closeConnection(pId);
         mqttInstance.sendToPlayer(pId, 'ROOM_CLOSED');
     }, []);
 
@@ -468,23 +645,38 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         const data = { ...(payload as any), userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
         setLatestRoll(data);
         setDiceHistory(prev => [...prev, data]);
+        
         if (commState === 'CONNECTED') {
-            if ((payload as any).isHidden && isHost) {
-                // Host sending a hidden roll? Usually players send hidden rolls to host. 
-                // We broadcast it anyway, non-hosts will ignore it.
-                mqttInstance.broadcast('DICE_ROLL', payload as Record<string, any>);
-            } else {
-                mqttInstance.broadcast('DICE_ROLL', payload as Record<string, any>);
+            const msgPayload = payload as Record<string, any>;
+            const sentP2P = webrtcInstance.broadcastP2P({
+                type: 'DICE_ROLL',
+                senderId: mqttInstance.myId,
+                senderName: mqttInstance.myName,
+                timestamp: Date.now(),
+                payload: msgPayload
+            });
+            if (!sentP2P) {
+                mqttInstance.broadcast('DICE_ROLL', msgPayload);
             }
         }
-    }, [myName, commState, isHost]);
+    }, [myName, commState]);
 
     const sendChatMessage = useCallback((text: string) => {
         const payload = { text };
         const data = { type: 'chat', text, userName: mqttInstance.myName || myName, timestamp: Date.now(), isLocal: true };
         setDiceHistory(prev => [...prev, data]);
+        
         if (commState === 'CONNECTED') {
-            mqttInstance.broadcast('CHAT_MESSAGE', payload);
+            const sentP2P = webrtcInstance.broadcastP2P({
+                type: 'CHAT_MESSAGE',
+                senderId: mqttInstance.myId,
+                senderName: mqttInstance.myName,
+                timestamp: Date.now(),
+                payload
+            });
+            if (!sentP2P) {
+                mqttInstance.broadcast('CHAT_MESSAGE', payload);
+            }
         }
     }, [myName, commState]);
 
@@ -495,11 +687,46 @@ export function MqttProvider({ children }: { children: ReactNode }) {
         setDiceHistory(prev => [...prev, data]);
 
         if (commState === 'CONNECTED') {
+            const payload = { textPayload };
             if (targetId === 'all') {
-                mqttInstance.broadcast('DISTRIBUTE_MEMO', { textPayload });
+                const sentP2P = webrtcInstance.broadcastP2P({
+                    type: 'DISTRIBUTE_MEMO',
+                    senderId: mqttInstance.myId,
+                    senderName: mqttInstance.myName,
+                    timestamp: Date.now(),
+                    payload
+                });
+                if (!sentP2P) {
+                    mqttInstance.broadcast('DISTRIBUTE_MEMO', payload);
+                }
             } else {
-                mqttInstance.sendToPlayer(targetId, 'DISTRIBUTE_MEMO', { textPayload });
+                const sentP2P = webrtcInstance.sendP2P(targetId, {
+                    type: 'DISTRIBUTE_MEMO',
+                    senderId: mqttInstance.myId,
+                    senderName: mqttInstance.myName,
+                    timestamp: Date.now(),
+                    payload
+                });
+                if (!sentP2P) {
+                    mqttInstance.sendToPlayer(targetId, 'DISTRIBUTE_MEMO', payload);
+                }
             }
+        } else {
+            setActiveCharacter(prev => {
+                if (prev) {
+                    const newItem = {
+                        id: 'item-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5),
+                        content: textPayload,
+                        createdAt: Date.now(),
+                        source: 'host' as const
+                    };
+                    const updatedItems = [...(prev.memoItems || []), newItem];
+                    const next = { ...prev, memoItems: updatedItems };
+                    saveCharacter(next);
+                    return next;
+                }
+                return null;
+            });
         }
     }, [myName, commState]);
 
@@ -510,51 +737,326 @@ export function MqttProvider({ children }: { children: ReactNode }) {
 
     const updateRoomWhiteboard = useCallback((updated: WhiteboardProject) => {
         const boardWithTime = { ...updated, updatedAt: Date.now() };
+        
+        if (roomWhiteboard) {
+            updated.tabs.forEach((newTab, tabIdx) => {
+                const oldTab = roomWhiteboard.tabs[tabIdx];
+                if (!oldTab) return;
+
+                if (newTab.fogEnabled !== oldTab.fogEnabled) {
+                    const patch = {
+                        tabId: newTab.id,
+                        patchType: 'fog_enabled',
+                        value: newTab.fogEnabled
+                    };
+                    if (commState === 'CONNECTED') {
+                        const sentP2P = webrtcInstance.broadcastP2P({
+                            type: 'WHITEBOARD_PATCH',
+                            senderId: mqttInstance.myId,
+                            senderName: mqttInstance.myName,
+                            timestamp: Date.now(),
+                            payload: patch
+                        });
+                        if (!sentP2P) {
+                            mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                        }
+                    } else {
+                        queueOfflineAction('WHITEBOARD_PATCH', patch);
+                    }
+                }
+
+                const oldCells = oldTab.cells || {};
+                const newCells = newTab.cells || {};
+                Object.keys(newCells).forEach(key => {
+                    if (JSON.stringify(newCells[key]) !== JSON.stringify(oldCells[key])) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'cell',
+                            key,
+                            value: newCells[key]
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+                Object.keys(oldCells).forEach(key => {
+                    if (!newCells[key]) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'cell_delete',
+                            key
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+
+                const oldFog = oldTab.fogOfWar || {};
+                const newFog = newTab.fogOfWar || {};
+                const oldFogKeys = Object.keys(oldFog);
+                const newFogKeys = Object.keys(newFog);
+
+                if (Math.abs(newFogKeys.length - oldFogKeys.length) > 100) {
+                    const patch = {
+                        tabId: newTab.id,
+                        patchType: 'fog_all',
+                        value: newFog
+                    };
+                    if (commState === 'CONNECTED') {
+                        const sentP2P = webrtcInstance.broadcastP2P({
+                            type: 'WHITEBOARD_PATCH',
+                            senderId: mqttInstance.myId,
+                            senderName: mqttInstance.myName,
+                            timestamp: Date.now(),
+                            payload: patch
+                        });
+                        if (!sentP2P) {
+                            mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                        }
+                    } else {
+                        queueOfflineAction('WHITEBOARD_PATCH', patch);
+                    }
+                } else {
+                    newFogKeys.forEach(key => {
+                        if (newFog[key] !== oldFog[key]) {
+                            const patch = {
+                                tabId: newTab.id,
+                                patchType: 'fog',
+                                key,
+                                value: newFog[key]
+                            };
+                            if (commState === 'CONNECTED') {
+                                const sentP2P = webrtcInstance.broadcastP2P({
+                                    type: 'WHITEBOARD_PATCH',
+                                    senderId: mqttInstance.myId,
+                                    senderName: mqttInstance.myName,
+                                    timestamp: Date.now(),
+                                    payload: patch
+                                });
+                                if (!sentP2P) {
+                                    mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                                }
+                            } else {
+                                queueOfflineAction('WHITEBOARD_PATCH', patch);
+                            }
+                        }
+                    });
+                    oldFogKeys.forEach(key => {
+                        if (newFog[key] === undefined) {
+                            const patch = {
+                                tabId: newTab.id,
+                                patchType: 'fog',
+                                key,
+                                value: false
+                            };
+                            if (commState === 'CONNECTED') {
+                                const sentP2P = webrtcInstance.broadcastP2P({
+                                    type: 'WHITEBOARD_PATCH',
+                                    senderId: mqttInstance.myId,
+                                    senderName: mqttInstance.myName,
+                                    timestamp: Date.now(),
+                                    payload: patch
+                                });
+                                if (!sentP2P) {
+                                    mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                                }
+                            } else {
+                                queueOfflineAction('WHITEBOARD_PATCH', patch);
+                            }
+                        }
+                    });
+                }
+
+                const oldTokens = oldTab.tokens || [];
+                const newTokens = newTab.tokens || [];
+                newTokens.forEach(newToken => {
+                    const oldToken = oldTokens.find(t => t.id === newToken.id);
+                    if (!oldToken || JSON.stringify(oldToken) !== JSON.stringify(newToken)) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'token',
+                            key: newToken.id,
+                            value: newToken
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+                oldTokens.forEach(oldToken => {
+                    const exists = newTokens.some(t => t.id === oldToken.id);
+                    if (!exists) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'token_delete',
+                            key: oldToken.id
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+
+                const oldWalls = oldTab.walls || [];
+                const newWalls = newTab.walls || [];
+                newWalls.forEach(newWall => {
+                    const oldWall = oldWalls.find(w => w.id === newWall.id);
+                    if (!oldWall || JSON.stringify(oldWall) !== JSON.stringify(newWall)) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'wall',
+                            key: newWall.id,
+                            value: newWall
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+                oldWalls.forEach(oldWall => {
+                    const exists = newWalls.some(w => w.id === oldWall.id);
+                    if (!exists) {
+                        const patch = {
+                            tabId: newTab.id,
+                            patchType: 'wall_delete',
+                            key: oldWall.id
+                        };
+                        if (commState === 'CONNECTED') {
+                            const sentP2P = webrtcInstance.broadcastP2P({
+                                type: 'WHITEBOARD_PATCH',
+                                senderId: mqttInstance.myId,
+                                senderName: mqttInstance.myName,
+                                timestamp: Date.now(),
+                                payload: patch
+                            });
+                            if (!sentP2P) {
+                                mqttInstance.broadcast('WHITEBOARD_PATCH', patch);
+                            }
+                        } else {
+                            queueOfflineAction('WHITEBOARD_PATCH', patch);
+                        }
+                    }
+                });
+            });
+        } else {
+            if (commState === 'CONNECTED') {
+                mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
+            }
+        }
+
         setRoomWhiteboard(boardWithTime);
 
-        // Sync and save locally using matching name + host name
         (async () => {
             try {
-                const localUser = mqttInstance.myId || 'local-user';
+                const localUser = myId || 'local-user';
                 const localBoards = await getMyWhiteboards(localUser);
-                const currentHostName = hostName || (isHost ? myName : null);
-
-                // Note: Only sync and overwrite if BOTH whiteboard name AND host name match!
-                const existing = localBoards.find(
-                    w => w.name === boardWithTime.name && (currentHostName ? w.hostName === currentHostName : true)
-                );
+                
+                let existing;
+                if (isHost) {
+                    // Host: match purely by name, overriding original board directly
+                    existing = localBoards.find(w => w.name === boardWithTime.name);
+                } else {
+                    // Player/Other: match by name and hostName
+                    existing = localBoards.find(
+                        w => w.name === boardWithTime.name && (hostName ? w.hostName === hostName : true)
+                    );
+                }
 
                 if (existing) {
-                    const updatedLocal: WhiteboardProject = {
+                    await saveWhiteboard({
                         ...existing,
                         tabs: boardWithTime.tabs,
-                        updatedAt: Date.now() // Timestamp updated
-                    };
-                    await saveWhiteboard(updatedLocal);
+                        updatedAt: Date.now()
+                    });
                 } else {
-                    const newLocal: WhiteboardProject = {
-                        id: boardWithTime.id.startsWith('board-') ? boardWithTime.id : ('board-' + Date.now().toString(36)),
+                    await saveWhiteboard({
+                        id: boardWithTime.id.startsWith('board-') && !boardWithTime.id.startsWith('board-room-') 
+                            ? boardWithTime.id 
+                            : ('board-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 5)),
                         name: boardWithTime.name,
-                        hostName: currentHostName || undefined, // Save hostName
+                        hostName: hostName || undefined,
                         userId: localUser,
-                        updatedAt: Date.now(), // Timestamp set
+                        updatedAt: Date.now(),
                         tabs: boardWithTime.tabs
-                    };
-                    await saveWhiteboard(newLocal);
+                    });
                 }
             } catch (err) {
                 console.error('Error auto-saving room whiteboard edit locally:', err);
             }
         })();
-
-        if (commState === 'CONNECTED') {
-            mqttInstance.broadcast('WHITEBOARD_SYNC', { project: boardWithTime });
-        }
-    }, [commState, hostName, isHost, myName]);
+    }, [roomWhiteboard, commState, hostName, isHost, myName, queueOfflineAction]);
 
     const updateQuickEditValue = useCallback((playerId: string, fieldName: string, value: number) => {
         if (commState === 'CONNECTED') {
-            mqttInstance.broadcast('QUICK_EDIT_SYNC', { playerId, fieldName, value });
+            const sentP2P = webrtcInstance.broadcastP2P({
+                type: 'QUICK_EDIT_SYNC',
+                senderId: mqttInstance.myId,
+                senderName: mqttInstance.myName,
+                timestamp: Date.now(),
+                payload: { playerId, fieldName, value }
+            });
+            if (!sentP2P) {
+                mqttInstance.broadcast('QUICK_EDIT_SYNC', { playerId, fieldName, value });
+            }
+        } else {
+            queueOfflineAction('QUICK_EDIT_SYNC', { playerId, fieldName, value });
         }
         setConnectedPlayers(prev => prev.map(p => {
             if (p.id === playerId) {
@@ -566,10 +1068,10 @@ export function MqttProvider({ children }: { children: ReactNode }) {
             }
             return p;
         }));
-    }, [commState]);
+    }, [commState, queueOfflineAction]);
 
     const value = {
-        commState, activeLobbyRooms, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId: mqttInstance.myId,
+        commState, activeLobbyRooms, roomId, roomName, roomTemplate, isHost, connectedPlayers, pendingPlayers, diceHistory, latestRoll, activeCharacter, myName, myId,
         isManagerOpen, setManagerOpen, updateActiveCharacter, connectionError, latestNotification,
         createRoom, joinRoom, acceptPlayer, rejectPlayer, kickPlayer, leaveRoom, disconnectLocal, addLocalRoll, sendChatMessage, patchCharacter, clearHistory,
         setConnectionError, showNotification, roomWhiteboard, updateRoomWhiteboard, updateQuickEditValue

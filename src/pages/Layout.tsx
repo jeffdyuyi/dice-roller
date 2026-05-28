@@ -7,11 +7,12 @@ import { RoomManagerPanel } from '../components/RoomManagerPanel';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Sidebar } from '../components/Sidebar';
 import { MainArea } from '../components/MainArea';
+import { MemoCardManager } from '../components/MemoCardManager';
 
 export function Layout() {
     const { commState, roomId, roomName, myName, latestNotification, setManagerOpen, addLocalRoll, diceHistory } = useMqttContext();
     const [infoOpen, setInfoOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'whiteboard' | 'memos'>('chat');
     const [showMobileDice, setShowMobileDice] = useState<boolean>(false);
 
     return (
@@ -88,6 +89,17 @@ export function Layout() {
                                 >
                                     <span>🗺️</span>
                                     <span>战术白板</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('memos')}
+                                    className={`h-7 px-3.5 text-[12px] font-mono transition-all flex items-center gap-1.5 ${
+                                        activeTab === 'memos'
+                                            ? 'bg-[#ff832b] text-white font-bold'
+                                            : 'text-ibm-textSecondary hover:text-ibm-text hover:bg-ibm-layerHover'
+                                    }`}
+                                >
+                                    <span>📁</span>
+                                    <span>备忘线索</span>
                                 </button>
                             </div>
 
@@ -229,10 +241,15 @@ export function Layout() {
                                 <MainArea diceHistory={diceHistory} />
                             </div>
                         </>
-                    ) : (
+                    ) : activeTab === 'whiteboard' ? (
                         /* 4. Whiteboard Sub-page - full screen for perfect editing workspace */
                         <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col">
                             <Outlet />
+                        </div>
+                    ) : (
+                        /* 5. Handout Ledger Sub-page */
+                        <div className="flex-1 h-full overflow-y-auto custom-scrollbar relative bg-ibm-layer flex flex-col bg-ibm-background">
+                            <MemoCardManager />
                         </div>
                     )
                 ) : (

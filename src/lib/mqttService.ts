@@ -14,7 +14,7 @@ export interface PlayerNode {
 
 export interface RoomMessage {
     type: 'JOIN_REQUEST' | 'JOIN_ACCEPTED' | 'JOIN_REJECTED' | 'PLAYER_LIST' | 'PLAYER_LEFT' | 'ROOM_CLOSED' | 'DICE_ROLL'
-    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH' | 'DISTRIBUTE_MEMO' | 'WHITEBOARD_SYNC' | 'QUICK_EDIT_SYNC';
+    | 'CHARACTER_IMPORT' | 'CHARACTER_SYNC' | 'CHARACTER_ADJUST' | 'CHARACTER_SNAPSHOT' | 'CHAT_MESSAGE' | 'CHARACTER_PATCH' | 'DISTRIBUTE_MEMO' | 'WHITEBOARD_SYNC' | 'WHITEBOARD_PATCH' | 'QUICK_EDIT_SYNC' | 'WEBRTC_SIGNAL';
     senderId: string;
     senderName: string;
     timestamp: number;
@@ -67,15 +67,40 @@ class MqttService {
             };
         }
 
-        this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', connectOptions);
+        const brokerUrl = localStorage.getItem('custom_mqtt_broker') || 'wss://broker.emqx.io:8084/mqtt';
+        console.log(`[MQTT] Connecting to broker: ${brokerUrl}`);
+        this.client = mqtt.connect(brokerUrl, connectOptions);
         
+        this.setupEvents(connectOptions);
+
+        // Fallback mechanism: if public connection fails or takes > 4s, try local network WebSocket broker fallback
+        if (!localStorage.getItem('custom_mqtt_broker') && brokerUrl.startsWith('wss://broker.emqx.io')) {
+            const currentClient = this.client;
+            setTimeout(() => {
+                if (currentClient && !currentClient.connected && this.client === currentClient) {
+                    console.warn("[MQTT] Public broker connection slow/offline. Trying local LAN fallback...");
+                    currentClient.end(true);
+                    
+                    const localBroker = `ws://${window.location.hostname}:9001/mqtt`;
+                    console.log(`[MQTT] Connecting to local fallback broker: ${localBroker}`);
+                    this.client = mqtt.connect(localBroker, connectOptions);
+                    this.setupEvents(connectOptions);
+                }
+            }, 4000);
+        }
+    }
+
+    private setupEvents(connectOptions: any) {
+        if (!this.client) return;
+
         this.client.on('connect', () => {
+            console.log("[MQTT] Connected successfully!");
             this.client?.subscribe('dnd5r/lobby/rooms/+');
             this.onConnectHandlers.forEach(cb => cb());
         });
 
         this.client.on('error', (err) => {
-            console.error("MQTT Error:", err);
+            console.error("[MQTT] Error:", err);
         });
 
         this.client.on('message', (topic, message) => {
@@ -102,7 +127,7 @@ class MqttService {
                 if (data.senderId === this.myId) return;
                 this.messageHandlers.forEach(handler => handler(data));
             } catch (e) {
-                console.error("Failed to parse mqtt message", e);
+                console.error("[MQTT] Failed to parse message", e);
             }
         });
     }
