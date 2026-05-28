@@ -589,11 +589,11 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                 {/* ── Unified Map Tools Sidebar ── */}
                 {activeTab && hasEditPermission && (
                     <div
-                        className="absolute left-4 top-4 z-40 bg-ibm-layer/95 border border-ibm-border shadow-2xl p-2 flex flex-col gap-1.5 rounded backdrop-blur-md w-[46px] overflow-visible"
+                        className="absolute left-4 top-4 z-40 bg-ibm-layer/95 border border-ibm-borderStrong shadow-2xl p-2.5 flex flex-col gap-2 rounded backdrop-blur-md w-[52px] overflow-visible"
                         style={{ backgroundColor: 'var(--bg-layer-01, #161616)' }}
                     >
                         {/* ── Terrain Brush ── */}
-                        <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-b border-ibm-border pb-1 select-none">地貌</p>
+                        <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-b border-ibm-border pb-1.5 select-none font-bold">地貌</p>
 
                         {/* ── Terrain Colors ── */}
                         {TERRAIN_COLORS.map(item => (
@@ -605,44 +605,50 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                     setFogDrawingMode(null);
                                     setIsAlignMode(false);
                                 }}
-                                className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
+                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
                                     tileColorBrushMode === item.hex
-                                        ? 'border-white scale-110 shadow-lg ring-2 ring-white/50'
-                                        : 'border-black/30 hover:border-white/50'
+                                        ? 'border-white scale-110 shadow-lg ring-2 ring-[#ff832b]'
+                                        : 'border-black/50 hover:border-white/80 hover:scale-105'
                                 }`}
                                 style={{ backgroundColor: item.hex }}
                                 title={`地貌刷: ${item.label}`}
                             >
-                                {tileColorBrushMode === item.hex && <span className="text-[9px] font-bold text-white drop-shadow leading-none">✓</span>}
-                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">地貌: {item.label}</span>
+                                {tileColorBrushMode === item.hex && (
+                                    <span className="text-[9px] font-bold text-white drop-shadow-md leading-none bg-black/40 rounded-full w-4 h-4 flex items-center justify-center">✓</span>
+                                )}
+                                <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">地貌: {item.label}</span>
                             </button>
                         ))}
                         {/* Terrain eraser */}
                         <button
                             onClick={() => { setTileColorBrushMode(prev => prev === 'eraser' ? null : 'eraser'); setWallDrawingMode(null); setFogDrawingMode(null); setIsAlignMode(false); }}
-                            className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                tileColorBrushMode === 'eraser' ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                            className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                tileColorBrushMode === 'eraser' 
+                                    ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-lg scale-105' 
+                                    : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-ibm-primary'
                             }`}
                             title="地貌橡皮擦"
                         >
                             <span>🧹</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">地貌橡皮擦</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">地貌橡皮擦</span>
                         </button>
 
                         {/* ── Fog of War ── */}
-                        <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-t border-b border-ibm-border py-1 mt-1 select-none">过魔</p>
+                        <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-t border-b border-ibm-border py-1.5 mt-1.5 select-none font-bold">迷雾</p>
                         <button
                             onClick={() => {
                                 onChange({ ...project, tabs: project.tabs.map(t => t.id === activeTab.id ? { ...activeTab, fogEnabled: !activeTab.fogEnabled } : t) });
                                 if (activeTab.fogEnabled) setFogDrawingMode(null);
                             }}
-                            className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                activeTab.fogEnabled ? 'bg-ibm-primary border-ibm-primary text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                            className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                activeTab.fogEnabled 
+                                    ? 'bg-[#ff832b] border-[#ff832b] text-white shadow-lg scale-105' 
+                                    : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-[#ff832b]'
                             }`}
-                            title={activeTab.fogEnabled ? '禁用过魔' : '启用过魔'}
+                            title={activeTab.fogEnabled ? '关闭战争迷雾' : '开启战争迷雾'}
                         >
                             <span>👁️</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">{activeTab.fogEnabled ? '禁用过魔' : '启用过魔'}</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">{activeTab.fogEnabled ? '禁用迷雾' : '启用迷雾'}</span>
                         </button>
                         <button
                             onClick={() => {
@@ -650,13 +656,15 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 setFogDrawingMode(prev => prev === 'paint' ? null : 'paint');
                                 setWallDrawingMode(null); setTileColorBrushMode(null);
                             }}
-                            className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                fogDrawingMode === 'paint' ? 'bg-ibm-primary border-ibm-primary text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                            className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                fogDrawingMode === 'paint' 
+                                    ? 'bg-ibm-primary border-ibm-primary text-white shadow-lg scale-105' 
+                                    : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-ibm-primary'
                             }`}
-                            title="涂抑过魔"
+                            title="铺设战争迷雾 (遮挡)"
                         >
                             <span>🌑</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">涂抑过魔</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">涂抹迷雾 (遮蔽)</span>
                         </button>
                         <button
                             onClick={() => {
@@ -664,13 +672,15 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 setFogDrawingMode(prev => prev === 'erase' ? null : 'erase');
                                 setWallDrawingMode(null); setTileColorBrushMode(null);
                             }}
-                            className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                fogDrawingMode === 'erase' ? 'bg-ibm-primary border-ibm-primary text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                            className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                fogDrawingMode === 'erase' 
+                                    ? 'bg-ibm-primary border-ibm-primary text-white shadow-lg scale-105' 
+                                    : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-ibm-primary'
                             }`}
-                            title="擦除过魔"
+                            title="擦除战争迷雾 (开视野)"
                         >
                             <span>☀️</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">擦除过魔</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">擦除迷雾 (开视野)</span>
                         </button>
                         <button
                             onClick={() => {
@@ -679,57 +689,63 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                                 Object.keys(activeTab.cells).forEach(k => { newFog[k] = true; });
                                 onChange({ ...project, tabs: project.tabs.map(t => t.id === activeTab.id ? { ...activeTab, fogEnabled: true, fogOfWar: newFog } : t) });
                             }}
-                            className="w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover hover:scale-105 active:scale-95 cursor-pointer text-ibm-text"
-                            title="全屏遗罩"
+                            className="w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover hover:scale-110 active:scale-95 cursor-pointer text-ibm-text hover:border-ibm-primary"
+                            title="全图笼罩迷雾"
                         >
                             <span>⬛</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">全屏遗罩</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">全图铺满迷雾</span>
                         </button>
                         <button
                             onClick={() => { if (confirm('确定清除所有过魔吗？')) onChange({ ...project, tabs: project.tabs.map(t => t.id === activeTab.id ? { ...activeTab, fogOfWar: {} } : t) }); }}
-                            className="w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-transparent border-ibm-border hover:bg-ibm-layerHover hover:scale-105 active:scale-95 cursor-pointer text-ibm-text"
-                            title="清除全部过魔"
+                            className="w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover hover:scale-110 active:scale-95 cursor-pointer text-ibm-text hover:border-ibm-primary"
+                            title="清除全图迷雾"
                         >
                             <span>⬜</span>
-                            <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">清除全部过魔</span>
+                            <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">清除全部迷雾</span>
                         </button>
 
                         {/* ── Wall Drawing (square only) ── */}
                         {activeTab.gridType === 'square' && (<>
-                            <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-t border-b border-ibm-border py-1 mt-1 select-none">地城</p>
+                            <p className="text-[9px] font-mono text-ibm-textSecondary uppercase tracking-widest text-center border-t border-b border-ibm-border py-1.5 mt-1.5 select-none font-bold">墙体</p>
                             {[
                                 { mode: 'wall' as const, icon: '🧱', label: '绘制墙体' },
-                                { mode: 'door' as const, icon: '🚶', label: '放置门' },
-                                { mode: 'window' as const, icon: '🪟', label: '绘制窗户' },
+                                { mode: 'door' as const, icon: '🚶', label: '放置门扇' },
+                                { mode: 'window' as const, icon: '🪟', label: '绘制窗格' },
                             ].map(({ mode, icon, label }) => (
                                 <button
                                     key={mode}
                                     onClick={() => { setWallDrawingMode(prev => prev === mode ? null : mode); setFogDrawingMode(null); setTileColorBrushMode(null); }}
-                                    className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                        wallDrawingMode === mode ? 'bg-ibm-primary border-ibm-primary text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                    className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                        wallDrawingMode === mode 
+                                            ? 'bg-ibm-primary border-ibm-primary text-white shadow-lg scale-105' 
+                                            : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-ibm-primary'
                                     }`}
                                     title={label}
                                 >
                                     <span>{icon}</span>
-                                    <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">{label}</span>
+                                    <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">{label}</span>
                                 </button>
                             ))}
                             <button
                                 onClick={() => { setWallDrawingMode(prev => prev === 'delete' ? null : 'delete'); setFogDrawingMode(null); setTileColorBrushMode(null); }}
-                                className={`w-[30px] h-[30px] rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-105 active:scale-95 cursor-pointer ${
-                                    wallDrawingMode === 'delete' ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-md' : 'bg-transparent border-ibm-border hover:bg-ibm-layerHover text-ibm-text'
+                                className={`w-9 h-9 rounded flex items-center justify-center text-sm transition-all relative group mx-auto border hover:scale-110 active:scale-95 cursor-pointer ${
+                                    wallDrawingMode === 'delete' 
+                                        ? 'bg-[#fa4d56] border-[#fa4d56] text-white shadow-lg scale-105' 
+                                        : 'bg-ibm-background/90 border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-text hover:border-ibm-primary'
                                 }`}
-                                title="擦除线条"
+                                title="擦除墙体线条"
                             >
                                 <span>✂️</span>
-                                <span className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">擦除线条</span>
+                                <span className="absolute left-full ml-3 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-md">擦除墙体线条</span>
                             </button>
                             {['wall', 'door', 'window'].includes(wallDrawingMode || '') && (
-                                <div className="flex flex-col gap-0.5 border-t border-ibm-border pt-1 mt-0.5">
+                                <div className="flex flex-col gap-1 border-t border-ibm-border pt-1.5 mt-1">
                                     {(['thin', 'standard', 'massive'] as const).map((t, i) => (
                                         <button key={t} onClick={() => setWallThicknessMode(t)}
-                                            className={`w-[30px] h-[18px] rounded text-[9px] transition-all mx-auto border cursor-pointer ${
-                                                wallThicknessMode === t ? 'bg-ibm-background border-ibm-primary text-ibm-primary font-bold' : 'bg-transparent border-transparent hover:bg-ibm-layerHover text-ibm-textSecondary'
+                                            className={`w-9 h-5 rounded text-[9px] transition-all mx-auto border cursor-pointer font-bold ${
+                                                wallThicknessMode === t 
+                                                    ? 'bg-ibm-primary border-ibm-primary text-white font-black' 
+                                                    : 'bg-ibm-background border-ibm-borderStrong hover:bg-ibm-layerHover text-ibm-textSecondary'
                                             }`}
                                         >{['细', '中', '粗'][i]}</button>
                                     ))}

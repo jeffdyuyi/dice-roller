@@ -226,19 +226,19 @@ export function Layout() {
                                 )}
                             </div>
 
-                            {/* Desktop-only Tools Sidebar */}
+                            {/* Desktop-only Tools Sidebar (Left) */}
                             <div className="hidden md:flex w-[280px] lg:w-[300px] shrink-0 border-r border-ibm-border bg-ibm-layer z-20 h-full overflow-y-auto custom-scrollbar flex-col">
                                 <Sidebar onRoll={addLocalRoll} />
                             </div>
                             
-                            {/* 2. Room Management Panel (Integrated left panel, hidden on mobile in favor of RoomManagerDrawer) */}
-                            <div className="hidden md:flex w-[290px] lg:w-[320px] shrink-0 border-r border-ibm-border bg-ibm-background z-20 h-full overflow-y-auto custom-scrollbar flex-col">
-                                <RoomManagerPanel />
-                            </div>
- 
-                            {/* 3. Chat Area / Dice History (Responsive auto-growing flexbox) */}
-                            <div className="flex-grow flex-1 shrink bg-ibm-background z-20 h-full flex flex-col overflow-hidden">
+                            {/* 3. Chat Area / Dice History (Center) - Centered and dominant */}
+                            <div className="flex-grow flex-1 shrink bg-ibm-background border-r border-ibm-border z-20 h-full flex flex-col overflow-hidden">
                                 <MainArea diceHistory={diceHistory} />
+                            </div>
+
+                            {/* 2. Room Management Panel (Right, hidden on mobile) */}
+                            <div className="hidden md:flex w-[290px] lg:w-[320px] shrink-0 bg-ibm-background z-20 h-full overflow-y-auto custom-scrollbar flex-col">
+                                <RoomManagerPanel />
                             </div>
                         </>
                     ) : activeTab === 'whiteboard' ? (
