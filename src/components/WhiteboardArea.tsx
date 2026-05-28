@@ -94,6 +94,62 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
         }
     }, [activeTabId]);
 
+    // Viewing Cell Popover Dragging & Positioning states
+    const [popoverPos, setPopoverPos] = useState<{ x: number; y: number } | null>(null);
+    const [isDraggingPopover, setIsDraggingPopover] = useState(false);
+    const dragStartOffset = useRef({ x: 0, y: 0 });
+
+    // Position popover above mouse cursor when viewingCell is opened
+    useEffect(() => {
+        if (viewingCell) {
+            // Position above the cursor to prevent obstructing cell views.
+            // Popover width: 360px. Offset X by -180px (centered).
+            // Popover typical max-height: ~400px. Offset Y by -420px.
+            const initX = Math.max(10, Math.min(viewingCell.x - 180, bounds.width - 380));
+            const initY = Math.max(10, Math.min(viewingCell.y - 420, bounds.height - 120));
+            setPopoverPos({ x: initX, y: initY });
+        } else {
+            setPopoverPos(null);
+        }
+    }, [viewingCell, bounds]);
+
+    // Handle global dragging events while isDraggingPopover is active
+    useEffect(() => {
+        if (!isDraggingPopover) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!containerRef.current) return;
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const mouseX = e.clientX - containerRect.left;
+            const mouseY = e.clientY - containerRect.top;
+            const nextX = Math.max(10, Math.min(mouseX - dragStartOffset.current.x, bounds.width - 380));
+            const nextY = Math.max(10, Math.min(mouseY - dragStartOffset.current.y, bounds.height - 120));
+            setPopoverPos({ x: nextX, y: nextY });
+        };
+
+        const handleMouseUp = () => {
+            setIsDraggingPopover(false);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDraggingPopover, bounds]);
+
+    const handlePopoverDragStart = (e: React.MouseEvent) => {
+        if (!popoverPos || !containerRef.current) return;
+        setIsDraggingPopover(true);
+        const containerRect = containerRef.current.getBoundingClientRect();
+        dragStartOffset.current = {
+            x: (e.clientX - containerRect.left) - popoverPos.x,
+            y: (e.clientY - containerRect.top) - popoverPos.y
+        };
+        e.preventDefault();
+    };
+
     const activeTab = project.tabs.find(t => t.id === activeTabId) || project.tabs[0];
 
     // Ensure we have an active tab ID if tab gets updated/deleted
@@ -872,36 +928,49 @@ export function WhiteboardArea({ project, onChange, myName }: WhiteboardAreaProp
                     </div>
                 )}
 
-                {/* 查看卡片 View Mode Popover */}
+                {/* 查看卡片 View Mode Popover (Draggable, centered above cursor initially) */}
                 {viewingCell && activeTab && (
                     <div
                         className="absolute z-50 bg-ibm-layer border border-ibm-border shadow-2xl p-4 w-[360px] max-h-[400px] overflow-y-auto custom-scrollbar transition-all duration-150 animate-in fade-in zoom-in-95 duration-100"
                         style={{
-                            left: `${Math.min(viewingCell.x + 10, bounds.width - 380)}px`,
-                            top: `${Math.min(viewingCell.y + 10, bounds.height - 420)}px`,
+                            left: popoverPos ? `${popoverPos.x}px` : `${Math.max(10, Math.min(viewingCell.x - 180, bounds.width - 380))}px`,
+                            top: popoverPos ? `${popoverPos.y}px` : `${Math.max(10, Math.min(viewingCell.y - 420, bounds.height - 120))}px`,
                             backgroundColor: 'var(--bg-layer-01)',
                         }}
                     >
-                        {/* Header */}
-                        <div className="flex justify-between items-center pb-2 border-b border-ibm-border/45 mb-3">
-                            <span className="font-mono text-[11px] text-ibm-textSecondary uppercase tracking-wider">
-                                坐标 ({viewingCell.q}, {viewingCell.r}) · 查看备注
-                            </span>
-                            <div className="flex gap-2">
+                        {/* Draggable Header */}
+                        <div 
+                            onMouseDown={handlePopoverDragStart}
+                            className="flex justify-between items-center pb-2 border-b border-ibm-borderStrong mb-3 cursor-grab active:cursor-grabbing bg-ibm-background/60 px-3 py-1.5 -mx-4 -mt-4 select-none"
+                            title="按住此处可拖拽移动面板"
+                        >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-[#ff832b] text-[10px] font-bold">✥</span>
+                                <span className="font-mono text-[10px] text-ibm-textSecondary uppercase tracking-wider truncate">
+                                    坐标 ({viewingCell.q}, {viewingCell.r}) · 备注卡
+                                </span>
+                            </div>
+                            <div className="flex gap-2 items-center shrink-0">
                                 {hasEditPermission && (
                                     <button
-                                        onClick={() => {
+                                        onMouseDown={e => e.stopPropagation()}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             setSelectedCell({ q: viewingCell.q, r: viewingCell.r });
                                             setViewingCell(null);
                                         }}
-                                        className="text-[10px] font-mono text-ibm-primary hover:text-ibm-primaryHover border border-ibm-border px-1.5 py-0.5"
+                                        className="text-[9px] font-mono text-ibm-primary hover:text-ibm-primaryHover border border-ibm-border px-1.5 py-0.5 bg-ibm-background cursor-pointer"
                                     >
                                         编辑
                                     </button>
                                 )}
                                 <button
-                                    onClick={() => setViewingCell(null)}
-                                    className="text-[10px] font-mono text-ibm-textSecondary hover:text-ibm-text px-1"
+                                    onMouseDown={e => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setViewingCell(null);
+                                    }}
+                                    className="text-[10px] font-mono text-ibm-textSecondary hover:text-ibm-text px-1 cursor-pointer"
                                 >
                                     X
                                 </button>
