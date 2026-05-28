@@ -40,6 +40,7 @@ export function RoomConfigurator() {
     const [customBrokerInput, setCustomBrokerInput] = useState(() => {
         return localStorage.getItem('custom_mqtt_broker') || '';
     });
+    const [showOfflineGuide, setShowOfflineGuide] = useState(false);
 
     const handleSaveCustomBroker = () => {
         const val = customBrokerInput.trim();
@@ -478,67 +479,87 @@ export function RoomConfigurator() {
                         </div>
                     </div>
 
-                    {/* Right Column: Tips & Info Sidebar */}
-                    <div className="space-y-6">
-                        <div className="border border-ibm-border bg-ibm-layer p-6 space-y-4">
-                            <h4 className="text-xs font-mono uppercase tracking-widest text-ibm-primary font-bold border-b border-ibm-border/30 pb-2">
-                                💡 联机战役小提示
-                            </h4>
-                            <ul className="text-xs text-ibm-textSecondary space-y-3.5 leading-relaxed font-sans list-disc pl-4">
-                                <li><strong>去中心化架构</strong>：本项目联机功能采用轻量级 MQTT 协议，玩家之间直接握手通信，极速响应，无需复杂的后台同步！</li>
-                                <li><strong>白板共享</strong>：作为房主开启房间时，联动您事先画好的白板可以免去在战役中临时重新上传的麻烦。</li>
-                                <li><strong>角色档案联动</strong>：玩家关联角色后，您的所有属性、冒险笔记将随同掷骰数据实时分享给房主，房主还可为您下发专属冒险备忘。</li>
-                                <li><strong>房间失效判定</strong>：当检测到房主下线或关闭页面时，联机大厅的该房间会在 3 分钟内自动从公共列表中静默下架。</li>
-                            </ul>
-                        </div>
-
-                        {/* 📶 Local LAN Guidance and Custom MQTT Broker */}
-                        <div className="border border-ibm-border bg-ibm-layer p-6 space-y-4">
-                            <h4 className="text-xs font-mono uppercase tracking-widest text-[#ff832b] font-bold border-b border-ibm-border/30 pb-2">
-                                📶 局域网离线/自组网联机指南
-                            </h4>
-                            <p className="text-[11px] text-ibm-textSecondary leading-relaxed">
-                                当游玩场所（如地下室、展会等）<strong>无公网连接</strong>但处于同一 Wi-Fi 或热点下时，GM 与玩家可通过局域网自组网正常联机：
-                            </p>
-                            <div className="text-[11px] text-ibm-textSecondary space-y-2 bg-ibm-background/40 p-3.5 border border-ibm-border/60">
-                                <p><strong>1. 开启本地代理：</strong>GM 需在电脑上运行本地 MQTT 代理服务（例如 Mosquitto），并允许 WebSocket 连接（默认端口 9001）。</p>
-                                <p><strong>2. 获取局域网 IP：</strong>GM 在终端运行 <code className="font-mono text-white bg-ibm-layer px-1 py-0.5">ipconfig</code>，获取局域网 IPv4（例如 <code className="font-mono">192.168.1.100</code>）。</p>
-                                <p><strong>3. 联机直连配置：</strong>将局域网代理地址填入下方配置，点击保存。玩家直接扫码或访问 GM IP 即可流畅对战。</p>
-                            </div>
-                            
-                            <div className="space-y-2 pt-2">
-                                <label className="text-[10px] font-mono uppercase tracking-widest text-ibm-textSecondary block">
-                                    自定义 MQTT Broker 地址 (WebSocket)
-                                </label>
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="text" 
-                                        value={customBrokerInput} 
-                                        onChange={e => setCustomBrokerInput(e.target.value)} 
-                                        className="flex-1 bg-ibm-background border border-ibm-border text-ibm-text px-3 py-2 text-xs focus:border-[#ff832b] outline-none transition-all placeholder:text-ibm-textSecondary/50 font-mono" 
-                                        placeholder="例如: ws://192.168.1.100:9001/mqtt"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleSaveCustomBroker}
-                                        className="bg-ibm-background border border-[#ff832b]/40 hover:bg-[#ff832b]/10 hover:border-[#ff832b] text-[#ff832b] px-3 text-xs font-mono transition-all"
-                                    >
-                                        保存
-                                    </button>
+                    {/* Right Column: Collapsible Instructions Sidebar */}
+                    <div className="space-y-4">
+                        <div className="border border-ibm-border bg-ibm-layer p-5 transition-all duration-300">
+                            <div 
+                                onClick={() => setShowOfflineGuide(!showOfflineGuide)}
+                                className="flex justify-between items-center cursor-pointer select-none group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm">📶</span>
+                                    <h4 className="text-xs font-sans font-bold uppercase tracking-wider text-[var(--brand-orange)] group-hover:text-[var(--brand-orange-hover)] transition-colors">
+                                        联机与局域网战役指南
+                                    </h4>
                                 </div>
-                                <p className="text-[9px] text-ibm-textPlaceholder">
-                                    留空并保存可重置为公网默认节点：<code className="font-mono">wss://broker.emqx.io:8084/mqtt</code>
-                                </p>
+                                <span className="text-xs text-ibm-textSecondary font-mono group-hover:text-ibm-text transition-colors">
+                                    {showOfflineGuide ? '收起 ▲' : '查看展开 ▼'}
+                                </span>
                             </div>
-                        </div>
 
-                        <div className="border border-ibm-border bg-ibm-layer p-6 space-y-3">
-                            <h4 className="text-xs font-mono uppercase tracking-widest text-ibm-textSecondary font-bold border-b border-ibm-border/30 pb-2">
-                                🛡️ 加密与数据保密
-                            </h4>
-                            <p className="text-[11px] text-ibm-textPlaceholder leading-relaxed">
-                                所有在战局中产生的白板笔画、血量修改、实时备忘均仅保存在各自游玩的本地 IndexedDB 浏览器细分库内。退出战局时，房主退出即清空临时房间缓存，确保绝对的安全和独立隐私。
-                            </p>
+                            {!showOfflineGuide && (
+                                <p className="text-[11px] text-ibm-textPlaceholder mt-2 font-sans">
+                                    点击右侧 “查看展开” 快速了解自组网离线联机指南、MQTT代理配置及战役小贴士...
+                                </p>
+                            )}
+
+                            {showOfflineGuide && (
+                                <div className="mt-4 space-y-5 animate-in slide-in-from-top duration-300">
+                                    {/* 1. LAN Off-line Guide */}
+                                    <div className="space-y-2 border-t border-ibm-border/30 pt-3">
+                                        <h5 className="text-[11px] font-sans font-bold text-ibm-text">
+                                            📶 局域网自组网离线对战
+                                        </h5>
+                                        <p className="text-[11px] text-ibm-textSecondary leading-relaxed">
+                                            当处于展会或无公网连接的热点下时，GM 与玩家可通过局域网自组网无网联机：
+                                        </p>
+                                        <div className="text-[10px] text-ibm-textSecondary space-y-2 bg-ibm-background/40 p-3 border border-ibm-border/60">
+                                            <p><strong>1. 本地代理：</strong>GM 需在电脑上运行 MQTT 代理服务（如 Mosquitto），并允许 WebSocket 连接（端口 9001）。</p>
+                                            <p><strong>2. 获取 IP：</strong>GM 在终端运行 <code className="font-mono text-white bg-ibm-layer px-1 py-0.5">ipconfig</code>，获取局域网 IPv4（例如 <code className="font-mono">192.168.1.100</code>）。</p>
+                                            <p><strong>3. 直连配置：</strong>将局域网代理地址填入下方配置并保存。玩家扫码或访问 GM IP 即可直连进入战役。</p>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. MQTT Broker Config */}
+                                    <div className="space-y-2 border-t border-ibm-border/30 pt-3">
+                                        <label className="text-[10px] font-mono uppercase tracking-widest text-ibm-textSecondary block">
+                                            自定义 MQTT Broker 地址 (WebSocket)
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={customBrokerInput} 
+                                                onChange={e => setCustomBrokerInput(e.target.value)} 
+                                                className="flex-1 bg-ibm-background border border-ibm-border text-ibm-text px-3 py-2 text-xs focus:border-[var(--brand-orange)] outline-none transition-all placeholder:text-ibm-textSecondary/50 font-mono" 
+                                                placeholder="例如: ws://192.168.1.100:9001/mqtt"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleSaveCustomBroker}
+                                                className="bg-ibm-background border border-[var(--brand-orange)]/40 hover:bg-[var(--brand-orange)]/10 hover:border-[var(--brand-orange)] text-[var(--brand-orange)] px-3 text-xs font-mono transition-all active:scale-95 cursor-pointer shadow-sm rounded-none"
+                                            >
+                                                保存
+                                            </button>
+                                        </div>
+                                        <p className="text-[9px] text-ibm-textPlaceholder">
+                                            留空并保存重置为公网默认节点：<code className="font-mono">wss://broker.emqx.io:8084/mqtt</code>
+                                        </p>
+                                    </div>
+
+                                    {/* 3. Campaign Tips */}
+                                    <div className="space-y-2.5 border-t border-ibm-border/30 pt-3">
+                                        <h5 className="text-[11px] font-sans font-bold text-ibm-text">
+                                            💡 联机战役小提示
+                                        </h5>
+                                        <ul className="text-[11px] text-ibm-textSecondary space-y-2 leading-relaxed font-sans list-disc pl-4">
+                                            <li><strong>去中心化通信</strong>：通过极速 MQTT 协议玩家直接握手，战力即时流转无后台滞后。</li>
+                                            <li><strong>白板共享</strong>：房主可一键载入已创建地城白板，免去临时重新配置上传的繁琐。</li>
+                                            <li><strong>角色卡联动</strong>：绑定角色后掷骰与属性信息会自动流转分享给房主，接受分发更自如。</li>
+                                            <li><strong>大厅静默下架</strong>：检测到房主关闭或下线后，房间将在 3 分钟内从列表自动安全下架。</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
